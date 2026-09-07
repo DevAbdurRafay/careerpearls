@@ -3,6 +3,28 @@
 {% from '_loading_states.html' import loading_spinner, loading_skeleton_text, loading_skeleton_avatar %}
 {% from '_empty_states.html' import empty_state_applications, empty_state_interviews %}
 
+{% macro render_company_pill(comp, default_name='Employer') %}
+  {% if comp %}
+    <span class="cp-company-hover-pill-wrap">
+      <a href="#" onclick="return false;" class="cp-company-hover-pill">
+        <span class="cp-company-pill-avatar">
+          {% if comp.logo_path %}
+            <img src="{{ url_for('static', filename='uploads/company_logos/' ~ comp.logo_path) }}" alt="{{ comp.name }}">
+          {% else %}
+            <i class="bi bi-building"></i>
+          {% endif %}
+        </span>
+        <span class="cp-company-pill-name">{{ comp.name }}</span>
+      </a>
+      <div class="cp-company-tooltip-bubble">
+        <i class="bi bi-envelope-fill me-1" style="font-size: 0.82rem; color: #818cf8;"></i>{{ comp.official_email or (comp.domain or 'contact@company.com') }}
+      </div>
+    </span>
+  {% else %}
+    <strong class="cp-company-pill-name">{{ default_name }}</strong>
+  {% endif %}
+{% endmacro %}
+
 {% block content %}
 <div class="container-fluid pt-0">
 
@@ -25,7 +47,7 @@
                         Congratulations, {{ candidate.full_name or current_user.name }}!
                     </h4>
                     <p class="small mb-0 cp-hired-subtext" style="font-size: 0.9rem;">
-                        You have been hired as <strong class="cp-hired-job-title">{{ ha.job.title if ha.job else 'the position' }}</strong> at <strong class="cp-hired-company-name">{{ ha.job.company.name if (ha.job and ha.job.company) else 'the company' }}</strong>.
+                        You have been hired as <strong class="cp-hired-job-title">{{ ha.job.title if ha.job else 'the position' }}</strong> at {{ render_company_pill(ha.job.company if ha.job else None, 'the company') }}. You will receive your onboarding details and start date via email.
                     </p>
                 </div>
             </div>
@@ -56,8 +78,8 @@
                     <h4 class="fw-bold text-white mb-1" style="font-size: 1.3rem; letter-spacing: -0.3px;">
                         Congratulations, {{ candidate.full_name or current_user.name }}!
                     </h4>
-                    <p class="text-pearl small mb-0" style="color: #cbd5e1; font-size: 0.9rem;">
-                        You have been shortlisted for <strong class="text-warning">{{ shortlisted_apps[0].job.title if shortlisted_apps[0].job else 'Position' }}</strong> by <strong class="text-white">{{ shortlisted_apps[0].job.company.name if (shortlisted_apps[0].job and shortlisted_apps[0].job.company) else 'Employer' }}</strong>. The hiring team has prioritized your profile.
+                    <p class="text-pearl small mb-0 d-flex align-items-center flex-wrap gap-1" style="color: #cbd5e1; font-size: 0.9rem;">
+                        You have been shortlisted for <strong class="text-warning me-1">{{ shortlisted_apps[0].job.title if shortlisted_apps[0].job else 'Position' }}</strong> by {{ render_company_pill(shortlisted_apps[0].job.company if shortlisted_apps[0].job else None, 'Employer') }}. The hiring team has prioritized your profile.
                     </p>
                 </div>
             </div>
@@ -69,6 +91,8 @@
         </div>
     </div>
     {% endif %}
+
+
 
     <!-- Key Performance Indicators -->
     <div class="row g-3 mb-2">
@@ -125,13 +149,13 @@
                             <span class="text-white" style="font-size: 0.95rem; font-weight: 600;">{{ status }}</span>
                         </h6>
                         {% for app in apps %}
-                        <div class="cp-card mb-2 p-3" style="{% if app.status == 'Selected' %}background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.3);{% else %}background: var(--cp-bg-card); border: 1px solid var(--cp-border);{% endif %} border-radius: 12px; transition: all 0.3s ease;">
+                        <div class="cp-card mb-2 p-3" style="background: {% if app.status == 'Selected' %}rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.3){% else %}var(--cp-bg-card); border: 1px solid var(--cp-border){% endif %}; border-radius: 12px; transition: all 0.3s ease;">
                             <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                                 <div>
                                     <div class="d-flex align-items-center gap-2 mb-1">
                                         <h5 class="mb-0 fw-bold text-white">{{ app.job.title if app.job else 'Job no longer available' }}</h5>
                                         {% if app.status == 'Selected' %}
-                                        <span class="badge fw-bold px-2.5 py-1 rounded-pill" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.5); font-size: 0.8rem;"><i class="bi bi-patch-check-fill me-1"></i>🎉 Hired</span>
+                                        <span class="badge fw-bold px-2.5 py-1 rounded-pill" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.5); font-size: 0.8rem;"><i class="bi bi-patch-check-fill me-1"></i>Hired</span>
                                         {% elif app.status == 'Shortlisted' %}
                                         <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill"><i class="bi bi-star-fill me-1"></i>Shortlisted</span>
                                         {% elif app.status == 'Rejected' %}
@@ -143,8 +167,8 @@
                                         <span class="badge" style="background:rgba(245,158,11,0.2);color:#f59e0b;border:1px solid rgba(245,158,11,0.4);font-size:0.75rem;"><i class="bi bi-pause-circle me-1"></i>On Hold</span>
                                         {% endif %}
                                     </div>
-                                    <p class="text-pearl mb-1 small">
-                                        {% if app.job and app.job.company %}{{ app.job.company.name }}{% else %}—{% endif %} · Applied {{ app.applied_at.strftime('%b %d, %Y') }}
+                                    <p class="text-pearl mb-1 small d-flex align-items-center flex-wrap gap-1">
+                                        {{ render_company_pill(app.job.company if app.job else None, '—') }} · Applied {{ app.applied_at.strftime('%b %d, %Y') }}
                                         {% if app.job and app.job.location %} · <i class="bi bi-geo-alt me-1"></i>{{ app.job.location }}{% endif %}
                                     </p>
                                     {% if app.status == 'Selected' %}
@@ -172,6 +196,35 @@
                                 </div>
                             </div>
                         </div>
+
+                        {% if app.status not in ['Selected', 'Rejected', 'Withdrawn'] %}
+                        {# ── Modern Withdrawal Confirmation Modal ── #}
+                        <div class="modal fade" id="withdrawModal{{ app.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
+                                <div class="modal-content border-0 shadow-lg" style="background: var(--cp-bg-card); border-radius: 20px; border: 1px solid var(--cp-border)!important;">
+                                    <div class="modal-body p-4 text-center">
+                                        <div class="d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 58px; height: 58px; border-radius: 50%; background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.35);">
+                                            <i class="bi bi-exclamation-triangle-fill fs-3"></i>
+                                        </div>
+                                        <h5 class="fw-bold text-white mb-2" style="font-size: 1.25rem;">Withdraw Application?</h5>
+                                        <p class="text-pearl small mb-4" style="line-height: 1.55;">
+                                            Are you sure you want to withdraw your application for <strong class="text-info">{{ app.job.title if app.job else 'this position' }}</strong> at {{ render_company_pill(app.job.company if app.job else None, 'the company') }}?
+                                            <br><span class="text-muted">This will smoothly remove your application.</span>
+                                        </p>
+                                        <form method="POST" action="{{ url_for('candidate.withdraw_application', app_id=app.id) }}" class="d-flex gap-2 justify-content-center">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="button" class="btn btn-secondary px-3 py-2" data-bs-dismiss="modal" style="border-radius: 12px; font-weight: 600; font-size: 0.88rem;">
+                                                No, Keep Application
+                                            </button>
+                                            <button type="submit" class="btn btn-danger px-4 py-2" style="border-radius: 12px; font-weight: 600; font-size: 0.88rem; background: linear-gradient(135deg, #ef4444, #dc2626); box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);">
+                                                <i class="bi bi-x-circle me-1"></i>Yes, Withdraw
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                         {% endfor %}
 
                     </div>
@@ -214,11 +267,10 @@
                                             {{ interview.mode or 'On-Site' }}
                                         </span>
                                     </div>
-                                    <div class="cp-interview-org">
-                                        <i class="bi bi-building me-1.5 cp-interview-org-icon"></i><span>Organization: </span><strong class="cp-interview-company-name cp-org-name-aesthetic">{{ comp_name }}</strong>
+                                    <div class="cp-interview-org d-flex align-items-center flex-wrap gap-1">
+                                        <i class="bi bi-building me-1 cp-interview-org-icon"></i><span>Organization: </span>
+                                        {{ render_company_pill(interview.application.job.company if (interview.application and interview.application.job) else None, comp_name) }}
                                     </div>
-                                </div>
-                            </div>                       </div>
                                 </div>
                             </div>
 
@@ -303,8 +355,8 @@
                         <span class="badge bg-warning text-dark fw-bold mb-2 px-3 py-1 rounded-pill" style="font-size: 0.76rem;">
                             🎉 OFFICIAL INVITATION / UPDATE
                         </span>
-                        <p class="text-pearl small mb-0" style="color: #fde68a; font-size: 0.88rem; font-weight: 500; line-height: 1.5;">
-                            You have received an official communication from <strong>{{ comp_name }}</strong> regarding your application.
+                        <p class="text-pearl small mb-0 d-flex align-items-center flex-wrap gap-1" style="color: #fde68a; font-size: 0.88rem; font-weight: 500; line-height: 1.5;">
+                            You have received an official communication from {{ render_company_pill(message.application.job.company if (message.application and message.application.job) else None, comp_name) }} regarding your application.
                         </p>
                     </div>
                     {% endif %}
@@ -408,115 +460,11 @@ document.addEventListener('DOMContentLoaded', function() {
             hiredCard.classList.remove('cp-hired-celebrating');
         }, 2500);
     }
-    {% endif %}
-});
-</script>
 
-</div>
+    if (window.confetti) {
+        var hiredPalette = ['#10b981', '#34d399', '#059669', '#38bdf8', '#fbbf24', '#f59e0b', '#a855f7', '#ec4899', '#ffffff'];
 
-{# ── Top-Level Root Modals Container (Prevents Backdrop Overlay Stacking Issues) ── #}
-{% for status, app_list in apps_by_status.items() %}
-    {% for app in app_list %}
-        {% if app.status not in ['Selected', 'Rejected', 'Withdrawn'] %}
-        <div class="modal fade" id="withdrawModal{{ app.id }}" tabindex="-1" aria-hidden="true" style="z-index: 1055;">
-            <div class="modal-dialog modal-dialog-centered" style="max-width: 440px;">
-                <div class="modal-content border-0 shadow-lg" style="background: rgba(15, 23, 42, 0.98); border-radius: 20px; border: 1.5px solid rgba(239, 68, 68, 0.35) !important; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);">
-                    <div class="modal-body p-4 text-center">
-                        <div class="d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 58px; height: 58px; border-radius: 50%; background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.35); box-shadow: 0 0 20px rgba(239, 68, 68, 0.25);">
-                            <i class="bi bi-exclamation-triangle-fill fs-3"></i>
-                        </div>
-                        <h5 class="fw-bold text-white mb-2" style="font-size: 1.25rem; letter-spacing: -0.3px;">Withdraw Application?</h5>
-                        <p class="text-pearl small mb-4" style="line-height: 1.55; color: #cbd5e1;">
-                            Are you sure you want to withdraw your application for <strong class="text-info">{{ app.job.title if app.job else 'this position' }}</strong> at <strong class="text-white">{{ app.job.company.name if (app.job and app.job.company) else 'the company' }}</strong>?
-                            <br><span class="text-muted" style="color: #94a3b8 !important;">This will smoothly remove your application.</span>
-                        </p>
-                        <form method="POST" action="{{ url_for('candidate.withdraw_application', app_id=app.id) }}" class="d-flex gap-2 justify-content-center m-0 p-0">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="button" class="btn cp-btn-withdraw-cancel" data-bs-dismiss="modal">
-                                No, Keep Application
-                            </button>
-                            <button type="submit" class="btn cp-btn-withdraw-confirm">
-                                <i class="bi bi-x-circle me-1"></i>Yes, Withdraw
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-    {% endfor %}
-{% endfor %}
-
-<style>
-/* Modern High-Contrast Interactive Hover States for Withdraw Action Buttons */
-.cp-btn-withdraw-confirm {
-    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
-    color: #ffffff !important;
-    border: 1.5px solid rgba(248, 113, 113, 0.8) !important;
-    border-radius: 12px !important;
-    padding: 10px 24px !important;
-    font-weight: 700 !important;
-    font-size: 0.88rem !important;
-    cursor: pointer !important;
-    box-shadow: 0 4px 16px rgba(239, 68, 68, 0.4) !important;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
-}
-.cp-btn-withdraw-confirm:hover {
-    background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
-    border-color: #fca5a5 !important;
-    color: #ffffff !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 24px rgba(239, 68, 68, 0.7), 0 0 16px rgba(248, 113, 113, 0.5) !important;
-}
-.cp-btn-withdraw-confirm:active {
-    transform: translateY(0) !important;
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.5) !important;
-}
-
-.cp-btn-withdraw-cancel {
-    background: rgba(255, 255, 255, 0.08) !important;
-    color: #e2e8f0 !important;
-    border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
-    border-radius: 12px !important;
-    padding: 10px 20px !important;
-    font-weight: 600 !important;
-    font-size: 0.88rem !important;
-    cursor: pointer !important;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-}
-.cp-btn-withdraw-cancel:hover {
-    background: rgba(255, 255, 255, 0.18) !important;
-    color: #ffffff !important;
-    border-color: rgba(255, 255, 255, 0.45) !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
-}
-:root[data-theme="light"] .cp-btn-withdraw-cancel {
-    background: #f1f5f9 !important;
-    color: #334155 !important;
-    border-color: #cbd5e1 !important;
-}
-:root[data-theme="light"] .cp-btn-withdraw-cancel:hover {
-    background: #e2e8f0 !important;
-    color: #0f172a !important;
-    border-color: #94a3b8 !important;
-}
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    {% if is_hired %}
-    if (typeof confetti === 'function') {
-        const hiredPalette = ['#10b981', '#34d399', '#059669', '#6ee7b7', '#a855f7', '#c084fc', '#f59e0b', '#fbbf24', '#ffffff'];
-
-        // 1. Initial Dual Side Cannon Bursts
+        // 1. Dual Bottom Corner Super-Cannons (Full viewport reach from bottom corners)
         confetti({
             particleCount: 85,
             angle: 55,
