@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore Jobs - CareerPearls</title>
+    {% include '_favicon.html' %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ai-chatbot.css') }}?v=3.1">
+    <script>
+        (function() {
+            var theme = localStorage.getItem('cp-theme-mode') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.setAttribute('data-accent', 'purple');
+        })();
+    </script>
+    <style>
+        @font-face {
+            font-family: 'Gill Sans';
+            src: local('Gill Sans'), local('Gill Sans MT'), local('Gill Sans MT Pro'), local('Gill Sans MT W01');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* Light theme variant for explore page */
+        :root[data-theme="light"] .cp-btn-nav-home {
+            background: rgba(255, 255, 255, 0.95) !important;
+            color: #1e293b !important;
+            border: 1px solid rgba(0, 0, 0, 0.15) !important;
+        }
+        :root[data-theme="light"] .cp-btn-nav-home:hover {
+            background: #f1f5f9 !important;
+            color: #0284c7 !important;
+            border-color: rgba(2, 132, 199, 0.4) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.2) !important;
+        }
+        :root[data-theme="light"] .lp-explore-header {
+            background: radial-gradient(circle at 50% -20%, rgba(56, 189, 248, 0.08), #ffffff 70%) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+        }
+        :root[data-theme="light"] .lp-explore-header .text-white {
+            color: #0f172a !important;
+        }
+        :root[data-theme="light"] .lp-explore-header .text-pearl {
+            color: #475569 !important;
+        }
+
+        /* Light theme search bar container and dropdowns */
+        :root[data-theme="light"] .lp-search-inner {
+            background: #ffffff !important;
+            border: 1px solid rgba(0, 0, 0, 0.12) !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+        }
+        :root[data-theme="light"] .lp-field-input {
+            color: #0f172a !important;
+        }
+        :root[data-theme="light"] .lp-field-input::placeholder {
+            color: #64748b !important;
+        }
+        :root[data-theme="light"] .lp-search-divider {
+            background: rgba(0, 0, 0, 0.1) !important;
+        }
+        :root[data-theme="light"] .lp-dropdown-trigger {
+            color: #0f172a !important;
+        }
+        :root[data-theme="light"] .lp-dropdown-trigger span {
+            color: #0f172a !important;
+        }
+        :root[data-theme="light"] .lp-custom-dropdown-menu {
+            background: #ffffff !important;
+            background-color: #ffffff !important;
+            border: 1px solid rgba(0, 0, 0, 0.12) !important;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.15) !important;
+        }
+        :root[data-theme="light"] .lp-dd-item {
+            color: #1e293b !important;
+        }
+        :root[data-theme="light"] .lp-dd-item:hover,
+        :root[data-theme="light"] .lp-dd-item.active {
+            background: rgba(2, 132, 199, 0.1) !important;
+            color: #0284c7 !important;
+        }
+
+        /* Light theme for category pills */
+        :root[data-theme="light"] .lp-category-pill {
+            background: #ffffff !important;
+            color: #1e293b !important;
+            border: 1px solid rgba(0, 0, 0, 0.12) !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+        }
+        :root[data-theme="light"] .lp-category-pill:hover {
+            background: #f8fafc !important;
+            color: #0284c7 !important;
+            border-color: rgba(2, 132, 199, 0.4) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15) !important;
+        }
+        :root[data-theme="light"] .lp-category-pill.active {
+            background: linear-gradient(135deg, #0284c7, #2563eb) !important;
+            color: #ffffff !important;
+            border-color: transparent !important;
+            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.35) !important;
+        }
+
+        /* Light theme for job listing content area */
+        :root[data-theme="light"] .lp-explore-content {
+            background: #f8fafc !important;
+        }
+        :root[data-theme="light"] .lp-explore-content .text-white {
+            color: #0f172a !important;
+        }
+        :root[data-theme="light"] .lp-explore-content .text-pearl {
+            color: #475569 !important;
+        }
+
+        /* Light theme for bottom CTA banner */
+        :root[data-theme="light"] .lp-explore-cta-inner {
+            background: #ffffff !important;
+            border: 1px solid rgba(0, 0, 0, 0.1) !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06) !important;
+        }
+        :root[data-theme="light"] .lp-explore-cta-inner h3 {
+            color: #0f172a !important;
+        }
+        :root[data-theme="light"] .lp-explore-cta-inner p {
+            color: #334155 !important;
+        }
+        :root[data-theme="light"] .lp-explore-cta-inner .btn-cp-ghost {
+            background: rgba(0, 0, 0, 0.04) !important;
+            color: #0f172a !important;
+            border: 1px solid rgba(0, 0, 0, 0.15) !important;
+        }
+        :root[data-theme="light"] .lp-explore-cta-inner .btn-cp-ghost:hover {
+            background: rgba(0, 0, 0, 0.08) !important;
+            color: #000000 !important;
+            border-color: rgba(0, 0, 0, 0.25) !important;
+        }
+    
+/* ── Category Filter Pills & Reset Button ── */
+.lp-category-pill {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 8px 18px !important;
+    border-radius: 9999px !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    color: #cbd5e1 !important;
+    background: rgba(15, 23, 42, 0.85) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    white-space: nowrap !important;
+}
+.lp-category-pill:hover {
+    background: rgba(30, 41, 59, 0.95) !important;
+    color: #38bdf8 !important;
+    border-color: rgba(56, 189, 248, 0.5) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 18px rgba(56, 189, 248, 0.25) !important;
+}
+.lp-category-pill.active {
+    background: linear-gradient(135deg, #0284c7, #2563eb) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.45) !important;
+}
+.lp-category-pill i {
+    font-size: 0.92rem !important;
+    flex-shrink: 0 !important;
+}
+
+.cp-btn-reset-filter {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    background: rgba(239, 68, 68, 0.12) !important;
+    color: #f87171 !important;
+    border: 1px solid rgba(239, 68, 68, 0.35) !important;
+    border-radius: 9999px !important;
+    padding: 7px 18px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+}
+.cp-btn-reset-filter:hover {
+    background: rgba(239, 68, 68, 0.25) !important;
+    border-color: rgba(239, 68, 68, 0.8) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35) !important;
+}
+
+</style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+</head>
+<body class="landing-page">
+{% from '_job_card.html' import render_job_card %}
+{# ── Custom Styling for Navbar Hovers & Dropdowns ── #}
+<style>
+.cp-btn-nav-home {
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: #f1f5f9 !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 12px !important;
+    font-size: 0.88rem !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.cp-btn-nav-home:hover {
+    background: rgba(255, 255, 255, 0.14) !important;
+    color: #38bdf8 !important;
+    border-color: rgba(56, 189, 248, 0.45) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.25) !important;
+}
+.cp-btn-nav-signin {
+    background: linear-gradient(135deg, #0284c7, #2563eb) !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 12px !important;
+    font-size: 0.88rem !important;
+    box-shadow: 0 4px 15px rgba(2, 132, 199, 0.35) !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.cp-btn-nav-signin:hover {
+    background: linear-gradient(135deg, #0369a1, #1d4ed8) !important;
+    color: #ffffff !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(2, 132, 199, 0.6) !important;
+}
+.cp-btn-nav-link {
+    color: #cbd5e1 !important;
+    font-weight: 500;
+    font-size: 0.9rem;
+    padding: 8px 16px !important;
+    border-radius: 10px;
+    text-decoration: none !important;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+.cp-btn-nav-link:hover, .cp-btn-nav-link.active {
+    color: #38bdf8 !important;
+    background: rgba(56, 189, 248, 0.1);
+}
+.cp-btn-nav-user {
+    background: rgba(15, 23, 42, 0.8) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #fff !important;
+    border-radius: 12px !important;
+    padding: 6px 14px !important;
+    font-size: 0.88rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    transition: all 0.2s ease;
+}
+.cp-btn-nav-user:hover {
+    background: rgba(30, 41, 59, 0.95) !important;
+    border-color: rgba(56, 189, 248, 0.4) !important;
+}
+.lp-custom-dropdown-menu {
+    background: #0b101b !important;
+    background-color: #0b101b !important;
+    border: 1px solid rgba(56, 189, 248, 0.4) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(56, 189, 248, 0.25) !important;
+    padding: 6px !important;
+    min-width: 210px !important;
+    margin-top: 10px !important;
+    z-index: 999999 !important;
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+}
+</style>
+
+{# ── Top Navigation Bar ──────────────────────────────────────────────────── #}
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top cp-navbar" id="landingNav" 
+     style="top: 0; left: 0; right: 0; width: 100%; height: 72px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); background: rgba(10, 14, 26, 0.94); border-bottom: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 25px rgba(0, 0, 0, 0.45); z-index: 1050;">
+    <div class="container-fluid px-3 px-lg-5 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+            {% if current_user.is_authenticated %}
+                {% if current_user.is_candidate() %}
+                    {% set brand_href = url_for('candidate.dashboard') %}
+                {% elif current_user.is_employer() %}
+                    {% set brand_href = url_for('employer.dashboard') %}
+                {% else %}
+                    {% set brand_href = url_for('admin.dashboard') %}
+                {% endif %}
+            {% else %}
+                {% set brand_href = url_for('index') %}
+            {% endif %}
+            {% include '_navbar_brand.html' %}
+        </div>
+
+        {# Navigation actions #}
+        {% if current_user.is_authenticated and current_user.is_candidate() %}
+            {# Unified Candidate Navbar (Browse Jobs, My Applications, My Profile, Help) #}
+            <div class="d-flex align-items-center cp-nav-links gap-2 gap-lg-3 mx-auto d-none d-lg-flex">
+                <a class="nav-link cp-candidate-nav-link px-2.5 active fw-bold text-white d-inline-flex align-items-center" href="{{ url_for('explore') }}">
+                    <i class="bi bi-briefcase me-1"></i><span>Browse Jobs</span>
+                </a>
+                <a class="nav-link cp-candidate-nav-link px-2.5 d-inline-flex align-items-center" href="{{ url_for('candidate.dashboard') }}">
+                    <i class="bi bi-file-earmark-text me-1"></i><span>My Applications</span>
+                    {% if unread_candidate_updates and unread_candidate_updates > 0 %}
+                    <span class="badge rounded-pill bg-danger ms-1 px-2 py-0.5" style="font-size: 0.72rem; vertical-align: middle; box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);">{{ unread_candidate_updates }}</span>
+                    {% endif %}
+                </a>
+                <a class="nav-link cp-candidate-nav-link px-2.5 d-inline-flex align-items-center" href="{{ url_for('candidate.profile') }}">
+                    <i class="bi bi-person-badge me-1"></i><span>My Profile</span>
+                </a>
+                <a class="nav-link cp-candidate-nav-link px-2.5 d-inline-flex align-items-center" href="{{ url_for('register_complaint') }}" title="Help & Complaint Desk">
+                    <i class="bi bi-question-circle me-1"></i><span>Help</span>
+                </a>
+            </div>
+
+            <div class="d-flex align-items-center gap-3 ms-auto cp-nav-user-actions">
+                {% include '_navbar_profile.html' %}
+                <a class="btn btn-sm ms-2 cp-btn-logout d-inline-flex align-items-center" href="{{ url_for('auth.logout') }}" style="border-radius: 10px; padding: 6px 14px;">
+                    <i class="bi bi-box-arrow-right me-2"></i><span>Logout</span>
+                </a>
+            </div>
+        {% elif current_user.is_authenticated and current_user.is_employer() %}
+            <div class="d-flex align-items-center gap-1 mx-auto d-none d-lg-flex">
+                <a class="nav-link px-3 text-secondary d-inline-flex align-items-center" href="{{ url_for('employer.dashboard') }}">Dashboard</a>
+                <a class="nav-link px-3 text-secondary d-inline-flex align-items-center" href="{{ url_for('employer.manage_applications') }}">Applications</a>
+                <a class="nav-link px-3 text-secondary d-inline-flex align-items-center" href="{{ url_for('privacy_policy') }}">Privacy Policy</a>
+                <a class="nav-link px-3 text-secondary d-inline-flex align-items-center" href="{{ url_for('terms_of_service') }}">Terms of Use</a>
+            </div>
+            <div class="d-flex align-items-center gap-3 ms-auto cp-nav-user-actions">
+                <a href="{{ url_for('employer.dashboard') }}" class="cp-btn-nav-link">
+                    <i class="bi bi-grid-fill text-primary"></i><span>Employer Dashboard</span>
+                </a>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-outline-danger px-3 py-1.5 rounded-2">
+                    <i class="bi bi-box-arrow-right me-1"></i>Sign Out
+                </a>
+            </div>
+        {% elif current_user.is_authenticated and current_user.is_admin() %}
+            <div class="d-flex align-items-center gap-1 mx-auto d-none d-lg-flex">
+                <a class="nav-link px-3 text-secondary d-inline-flex align-items-center" href="{{ url_for('admin.dashboard') }}">Admin Dashboard</a>
+                <a class="nav-link px-3 text-secondary d-inline-flex align-items-center" href="{{ url_for('privacy_policy') }}">Privacy Policy</a>
+                <a class="nav-link px-3 text-secondary d-inline-flex align-items-center" href="{{ url_for('terms_of_service') }}">Terms of Use</a>
+            </div>
+            <div class="d-flex align-items-center gap-3 ms-auto cp-nav-user-actions">
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-sm btn-outline-info px-3 py-1.5 rounded-2">
+                    <i class="bi bi-shield-lock me-1"></i>Admin Panel
+                </a>
+            </div>
+        {% else %}
+            {# Unauthenticated Public Guest Navigation (From Landing Page) #}
+            <div class="d-flex align-items-center gap-1 mx-auto d-none d-lg-flex">
+                <a class="nav-link px-3 text-secondary d-inline-flex align-items-center" href="{{ url_for('about') }}">About Us</a>
+                <a class="nav-link px-3 active fw-bold text-white d-inline-flex align-items-center" href="{{ url_for('explore') }}">Jobs</a>
+                <a class="nav-link px-3 text-secondary d-inline-flex align-items-center" href="{{ url_for('privacy_policy') }}">Privacy Policy</a>
+                <a class="nav-link px-3 text-secondary d-inline-flex align-items-center" href="{{ url_for('terms_of_service') }}">Terms of Use</a>
+            </div>
+
+            <div class="d-flex align-items-center gap-2.5 ms-auto cp-nav-user-actions">
+                <a href="{{ url_for('index') }}" class="btn btn-sm d-inline-flex align-items-center px-3 py-2 fw-semibold text-decoration-none cp-btn-nav-home">
+                    <i class="bi bi-arrow-left me-2 text-primary" style="font-size: 1rem;"></i>
+                    <span>Back to Home</span>
+                </a>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-sm d-inline-flex align-items-center px-4 py-2 fw-semibold text-decoration-none cp-btn-nav-signin">
+                    <i class="bi bi-box-arrow-in-right me-1.5" style="font-size: 1rem;"></i>
+                    <span>Sign In</span>
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</nav>
+
+{% if current_user.is_authenticated and current_user.is_candidate() %}
+<!-- Upper Right Floating Saved Jobs Action Button -->
+<a href="{{ url_for('candidate.saved_jobs') }}" class="cp-floating-saved-btn" title="View All Saved Jobs">
+    <span class="cp-floating-saved-icon">
+        <i class="bi bi-bookmark-heart-fill"></i>
+    </span>
+    <span class="cp-floating-saved-label">Saved Jobs</span>
+</a>
+{% endif %}
+
+{# ── Explore Hero & Search Section ── #}
+<div class="lp-explore-header" style="position: relative; z-index: 50; padding-top: 20px; padding-bottom: 1.25rem; background: radial-gradient(circle at 50% -20%, rgba(56, 189, 248, 0.15), rgba(10, 14, 26, 0.98) 70%); border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
+    <div class="container" style="max-width: 1200px;">
+        <div class="text-center mb-4 pb-1 pt-0">
+            <h1 class="fw-bold text-white mb-2" style="font-size: 2.15rem; letter-spacing: -0.6px; line-height: 1.2; margin-top: 0;">
+                Explore <span style="background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Dream Jobs &amp; Careers</span>
+            </h1>
+            <p class="text-pearl mb-0" style="color: #94a3b8; font-size: 0.96rem; line-height: 1.5;">
+                Find the best engineering, data, design, and enterprise positions from verified hiring organizations
+            </p>
+        </div>
+
+        {# ── Search Form Bar with Custom Glass Dropdowns ── #}
+        <div class="lp-explore-search mb-3" style="position: relative; z-index: 60;">
+            <form action="{{ url_for('explore') }}" method="GET" id="exploreSearchForm">
+                <div class="lp-search-inner" style="position: relative; z-index: 70; overflow: visible !important; box-shadow: 0 12px 35px rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 16px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px);">
+                    <div class="lp-search-field lp-search-main">
+                        <i class="bi bi-search lp-field-icon me-2" style="color: #38bdf8; font-size: 1.05rem;"></i>
+                        <input type="text" name="q" class="lp-field-input" placeholder="Search job title, skills, or company..." value="{{ q }}">
+                    </div>
+                    <div class="lp-search-divider d-none d-md-block"></div>
+                    
+                    {# Custom Location Dropdown #}
+                    <div class="lp-search-field lp-search-sm d-none d-md-flex dropdown position-relative">
+                        <i class="bi bi-geo-alt-fill lp-field-icon me-2" style="color: #60a5fa; font-size: 1.05rem;"></i>
+                        <input type="hidden" name="location" id="lpCityInput" value="{{ location or '' }}">
+                        <button type="button" class="lp-dropdown-trigger" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span>{% if location %}{{ location }}{% else %}All Cities{% endif %}</span>
+                            <i class="bi bi-chevron-down ms-auto lp-dropdown-chevron"></i>
+                        </button>
+                        <ul class="dropdown-menu lp-custom-dropdown-menu shadow-2xl">
+                            <li><a class="dropdown-item lp-dd-item {% if not location %}active{% endif %}" href="#" data-val="">All Cities</a></li>
+                            <li><a class="dropdown-item lp-dd-item {% if location == 'Karachi' %}active{% endif %}" href="#" data-val="Karachi">Karachi</a></li>
+                            <li><a class="dropdown-item lp-dd-item {% if location == 'Lahore' %}active{% endif %}" href="#" data-val="Lahore">Lahore</a></li>
+                            <li><a class="dropdown-item lp-dd-item {% if location == 'Islamabad' %}active{% endif %}" href="#" data-val="Islamabad">Islamabad</a></li>
+                            <li><a class="dropdown-item lp-dd-item {% if location == 'Rawalpindi' %}active{% endif %}" href="#" data-val="Rawalpindi">Rawalpindi</a></li>
+                            <li><a class="dropdown-item lp-dd-item {% if location == 'Remote' %}active{% endif %}" href="#" data-val="Remote">Remote</a></li>
+                        </ul>
+                    </div>
+                    <div class="lp-search-divider d-none d-md-block"></div>
+
+                    {# Custom Salary Dropdown #}
+                    <div class="lp-search-field lp-search-sm d-none d-md-flex dropdown position-relative">
+                        <i class="bi bi-wallet2 lp-field-icon me-2" style="color: #34d399; font-size: 1.05rem;"></i>
+                        <input type="hidden" name="salary" id="lpSalaryInput" value="{{ salary or '' }}">
+                        <button type="button" class="lp-dropdown-trigger" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span>{% if salary %}PKR {{ salary }}+{% else %}Any Salary{% endif %}</span>
+                            <i class="bi bi-chevron-down ms-auto lp-dropdown-chevron"></i>
+                        </button>
+                        <ul class="dropdown-menu lp-custom-dropdown-menu shadow-2xl">
+                            <li><a class="dropdown-item lp-dd-item {% if not salary %}active{% endif %}" href="#" data-val="">Any Salary</a></li>
+                            <li><a class="dropdown-item lp-dd-item {% if salary == '50000' %}active{% endif %}" href="#" data-val="50000">PKR 50k+</a></li>
+                            <li><a class="dropdown-item lp-dd-item {% if salary == '100000' %}active{% endif %}" href="#" data-val="100000">PKR 100k+</a></li>
+                            <li><a class="dropdown-item lp-dd-item {% if salary == '150000' %}active{% endif %}" href="#" data-val="150000">PKR 150k+</a></li>
+                            <li><a class="dropdown-item lp-dd-item {% if salary == '200000' %}active{% endif %}" href="#" data-val="200000">PKR 200k+</a></li>
+                        </ul>
+                    </div>
+
+                    <button type="submit" class="lp-search-btn btn" style="border-radius: 12px; background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; font-weight: 600; padding: 0.75rem 1.75rem; border: none; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); display: inline-flex; align-items: center; gap: 8px;">
+                        <i class="bi bi-search"></i>
+                        <span>Search</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        {# ── Category Filter Pills & Reset Button ── #}
+        <div class="d-flex flex-wrap align-items-center justify-content-center gap-2 pt-2 mb-2">
+            <a href="{{ url_for('explore', q=q, location=location, salary=salary) }}" 
+               class="lp-category-pill {% if not category_name %}active{% endif %}">
+                <i class="bi bi-grid-fill me-2"></i>All Positions
+            </a>
+            {% for cat in categories %}
+            <a href="{{ url_for('explore', category=cat.name, q=q, location=location, salary=salary) }}" 
+               class="lp-category-pill {% if category_name == cat.name %}active{% endif %}">
+                {% if 'Tech' in cat.name or 'Dev' in cat.name or 'Eng' in cat.name %}
+                    <i class="bi bi-code-slash me-2"></i>
+                {% elif 'Data' in cat.name or 'AI' in cat.name or 'Machine' in cat.name %}
+                    <i class="bi bi-graph-up-arrow me-2"></i>
+                {% elif 'Design' in cat.name or 'UI' in cat.name or 'Creative' in cat.name %}
+                    <i class="bi bi-palette me-2"></i>
+                {% elif 'Cloud' in cat.name or 'DevOps' in cat.name or 'System' in cat.name %}
+                    <i class="bi bi-cloud-check me-2"></i>
+                {% else %}
+                    <i class="bi bi-briefcase me-2"></i>
+                {% endif %}
+                <span>{{ cat.name }}</span>
+            </a>
+            {% endfor %}
+            
+            {% if q or location or salary or category_name %}
+            <a href="{{ url_for('explore') }}" class="btn btn-sm cp-btn-reset-filter d-inline-flex align-items-center px-3 py-1 ms-1" title="Clear all search filters">
+                <i class="bi bi-x-circle me-1"></i>Reset
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{# ── Main Jobs Grid ── #}
+<div class="lp-explore-content py-4" style="min-height: 50vh;">
+    <div class="container" style="max-width: 1200px;">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <span class="text-pearl small" style="color: #94a3b8; font-size: 0.95rem; font-weight: 500;">
+                {% if q or location or category_name %}
+                    Found <strong class="text-white">{{ jobs|length }}</strong> matching opportunities
+                {% else %}
+                    All verified active enterprise opportunities
+                {% endif %}
+            </span>
+            <span class="badge px-3 py-1.5 rounded-pill" style="background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.84rem; font-weight: 600;">
+                <i class="bi bi-patch-check-fill me-2"></i>{{ jobs|length }} verified positions available
+            </span>
+        </div>
+
+        <div class="row g-4">
+            {% if jobs %}
+                {% for job in jobs %}
+                    {{ render_job_card(job, mode=('candidate' if current_user.is_authenticated and current_user.is_candidate() else 'public')) }}
+                {% endfor %}
+            {% else %}
+            <div class="col-12">
+                <div class="lp-no-results">
+                    <div class="d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 72px; height: 72px; border-radius: 20px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25);">
+                        <i class="bi bi-search fs-2 text-primary"></i>
+                    </div>
+                    <h4 class="fw-bold text-white mb-2">No Matching Jobs Found</h4>
+                    <p class="text-pearl mb-4" style="color: #94a3b8; max-width: 500px; margin: 0 auto;">We couldn't find any active listings matching your current search parameters. Try broadening your keywords or resetting filters.</p>
+                    <a href="{{ url_for('explore') }}" class="btn btn-cp-primary px-4 py-2.5 fw-semibold">
+                        <i class="bi bi-arrow-clockwise me-2"></i>Browse All Available Jobs
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        {# ── Bottom CTA Banner (Shown ONLY for Unauthenticated Public Guests from Landing Page) ── #}
+        {% if not current_user.is_authenticated %}
+        <div class="lp-explore-cta">
+            <div class="lp-explore-cta-inner">
+                <h3>Ready to accelerate your professional career?</h3>
+                <p class="text-muted mb-4">Create a free candidate profile to apply in 1 click, track application statuses, and interview directly with verified hiring teams.</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="{{ url_for('auth.register', role='candidate') }}" class="btn btn-cp-primary px-5 py-3 fw-bold">
+                        <i class="bi bi-rocket-takeoff me-2"></i>Create Free Candidate Profile
+                    </a>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-cp-ghost px-4 py-3 fw-semibold text-white" style="border: 1px solid rgba(255, 255, 255, 0.15);">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Already have an account? Sign In
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<footer class="lp-footer" style="margin-top:0;">
+    <div class="container">
+        <div class="lp-footer-bottom">
+            <span>&copy; 2026 CareerPearls. All rights reserved.</span>
+            <div class="d-flex gap-3">
+                <a href="{{ url_for('about') }}" style="color:#94a3b8;text-decoration:none;">About Us</a>
+                <a href="{{ url_for('privacy_policy') }}" style="color:#94a3b8;text-decoration:none;">Privacy Policy</a>
+                <a href="{{ url_for('terms_of_service') }}" style="color:#94a3b8;text-decoration:none;">Terms of Service</a>
+                {% if not current_user.is_authenticated %}
+                <a href="{{ url_for('index') }}" style="color:#4facfe;text-decoration:none;"><i class="bi bi-arrow-left me-1"></i>Back to Home</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('click', function(e) {
+    var item = e.target.closest('.lp-dd-item');
+    if (!item) return;
+    e.preventDefault();
+    
+    var val = item.getAttribute('data-val') || '';
+    var text = item.innerText.trim();
+    var dropdownWrap = item.closest('.dropdown');
+    if (!dropdownWrap) return;
+    
+    var input = dropdownWrap.querySelector('input[type="hidden"]');
+    var label = dropdownWrap.querySelector('.lp-dropdown-trigger span');
+    
+    if (input) input.value = val;
+    if (label) label.innerText = text;
+    
+    dropdownWrap.querySelectorAll('.lp-dd-item').forEach(function(i) {
+        i.classList.remove('active');
+    });
+    item.classList.add('active');
+    
+    var triggerBtn = dropdownWrap.querySelector('.lp-dropdown-trigger');
+    if (triggerBtn && window.bootstrap && bootstrap.Dropdown) {
+        var bsDd = bootstrap.Dropdown.getInstance(triggerBtn);
+        if (bsDd) bsDd.hide();
+    }
+});
+</script>
+{% include '_settings_panel.html' %}
+{% if not (current_user.is_authenticated and current_user.is_admin()) %}
+{% include '_ai_chatbot_drawer.html' %}
+<script src="{{ url_for('static', filename='js/ai-chatbot.js') }}?v=3.1"></script>
+{% endif %}
+</body>
+</html>

@@ -1,0 +1,80 @@
+{% extends "auth_base.html" %}
+{% block title %}Verify Email — CareerPearls{% endblock %}
+
+{% block content %}
+<div class="auth-split">
+    {% set page = 'verify_registration' %}
+    {% include '_auth_showcase.html' %}
+    <div class="auth-form-side">
+        <div class="auth-form-inner auth-form-enter">
+            <div class="auth-back-link mb-3 auth-field-enter">
+                <a href="{{ url_for('auth.register', role=role) }}" class="btn-auth-back-icon" title="Back to Registration" aria-label="Back to Registration">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </a>
+            </div>
+
+            <div class="mb-3 d-inline-flex p-3 rounded-circle shadow position-relative"
+                 style="background: rgba(79,172,254,0.15); border: 2px solid rgba(79,172,254,0.4);">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4facfe" stroke-width="2.5">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                    <polyline points="22,6 12,13 2,6"/>
+                </svg>
+            </div>
+
+            <h3 class="auth-form-title auth-field-enter">Verify Your Email</h3>
+            <p class="auth-form-sub auth-field-enter auth-field-enter-1">
+                We sent a 6-digit verification code to <br><strong class="text-white">{{ email }}</strong>
+            </p>
+
+            <div class="mb-3 auth-field-enter auth-field-enter-2">
+                <span class="badge px-3 py-1.5 rounded-pill" style="background: rgba(79, 172, 254, 0.15); color: #4facfe; border: 1px solid rgba(79, 172, 254, 0.3); font-size: 0.85rem;">
+                    Code expires in <span id="verifyCountdown" class="fw-bold">{{ expiry_seconds }}</span>s
+                </span>
+            </div>
+
+            <form method="POST" class="auth-form" id="verifyForm">
+                {{ form.hidden_tag() }}
+                <div class="mb-3 auth-field-enter auth-field-enter-3">
+                    {{ form.code(class="form-control cp-input-glow" ~ (" is-invalid" if form.code.errors else ""), maxlength="6", inputmode="numeric", pattern="[0-9]*", autocomplete="one-time-code", style="font-size: 1.6rem !important; letter-spacing: 0.4em !important; font-weight: 700 !important; text-align: center !important; padding: 0.75rem !important;") }}
+                    {% for error in form.code.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+                <div class="auth-field-enter auth-field-enter-4">
+                    <button type="submit" class="btn btn-cp-primary w-100 py-2.5 fw-bold text-white shadow-md d-flex align-items-center justify-content-center gap-2 rounded-3"
+                            style="background: linear-gradient(135deg, #4facfe 0%, #7b2ff7 100%); border: none; font-size: 0.95rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        <span>Verify &amp; Proceed</span>
+                    </button>
+                </div>
+            </form>
+
+            <form method="POST" action="{{ url_for('auth.resend_verification') }}" class="text-center mt-3 auth-field-enter auth-field-enter-5">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-link text-pearl text-decoration-none small p-0" id="resendBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    Resend code
+                </button>
+            </form>
+
+            <p class="text-center mt-4 text-pearl mb-0 auth-field-enter auth-field-enter-6">
+                Wrong email? <a href="{{ url_for('auth.register', role=role) }}" class="text-decoration-none auth-link fw-medium">Start over</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+window.authHeroAccents = ['Secure email verification', 'Protecting your identity', 'Safe & verified community'];
+window.authPrimaryTaglines = ['Verify in one step', 'Instant 6-digit access', 'Confirm your email'];
+window.authSecondaryTaglines = ['Zero spam tolerance', 'Real verified profiles', 'Secure job network'];
+window.authFloatTags = ['Security', 'Identity', 'Verify', 'Protection', 'Access', 'Verified'];
+</script>
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+<script src="{{ url_for('static', filename='js/verification-store.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends "email/_base.html" %}
+{% block email_title %}Welcome to CareerPearls{% endblock %}
+{% block email_heading %}Welcome aboard!{% endblock %}
+{% block email_body %}
+<p style="margin:0 0 16px;color:#e8eaf0;">Hi {{ user.name }},</p>
+<p style="margin:0 0 20px;">Your account is ready. Start exploring opportunities or post your first job today.</p>
+<p style="margin:0;text-align:center;">
+    <a href="{{ app_base_url }}" style="display:inline-block;padding:12px 28px;background:linear-gradient(135deg,#4facfe,#7b2ff7);color:#fff;text-decoration:none;border-radius:50px;font-weight:600;font-size:14px;">Go to CareerPearls</a>
+</p>
+{% endblock %}

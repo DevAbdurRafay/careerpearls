@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Profile Setup — CareerPearls{% endblock %}
+
+{% block content %}
+<div class="pt-5 mt-4 cp-onboarding-page">
+    <form method="POST" action="{{ url_for('candidate.onboarding') }}" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="profile-section mb-4">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span class="cp-section-badge">1</span>
+                <h2 class="profile-section-title mb-0">Career Status</h2>
+            </div>
+            <p class="cp-subtext mb-3">Where are you in your professional journey?</p>
+            <div class="row g-3">
+                {% for value, label in career_options %}
+                {% set parts = label.split(' — ') %}
+                <div class="col-md-6 col-lg-4">
+                    <label class="status-card-label w-100 h-100">
+                        <input type="radio" name="career_status" value="{{ value }}" class="d-none career-status-radio" {% if current_status == value %}checked{% endif %}>
+                        <div class="status-card p-3 rounded h-100 d-flex align-items-center justify-content-between {% if current_status == value %}selected{% endif %}">
+                            <div>
+                                <div class="fw-semibold text-white mb-0">{{ parts[0] }}</div>
+                                {% if parts|length > 1 %}
+                                <div class="cp-subtext">{{ parts[1] }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="profile-section mb-4">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="cp-section-badge">2</span>
+                    <h2 class="profile-section-title mb-0">Fields of Interest</h2>
+                </div>
+                <span class="badge bg-dark border text-pearl" id="interestCounterBadge">Selected: {{ selected_interests|length }} (min 3)</span>
+            </div>
+            <p class="cp-subtext mb-3">Choose at least 3 career fields you want to explore.</p>
+            <div class="d-flex flex-wrap gap-2">
+                {% for opt in interest_options %}
+                <label class="interest-chip-label">
+                    <input type="checkbox" name="interests" value="{{ opt }}" class="d-none interest-checkbox" {% if opt in selected_interests %}checked{% endif %}>
+                    <span class="interest-chip {% if opt in selected_interests %}selected{% endif %}">{{ opt }}</span>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="profile-section mb-4">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span class="cp-section-badge">3</span>
+                <h2 class="profile-section-title mb-0">Key Technical Skills</h2>
+            </div>
+            <p class="cp-subtext mb-3">Add your primary technical skill to help employers find you.</p>
+            <div class="row g-3">
+                <div class="col-md-7">
+                    <label class="form-label cp-label" for="primary_skill">Skill</label>
+                    <input type="text" name="primary_skill" id="primary_skill" class="form-control cp-input-glow" list="onboardingSkillsDatalist" placeholder="e.g. Python, Data Analysis, React" value="{{ primary_skill }}" required>
+                    <datalist id="onboardingSkillsDatalist">
+                        {% for sk in predefined_skills %}
+                        <option value="{{ sk }}">
+                        {% endfor %}
+                    </datalist>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label cp-label" for="primary_skill_level">Proficiency</label>
+                    <select name="primary_skill_level" id="primary_skill_level" class="form-select cp-input-glow">
+                        {% for level in ['Beginner', 'Intermediate', 'Advanced', 'Expert'] %}
+                        <option value="{{ level }}" {% if skill_level == level %}selected{% endif %}>{{ level }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-section mb-4">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span class="cp-section-badge">4</span>
+                <h2 class="profile-section-title mb-0">Resume Upload</h2>
+            </div>
+            <p class="cp-subtext mb-3">Upload your resume (PDF or image). You can add more later in your profile.</p>
+            <input type="file" name="resume" id="onboardingResume" class="form-control cp-input-glow" accept=".pdf,.jpg,.jpeg,.png">
+            <small class="cp-field-hint">Accepted: PDF, JPEG, PNG — max 15MB</small>
+        </div>
+
+        <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-cp-primary px-4">
+                Complete Setup
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="ms-1" style="vertical-align:-2px"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.career-status-radio').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            document.querySelectorAll('.status-card').forEach(function (card) {
+                card.classList.remove('selected');
+            });
+            if (radio.checked) {
+                radio.closest('label').querySelector('.status-card').classList.add('selected');
+            }
+        });
+    });
+
+    var counterBadge = document.getElementById('interestCounterBadge');
+    document.querySelectorAll('.interest-checkbox').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+            var chip = cb.closest('label').querySelector('.interest-chip');
+            chip.classList.toggle('selected', cb.checked);
+            var checkedCount = document.querySelectorAll('.interest-checkbox:checked').length;
+            if (counterBadge) {
+                counterBadge.textContent = 'Selected: ' + checkedCount + ' (min 3)';
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

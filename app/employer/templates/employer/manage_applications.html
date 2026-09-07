@@ -1,0 +1,1198 @@
+{% extends "base.html" %}
+{% block title %}Manage Applications — CareerPearls{% endblock %}
+{% from '_loading_states.html' import loading_spinner %}
+{% from '_empty_states.html' import empty_state_candidates %}
+
+{% block content %}
+{# ── Custom CSS for High-End Futuristic Glowing Loader & Modals ── #}
+<style>
+/* Glowing Orbital Rings Loader */
+.cp-glow-loader-wrap {
+    position: relative;
+    padding: 3.5rem 1rem;
+}
+.cp-glow-loader-orbit {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    margin: 0 auto;
+}
+.cp-glow-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2.5px solid transparent;
+    animation: cpRotateGlow 2s linear infinite;
+}
+.cp-ring-1 {
+    border-top-color: #38bdf8;
+    border-right-color: #818cf8;
+    filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.7));
+}
+.cp-ring-2 {
+    inset: 10px;
+    border-bottom-color: #c084fc;
+    border-left-color: #34d399;
+    animation-duration: 2.6s;
+    animation-direction: reverse;
+    filter: drop-shadow(0 0 8px rgba(192, 132, 252, 0.7));
+}
+.cp-ring-3 {
+    inset: 20px;
+    border-top-color: #f472b6;
+    border-left-color: #60a5fa;
+    animation-duration: 1.8s;
+    filter: drop-shadow(0 0 6px rgba(244, 114, 182, 0.6));
+}
+.cp-glow-core {
+    position: absolute;
+    inset: 28px;
+    background: radial-gradient(circle, #38bdf8 0%, rgba(37, 99, 235, 0.4) 60%, transparent 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: cpPulseCore 1.6s ease-in-out infinite alternate;
+}
+@keyframes cpRotateGlow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+@keyframes cpPulseCore {
+    0% { transform: scale(0.85); opacity: 0.7; box-shadow: 0 0 10px rgba(56, 189, 248, 0.5); }
+    100% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 24px rgba(129, 140, 248, 0.9); }
+}
+
+/* Modal Architecture & Clean Spacing Styles */
+.cp-modal-icon-wrap {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-right: 14px;
+}
+.cp-template-bar {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1.5px solid rgba(56, 189, 248, 0.25);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.cp-btn-template {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 14px;
+    border-radius: 9px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    text-decoration: none;
+    border: 1.5px solid transparent;
+}
+.cp-btn-template:hover {
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+.cp-schedule-box {
+    background: rgba(15, 23, 42, 0.95);
+    border: 1.5px solid rgba(56, 189, 248, 0.35);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 22px;
+}
+.cp-status-notice {
+    background: rgba(34, 197, 94, 0.08);
+    border: 1.5px solid rgba(34, 197, 94, 0.28);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+.cp-modal-btn-submit {
+    border-radius: 10px;
+    padding: 8px 22px;
+    font-weight: 600;
+    font-size: 0.88rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.22s ease;
+    border: 1.5px solid transparent;
+}
+.cp-modal-btn-submit:hover {
+    transform: translateY(-1.5px);
+}
+</style>
+
+<div class="container-fluid pt-2">
+
+    {# ── Comprehensive KPI Cards ─────────────────────────────────────────── #}
+    <div class="row g-3 mb-4">
+        <div class="col-md-4 col-lg-2">
+            <div class="kpi-card">
+                <div class="kpi-value" style="color: #4facfe;">{{ active_jobs }}</div>
+                <div class="kpi-label">Active Jobs</div>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2">
+            <div class="kpi-card">
+                <div class="kpi-value" style="color: #a855f7;">{{ total_applications }}</div>
+                <div class="kpi-label">Total Applications</div>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2">
+            <div class="kpi-card">
+                <div class="kpi-value" style="color: #fbbf24;">{{ shortlisted }}</div>
+                <div class="kpi-label">Shortlisted</div>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2">
+            <div class="kpi-card">
+                <div class="kpi-value" style="color: #3b82f6;">{{ interviews_this_week }}</div>
+                <div class="kpi-label">This Week's Interviews</div>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2">
+            <div class="kpi-card">
+                <div class="kpi-value" style="color: #22c55e;">{{ selected }}</div>
+                <div class="kpi-label">Hired</div>
+            </div>
+        </div>
+        <div class="col-md-4 col-lg-2">
+            <div class="kpi-card">
+                <div class="kpi-value" style="color: #ef4444;">{{ offer_acceptance }}%</div>
+                <div class="kpi-label">Offer Rate</div>
+            </div>
+        </div>
+    </div>
+
+    {# ── Filter Bar ─────────────────────────────────────────── #}
+    <div class="cp-card mb-3 p-3">
+        <form method="GET" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <select name="job_id" class="form-select form-select-sm">
+                    <option value="">All Jobs</option>
+                    {% for j in company_jobs %}
+                    <option value="{{ j.id }}" {% if job_filter == j.id %}selected{% endif %}>{{ j.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">All Statuses</option>
+                    {% for s in ['Applied', 'Shortlisted', 'Under Review', 'Contacted', 'Interview Scheduled', 'Selected', 'Rejected'] %}
+                    <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-cp-primary flex-grow-1">Filter Applications</button>
+                {% if status_filter or job_filter %}
+                <a href="{{ url_for('employer.manage_applications') }}" class="btn btn-sm btn-cp-ghost">Reset</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    {# ── Application Cards List ─────────────────────────────────────────── #}
+    {% for app in applications.items %}
+    <div class="cp-card mb-3 p-3">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <h5 class="mb-0 fw-bold text-white">{{ app.candidate.full_name if app.candidate else 'Unknown Candidate' }}</h5>
+                    {% if app.candidate and app.candidate.is_location_verified %}
+                    <span class="badge bg-success-subtle text-success border border-success" title="Verified Location"><i class="bi bi-patch-check-fill me-1"></i>Verified Location</span>
+                    {% endif %}
+                </div>
+                <p class="text-pearl mb-1 small" style="color: #94a3b8;">
+                    {{ app.job.title if app.job else 'Unknown Job' }} · Applied {{ app.applied_at.strftime('%b %d, %Y') if app.applied_at else 'N/A' }} · <i class="bi bi-geo-alt me-1"></i>{{ app.candidate.location if app.candidate else 'Location not specified' }}
+                </p>
+                <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
+                    {% set last_interview = app.interviews.all()[-1] if (app.interviews and app.interviews.all()) else None %}
+                    {% if app.status == 'Shortlisted' %}
+                    <span class="badge bg-warning text-dark fw-bold px-2.5 py-1.5 rounded-pill shadow-sm"><i class="bi bi-star-fill me-1"></i>Shortlisted</span>
+                    {% elif app.status == 'Selected' %}
+                    <span class="badge bg-success text-white fw-bold px-3 py-1.5 rounded-pill shadow-sm" style="background: linear-gradient(135deg, #16a34a, #22c55e);"><i class="bi bi-patch-check-fill me-1"></i>Hired</span>
+                    {% elif last_interview and last_interview.status == 'Rescheduled' %}
+                    <span class="badge px-2.5 py-1.5 rounded-pill shadow-sm" style="background: rgba(14, 165, 233, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.45);"><i class="bi bi-clock-history me-1"></i>Rescheduled (Pending New Date)</span>
+                    {% elif app.status == 'Interview Scheduled' or (last_interview and last_interview.status == 'Scheduled') %}
+                    <span class="badge px-2.5 py-1.5 rounded-pill shadow-sm" style="background: rgba(99, 102, 241, 0.25); color: #a5b4fc; border: 1px solid rgba(129, 140, 248, 0.5);"><i class="bi bi-calendar2-check-fill me-1"></i>Interview Scheduled</span>
+                    {% elif app.status == 'Contacted' %}
+                    <span class="badge bg-primary px-2.5 py-1.5 rounded-pill"><i class="bi bi-chat-dots-fill me-1"></i>Contacted</span>
+                    {% elif app.status == 'Rejected' %}
+                    <span class="badge bg-danger px-2.5 py-1.5 rounded-pill shadow-sm"><i class="bi bi-x-circle-fill me-1"></i>{% if app.rejection_reason and ('interview' in app.rejection_reason.lower() or 'coming' in app.rejection_reason.lower() or 'failed' in app.rejection_reason.lower()) %}Failed / Rejected{% else %}Rejected{% endif %}</span>
+                    {% if app.rejection_reason %}
+                    <span class="small text-muted ms-1">Remarks: <em class="text-light">{{ app.rejection_reason }}</em></span>
+                    {% endif %}
+                    {% elif app.status == 'Under Review' %}
+                    <span class="badge bg-info text-dark px-2.5 py-1.5 rounded-pill"><i class="bi bi-hourglass-split me-1"></i>Under Review (Waitlist)</span>
+                    {% elif app.status == 'Withdrawn' %}
+                    <span class="badge px-2.5 py-1.5 rounded-pill shadow-sm" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35);"><i class="bi bi-x-circle me-1"></i>Withdrawn by Candidate</span>
+                    {% else %}
+                    <span class="badge bg-secondary px-2.5 py-1.5 rounded-pill">{{ app.status }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# ── Action Buttons ─────────────────── #}
+            <div class="d-flex gap-2 align-items-center flex-wrap" style="min-width:0;">
+                {# 1. View Full Profile (Always Available) #}
+                <button type="button" class="btn btn-sm cp-app-btn cp-btn-profile" onclick="openCandidateModal({{ app.candidate.id if app.candidate else 0 }}, {{ app.id }})">
+                    <i class="bi bi-person-lines-fill me-1"></i>Profile
+                </button>
+
+                {% if app.status == 'Withdrawn' %}
+                <span class="badge px-3 py-1.5 rounded-pill text-muted border border-secondary bg-secondary bg-opacity-10 fw-semibold d-inline-flex align-items-center gap-1.5">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Withdrawn (Auto-removes in 12h)</span>
+                </span>
+                {% elif app.status == 'Selected' %}
+                {# If candidate is HIRED, disable mutators and show verified completion badge #}
+                <span class="badge px-3 py-1.5 rounded-pill cp-hired-completed-badge d-inline-flex align-items-center gap-1.5 shadow-sm">
+                    <i class="bi bi-patch-check-fill"></i>
+                    <span>Hired · Process Completed</span>
+                </span>
+                {% else %}
+                {# If NOT hired (active or rejected), keep actions available #}
+
+                {# 3. Schedule Interview (Dedicated Action) #}
+                {% if app.status == 'Interview Scheduled' or (last_interview and last_interview.status == 'Scheduled') %}
+                <button type="button" class="btn btn-sm cp-app-btn cp-btn-scheduled" data-bs-toggle="modal" data-bs-target="#scheduleModal{{ app.id }}" title="Interview is scheduled. Click to view or reschedule.">
+                    <i class="bi bi-calendar2-check-fill me-1"></i>Scheduled
+                </button>
+                {% else %}
+                <button type="button" class="btn btn-sm cp-app-btn cp-btn-interview" data-bs-toggle="modal" data-bs-target="#scheduleModal{{ app.id }}" title="Schedule official interview with date, time, and venue">
+                    <i class="bi bi-calendar-check me-1"></i>Interview
+                </button>
+                {% endif %}
+
+                {# 4. Shortlist Toggle (Opens Confirmation Dialog) #}
+                {% if app.status == 'Shortlisted' %}
+                <form method="POST" action="{{ url_for('employer.unshortlist_candidate', app_id=app.id) }}" class="d-inline m-0 p-0">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm cp-app-btn cp-btn-shortlisted" title="Candidate is shortlisted. Click to remove from shortlist.">
+                        <i class="bi bi-star-fill me-1"></i>Shortlisted
+                    </button>
+                </form>
+                {% else %}
+                <button type="button" class="btn btn-sm cp-app-btn cp-btn-shortlist" data-bs-toggle="modal" data-bs-target="#shortlistModal{{ app.id }}" title="Shortlist candidate and send official notification email">
+                    <i class="bi bi-star me-1"></i>Shortlist
+                </button>
+                {% endif %}
+
+                {# 5. Wait / Un-Wait Toggle #}
+                {% if app.status == 'Under Review' %}
+                <form method="POST" action="{{ url_for('employer.unwait_candidate', app_id=app.id) }}" class="d-inline m-0 p-0">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm cp-app-btn cp-btn-unwait" title="Candidate is currently on Waitlist. Click to un-wait and return to active review.">
+                        <i class="bi bi-hourglass-bottom me-1"></i>Un-Wait
+                    </button>
+                </form>
+                {% else %}
+                <form method="POST" action="{{ url_for('employer.wait_candidate', app_id=app.id) }}" class="d-inline m-0 p-0">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm cp-app-btn cp-btn-wait" title="Place on Under Review / Waitlist">
+                        <i class="bi bi-hourglass-split me-1"></i>Wait
+                    </button>
+                </form>
+                {% endif %}
+
+                {# 6. Reject Modal Trigger #}
+                {% if app.status != 'Rejected' %}
+                <button type="button" class="btn btn-sm cp-app-btn cp-btn-reject" data-bs-toggle="modal" data-bs-target="#rejectModal{{ app.id }}">
+                    <i class="bi bi-x-circle-fill me-1"></i>Reject
+                </button>
+                {% endif %}
+
+                {# 7. Interview Outcome (if interview exists) #}
+                {% if last_interview %}
+                <button type="button" class="btn btn-sm cp-app-btn cp-btn-outcome" data-bs-toggle="modal" data-bs-target="#interviewOutcomeModal{{ last_interview.id }}" title="Record Interview Outcome">
+                    <i class="bi bi-clipboard-check me-1"></i>Outcome
+                </button>
+                {% endif %}
+                {% endif %}
+
+                {# 8. Direct Email (Always Available) #}
+                <button type="button" class="btn btn-sm cp-app-btn cp-btn-email" data-bs-toggle="modal" data-bs-target="#emailModal{{ app.id }}" title="Send Direct Email">
+                    <i class="bi bi-envelope-fill me-1"></i>Email
+                </button>
+            </div>
+        </div>
+
+        {% if app.cover_letter %}
+        <div class="cp-cover-letter-box p-3 rounded mt-3">
+            <span class="small fw-bold d-block mb-1">Cover Letter:</span>
+            <p class="mb-0 small" style="white-space: pre-wrap; line-height: 1.5;">{{ app.cover_letter }}</p>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="cp-card text-center py-5">
+        <i class="bi bi-inbox display-5 text-muted d-block mb-3"></i>
+        <p class="text-pearl mb-0">No applications received yet matching the criteria.</p>
+    </div>
+    {% endfor %}
+
+    {% if applications.pages > 1 %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% for p in applications.iter_pages() %}
+                {% if p %}
+                <li class="page-item {% if p == applications.page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('employer.manage_applications', page=p, status=status_filter, job_id=job_filter) }}">{{ p }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+{# ── ALL APPLICATION ACTION MODALS (Placed Outside Cards at Root Level) ─────── #}
+{% for app in applications.items %}
+    {% set cand_name = app.candidate.full_name if app.candidate else 'Candidate' %}
+    {% set job_title = app.job.title if app.job else 'Position' %}
+    {% set comp_name = company.name if company else 'Analysis Workforce' %}
+    {% set comp_email = current_user.email or (company.email if company else 'analysis.workforce@gmail.com') %}
+    {% set comp_loc = company.location if (company and company.location and company.location != 'Remote') else 'Suite #504, 5th Floor, Executive Tower, Dolmen Mall Clifton, Marine Drive, Karachi, Pakistan' %}
+
+    <!-- Modal Action 1: Message Directly & Interview Call (Spacious & Non-Overlapping) -->
+    <div class="modal fade" id="messageModal{{ app.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0" style="background: #0b1120; border: 1.5px solid rgba(56, 189, 248, 0.35) !important; box-shadow: 0 25px 70px rgba(0,0,0,0.95); border-radius: 18px; overflow: hidden;">
+                <form method="POST" action="{{ url_for('employer.message_candidate', app_id=app.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    {# Modal Header with proper flex gaps #}
+                    <div class="modal-header border-bottom border-secondary border-opacity-25 px-4 py-3" style="background: rgba(15, 23, 42, 0.95);">
+                        <div class="d-flex align-items-center">
+                            <div class="cp-modal-icon-wrap" style="background: linear-gradient(135deg, #0284c7, #2563eb); box-shadow: 0 0 16px rgba(37, 99, 235, 0.55);">
+                                <i class="bi bi-chat-left-text-fill text-white fs-5"></i>
+                            </div>
+                            <div>
+                                <h5 class="modal-title fw-bold text-white mb-1" style="font-size: 1.15rem; letter-spacing: -0.2px;">Direct Messaging &amp; Interview Call</h5>
+                                <div class="d-flex align-items-center flex-wrap gap-2 text-pearl small" style="color: #94a3b8; font-size: 0.82rem;">
+                                    <span><i class="bi bi-person-fill text-info me-1"></i>Candidate: <strong class="text-info">{{ cand_name }}</strong></span>
+                                    <span class="opacity-50">·</span>
+                                    <span><i class="bi bi-briefcase me-1"></i>Role: <span class="text-white">{{ job_title }}</span></span>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body p-4">
+                        {# One-Click Templates Bar #}
+                        <div class="cp-template-bar">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-lightning-charge-fill text-warning fs-6"></i>
+                                <span class="small fw-bold text-white">One-Click Templates:</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <button type="button" class="cp-btn-template" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border-color: rgba(56, 189, 248, 0.45);" onclick="insertMsgTemplate('msgText{{ app.id }}', 'interview', '{{ cand_name }}', '{{ job_title }}', '{{ comp_name }}', '{{ comp_email }}', '{{ comp_loc }}')">
+                                    <i class="bi bi-lightning-fill"></i>
+                                    <span>On-Site Interview Invitation</span>
+                                </button>
+                                <button type="button" class="cp-btn-template" style="background: rgba(167, 139, 250, 0.12); color: #a78bfa; border-color: rgba(167, 139, 250, 0.45);" onclick="insertMsgTemplate('msgText{{ app.id }}', 'screening', '{{ cand_name }}', '{{ job_title }}', '{{ comp_name }}', '{{ comp_email }}', '{{ comp_loc }}')">
+                                    <i class="bi bi-file-earmark-text-fill"></i>
+                                    <span>Initial Screening</span>
+                                </button>
+                                <button type="button" class="cp-btn-template" style="background: rgba(52, 211, 153, 0.12); color: #34d399; border-color: rgba(52, 211, 153, 0.45);" onclick="insertMsgTemplate('msgText{{ app.id }}', 'update', '{{ cand_name }}', '{{ job_title }}', '{{ comp_name }}', '{{ comp_email }}', '{{ comp_loc }}')">
+                                    <i class="bi bi-chat-dots-fill"></i>
+                                    <span>General Update</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {# Communication Body Textarea #}
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                                <i class="bi bi-chat-text-fill text-primary"></i>
+                                <span>Communication Body *</span>
+                            </label>
+                            <textarea name="message" id="msgText{{ app.id }}" class="form-control" rows="5" placeholder="Write custom communication or select one of the professional templates above..." required style="background: #0f172a; color: #fff; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 12px; font-size: 0.92rem; line-height: 1.6; padding: 14px;"></textarea>
+                        </div>
+
+                        {# Spacious Interview Schedule Box with Clear Dividers #}
+                        <div class="cp-schedule-box">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-calendar2-check-fill text-info fs-6"></i>
+                                    <span class="fw-bold text-info" style="font-size: 0.92rem;">Official Interview Call &amp; Venue Schedule</span>
+                                </div>
+                                <span class="badge bg-primary-subtle text-info border border-info border-opacity-25 px-2.5 py-1" style="font-size: 0.72rem;">Optional Automated Dispatch</span>
+                            </div>
+                            
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label text-pearl small fw-semibold mb-2 d-flex align-items-center gap-2">
+                                        <i class="bi bi-calendar-event text-muted"></i>
+                                        <span>Interview Date</span>
+                                    </label>
+                                    <input type="date" name="interview_date" id="msgDate{{ app.id }}" class="form-control" style="background: #1e293b; color: #fff; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 12px; font-size: 0.88rem;">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label text-pearl small fw-semibold mb-2 d-flex align-items-center gap-2">
+                                        <i class="bi bi-clock-history text-muted"></i>
+                                        <span>Interview Time (AM / PM)</span>
+                                    </label>
+                                    <input type="text" name="interview_time" id="msgTime{{ app.id }}" class="form-control" value="11:30 AM PKT" placeholder="e.g. 11:30 AM PKT" style="background: #1e293b; color: #fff; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 12px; font-size: 0.88rem;">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label text-pearl small fw-semibold mb-2 d-flex align-items-center gap-2">
+                                        <i class="bi bi-camera-video text-muted"></i>
+                                        <span>Interview Mode</span>
+                                    </label>
+                                    <select name="interview_mode" class="form-select" style="background: #1e293b; color: #fff; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 12px; font-size: 0.88rem;">
+                                        <option value="On-Site" selected>On-Site (In-Person Office)</option>
+                                        <option value="Google Meet">Google Meet Video</option>
+                                        <option value="Zoom Meeting">Zoom Meeting</option>
+                                        <option value="Phone Call">Phone Interview</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label text-pearl small fw-semibold mb-2 d-flex align-items-center gap-2">
+                                        <i class="bi bi-geo-alt-fill text-primary"></i>
+                                        <span>Venue / Office Address</span>
+                                    </label>
+                                    <input type="text" name="interview_location" id="msgLoc{{ app.id }}" class="form-control" value="{{ comp_loc }}" placeholder="Office Address or Location Details" style="background: #1e293b; color: #fff; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 12px; font-size: 0.88rem;">
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Security & Status Notification Card (Clean non-overlapping alert) #}
+                        <div class="cp-status-notice">
+                            <i class="bi bi-shield-check text-success fs-5 flex-shrink-0" style="margin-top: 2px;"></i>
+                            <div class="small text-pearl" style="color: #cbd5e1; font-size: 0.84rem; line-height: 1.5;">
+                                Dispatches in-app chat thread and triggers official email under <strong class="text-white">{{ comp_name }}</strong>. Application status automatically moves to <span class="badge bg-success-subtle text-success border border-success border-opacity-25 px-2 py-0.5 ms-1">Contacted</span>.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-top border-secondary border-opacity-25 px-4 py-3" style="background: rgba(15, 23, 42, 0.8);">
+                        <button type="button" class="btn btn-sm btn-cp-ghost px-4 py-2" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="cp-modal-btn-submit" style="background: linear-gradient(135deg, #0284c7, #2563eb); border-color: rgba(56, 189, 248, 0.85); color: #fff; box-shadow: 0 4px 16px rgba(37, 99, 235, 0.45);">
+                            <i class="bi bi-send-fill fs-6"></i>
+                            <span>Send Message &amp; Schedule</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Action 1.5: Dedicated Official Interview Scheduling Modal -->
+    <div class="modal fade" id="scheduleModal{{ app.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0" style="background: #0b1120; border: 1.5px solid rgba(99, 102, 241, 0.4) !important; box-shadow: 0 25px 70px rgba(0,0,0,0.95); border-radius: 18px; overflow: hidden;">
+                <form method="POST" action="{{ url_for('employer.schedule_interview', app_id=app.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    {# Modal Header #}
+                    <div class="modal-header border-bottom border-secondary border-opacity-25 px-4 py-3" style="background: rgba(15, 23, 42, 0.95);">
+                        <div class="d-flex align-items-center">
+                            <div class="cp-modal-icon-wrap" style="background: linear-gradient(135deg, #4338ca, #6366f1); box-shadow: 0 0 16px rgba(99, 102, 241, 0.55);">
+                                <i class="bi bi-calendar2-check-fill text-white fs-5"></i>
+                            </div>
+                            <div>
+                                <h5 class="modal-title fw-bold text-white mb-1" style="font-size: 1.15rem; letter-spacing: -0.2px;">Official Interview Scheduling &amp; Invitation</h5>
+                                <div class="d-flex align-items-center flex-wrap gap-2 text-pearl small" style="color: #94a3b8; font-size: 0.82rem;">
+                                    <span><i class="bi bi-person-fill text-info me-1"></i>Candidate: <strong class="text-info">{{ cand_name }}</strong></span>
+                                    <span class="opacity-50">·</span>
+                                    <span><i class="bi bi-briefcase me-1"></i>Role: <span class="text-white">{{ job_title }}</span></span>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body p-4">
+                        {# Quick Preset Templates Bar #}
+                        <div class="cp-template-bar" style="border-color: rgba(99, 102, 241, 0.3);">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-lightning-charge-fill text-warning fs-6"></i>
+                                <span class="small fw-bold text-white">Preset Interview Types:</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <button type="button" class="cp-btn-template" style="background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border-color: rgba(99, 102, 241, 0.45);" onclick="insertScheduleTemplate('intRound{{ app.id }}', 'intMode{{ app.id }}', 'intLoc{{ app.id }}', 'intMsg{{ app.id }}', 'onsite', '{{ cand_name }}', '{{ job_title }}', '{{ comp_name }}', '{{ comp_loc }}', '{{ comp_email }}')">
+                                    <i class="bi bi-building"></i>
+                                    <span>On-Site In-Person</span>
+                                </button>
+                                <button type="button" class="cp-btn-template" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.45);" onclick="insertScheduleTemplate('intRound{{ app.id }}', 'intMode{{ app.id }}', 'intLoc{{ app.id }}', 'intMsg{{ app.id }}', 'technical', '{{ cand_name }}', '{{ job_title }}', '{{ comp_name }}', '{{ comp_loc }}', '{{ comp_email }}')">
+                                    <i class="bi bi-code-slash"></i>
+                                    <span>Technical Assessment</span>
+                                </button>
+                                <button type="button" class="cp-btn-template" style="background: rgba(52, 211, 153, 0.15); color: #34d399; border-color: rgba(52, 211, 153, 0.45);" onclick="insertScheduleTemplate('intRound{{ app.id }}', 'intMode{{ app.id }}', 'intLoc{{ app.id }}', 'intMsg{{ app.id }}', 'screening', '{{ cand_name }}', '{{ job_title }}', '{{ comp_name }}', '{{ comp_loc }}', '{{ comp_email }}')">
+                                    <i class="bi bi-person-video"></i>
+                                    <span>Screening &amp; Culture</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {# Form Fields Grid #}
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-7">
+                                <label class="form-label small fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                                    <i class="bi bi-award-fill text-warning"></i>
+                                    <span>Interview Round / Subject *</span>
+                                </label>
+                                <input type="text" name="round_name" id="intRound{{ app.id }}" class="form-control" value="In-Person On-Site Interview" required style="background: #0f172a; color: #fff; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 12px; font-size: 0.88rem; font-weight: 600;">
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label small fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                                    <i class="bi bi-camera-video-fill text-info"></i>
+                                    <span>Interview Mode *</span>
+                                </label>
+                                <select name="interview_mode" id="intMode{{ app.id }}" class="form-select" onchange="handleInterviewModeChange(this, 'intLoc{{ app.id }}', '{{ comp_loc }}')" style="background: #0f172a; color: #fff; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 12px; font-size: 0.88rem; font-weight: 500;">
+                                    <option value="On-Site" selected>🏢 On-Site (In-Person Office)</option>
+                                    <option value="Google Meet">📹 Google Meet Video</option>
+                                    <option value="Zoom Meeting">💻 Zoom Meeting</option>
+                                    <option value="Phone Call">📞 Phone Interview</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                                    <i class="bi bi-calendar-date-fill text-primary"></i>
+                                    <span>Interview Date *</span>
+                                </label>
+                                <input type="date" name="interview_date" id="intDate{{ app.id }}" class="form-control" required style="background: #0f172a; color: #fff; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 12px; font-size: 0.88rem;">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                                    <i class="bi bi-clock-fill text-warning"></i>
+                                    <span>Interview Time (AM / PM) *</span>
+                                </label>
+                                <input type="text" name="interview_time" id="intTime{{ app.id }}" class="form-control" value="11:30 AM PKT" placeholder="e.g. 11:30 AM PKT" required style="background: #0f172a; color: #fff; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 12px; font-size: 0.88rem;">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                                    <i class="bi bi-geo-alt-fill text-danger"></i>
+                                    <span>Venue / Office Address or Video Meeting Link *</span>
+                                </label>
+                                <input type="text" name="interview_location" id="intLoc{{ app.id }}" class="form-control" value="{{ comp_loc }}" placeholder="Office Address or Meeting URL" required style="background: #0f172a; color: #fff; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 12px; font-size: 0.88rem;">
+                            </div>
+                        </div>
+
+                        {# Message Body #}
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                                <i class="bi bi-card-text text-success"></i>
+                                <span>Official Invitation Note / Instructions to Candidate</span>
+                            </label>
+                            <textarea name="message" id="intMsg{{ app.id }}" class="form-control" rows="4" style="background: #0f172a; color: #fff; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 12px; font-size: 0.88rem; line-height: 1.6; padding: 12px;">We are pleased to invite you for an in-person On-Site Interview for the {{ job_title }} position at {{ comp_name }}. Please bring an updated copy of your portfolio and CV. Feel free to contact our hiring desk at {{ comp_email }} for any queries.</textarea>
+                        </div>
+
+                        {# Notice Card #}
+                        <div class="cp-status-notice" style="border-color: rgba(99, 102, 241, 0.35); background: rgba(99, 102, 241, 0.08);">
+                            <i class="bi bi-shield-check text-info fs-5 flex-shrink-0" style="margin-top: 2px;"></i>
+                            <div class="small text-pearl" style="color: #cbd5e1; font-size: 0.84rem; line-height: 1.5;">
+                                Dispatches official authenticated interview invitation to <strong class="text-white">{{ app.candidate.user.email if app.candidate and app.candidate.user else 'candidate' }}</strong> and records schedule in candidate portal. Application status automatically moves to <span class="badge bg-primary-subtle text-info border border-info border-opacity-25 px-2 py-0.5 ms-1">Interview Scheduled</span>.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-top border-secondary border-opacity-25 px-4 py-3" style="background: rgba(15, 23, 42, 0.8);">
+                        <button type="button" class="btn btn-sm btn-cp-ghost px-4 py-2" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="cp-modal-btn-submit" style="background: linear-gradient(135deg, #4338ca, #6366f1); border-color: rgba(129, 140, 248, 0.85); color: #fff; box-shadow: 0 4px 16px rgba(99, 102, 241, 0.45);">
+                            <i class="bi bi-calendar2-check-fill fs-6"></i>
+                            <span>Confirm &amp; Schedule Interview</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Action 2: Send Direct Email (Spacious & Non-Overlapping) -->
+    <div class="modal fade" id="emailModal{{ app.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0" style="background: #0b1120; border: 1.5px solid rgba(52, 211, 153, 0.35) !important; box-shadow: 0 25px 70px rgba(0,0,0,0.95); border-radius: 18px; overflow: hidden;">
+                <form method="POST" action="{{ url_for('employer.send_direct_email', app_id=app.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    {# Modal Header #}
+                    <div class="modal-header border-bottom border-secondary border-opacity-25 px-4 py-3" style="background: rgba(15, 23, 42, 0.95);">
+                        <div class="d-flex align-items-center">
+                            <div class="cp-modal-icon-wrap" style="background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 0 16px rgba(16, 185, 129, 0.55);">
+                                <i class="bi bi-envelope-paper-fill text-white fs-5"></i>
+                            </div>
+                            <div>
+                                <h5 class="modal-title fw-bold text-white mb-1" style="font-size: 1.15rem; letter-spacing: -0.2px;">Direct Official Email Dispatch</h5>
+                                <div class="d-flex align-items-center flex-wrap gap-2 text-pearl small" style="color: #94a3b8; font-size: 0.82rem;">
+                                    <span><i class="bi bi-person-fill text-success me-1"></i>Candidate: <strong class="text-success">{{ cand_name }}</strong></span>
+                                    <span class="opacity-50">·</span>
+                                    <span><i class="bi bi-building me-1 cp-org-badge-icon"></i>Organization: <strong class="cp-org-name-aesthetic">{{ comp_name }}</strong></span>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body p-4">
+                        {# Quick Email Template Inserters #}
+                        <div class="cp-template-bar" style="border-color: rgba(52, 211, 153, 0.25);">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-lightning-charge-fill text-success fs-6"></i>
+                                <span class="small fw-bold text-white">Pre-Built Email Templates:</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <button type="button" class="cp-btn-template" style="background: rgba(52, 211, 153, 0.12); color: #34d399; border-color: rgba(52, 211, 153, 0.45);" onclick="insertEmailTemplate('emailSub{{ app.id }}', 'emailBody{{ app.id }}', 'interview', '{{ cand_name }}', '{{ job_title }}', '{{ comp_name }}', '{{ comp_email }}', '{{ comp_loc }}')">
+                                    <i class="bi bi-lightning-fill"></i>
+                                    <span>Formal On-Site Interview Call</span>
+                                </button>
+                                <button type="button" class="cp-btn-template" style="background: rgba(96, 165, 250, 0.12); color: #60a5fa; border-color: rgba(96, 165, 250, 0.45);" onclick="insertEmailTemplate('emailSub{{ app.id }}', 'emailBody{{ app.id }}', 'followup', '{{ cand_name }}', '{{ job_title }}', '{{ comp_name }}', '{{ comp_email }}', '{{ comp_loc }}')">
+                                    <i class="bi bi-file-earmark-text-fill"></i>
+                                    <span>Application Update / Follow-up</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                                    <i class="bi bi-person-badge text-muted"></i>
+                                    <span>Recipient Email</span>
+                                </label>
+                                <input type="text" class="form-control" value="{{ app.candidate.user.email if app.candidate and app.candidate.user else 'N/A' }}" readonly style="background: #0f172a; color: #94a3b8; border: 1.5px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 12px; font-size: 0.88rem;">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                                    <i class="bi bi-shield-check text-success"></i>
+                                    <span>Sender Email Signature</span>
+                                </label>
+                                <input type="text" class="form-control" value="{{ comp_email }}" readonly style="background: #0f172a; color: #34d399; border: 1.5px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 8px 12px; font-size: 0.88rem; font-weight: 600;">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                                <i class="bi bi-card-heading text-primary"></i>
+                                <span>Email Subject *</span>
+                            </label>
+                            <input type="text" name="subject" id="emailSub{{ app.id }}" class="form-control" value="🎉 Official On-Site Interview Invitation: {{ job_title }} — {{ comp_name }}" required style="background: #0f172a; color: #fff; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 12px; font-size: 0.88rem; font-weight: 600;">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                                <i class="bi bi-envelope-open-fill text-success"></i>
+                                <span>Email Message Body *</span>
+                            </label>
+                            <textarea name="message_body" id="emailBody{{ app.id }}" class="form-control" rows="7" required style="background: #0f172a; color: #fff; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 12px; font-size: 0.92rem; line-height: 1.6; padding: 14px;">Dear {{ cand_name }},
+
+🎉 Congratulations! Thank you for applying for the {{ job_title }} position at {{ comp_name }}. We were impressed by your verified background and are pleased to invite you for an in-person On-Site Interview.
+
+Interview Schedule & Venue:
+• Position: {{ job_title }}
+• Proposed Date & Day: Monday, Sept 01, 2026
+• Time: 11:30 AM PKT
+• Mode: On-Site In-Person Interview
+• Venue / Address: {{ comp_loc }}
+
+Please reply to this email or confirm through your CareerPearls candidate portal if this time works for you. For any directions or queries, feel free to email our hiring team at {{ comp_email }}.
+
+Best regards,
+{{ comp_name }} Hiring Team</textarea>
+                        </div>
+
+                        <div class="cp-status-notice" style="border-color: rgba(52, 211, 153, 0.28);">
+                            <i class="bi bi-shield-check text-success fs-5 flex-shrink-0" style="margin-top: 2px;"></i>
+                            <div class="small text-pearl" style="color: #cbd5e1; font-size: 0.84rem; line-height: 1.5;">
+                                This email will be sent directly to <strong class="text-white">{{ app.candidate.user.email if app.candidate and app.candidate.user else 'candidate' }}</strong> with authenticated corporate signature <strong class="text-success">{{ comp_name }}</strong>.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-top border-secondary border-opacity-25 px-4 py-3" style="background: rgba(15, 23, 42, 0.8);">
+                        <button type="button" class="btn btn-sm btn-cp-ghost px-4 py-2" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="cp-modal-btn-submit" style="background: linear-gradient(135deg, #059669, #10b981); border-color: rgba(52, 211, 153, 0.85); color: #fff; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.45);">
+                            <i class="bi bi-envelope-paper-fill fs-6"></i>
+                            <span>Send Official Email</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Action: Shortlist Confirmation Modal (Proper UI Dialog) -->
+    <div class="modal fade" id="shortlistModal{{ app.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0" style="background: #0b1120; border: 1.5px solid rgba(245, 158, 11, 0.45) !important; box-shadow: 0 25px 70px rgba(0,0,0,0.95); border-radius: 18px; overflow: hidden;">
+                <form method="POST" action="{{ url_for('employer.shortlist_candidate', app_id=app.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="modal-header border-bottom border-secondary border-opacity-25 px-4 py-3" style="background: rgba(15, 23, 42, 0.95);">
+                        <div class="d-flex align-items-center">
+                            <div class="cp-modal-icon-wrap" style="background: linear-gradient(135deg, #d97706, #f59e0b); box-shadow: 0 0 16px rgba(245, 158, 11, 0.55);">
+                                <i class="bi bi-star-fill text-white fs-5"></i>
+                            </div>
+                            <div>
+                                <h5 class="modal-title fw-bold text-white mb-1" style="font-size: 1.15rem;">Shortlist Candidate</h5>
+                                <div class="text-pearl small" style="color: #94a3b8; font-size: 0.82rem;">Candidate: <strong class="text-warning">{{ cand_name }}</strong> · Role: {{ job_title }}</div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body p-4">
+                        <div class="p-3 rounded-3" style="background: rgba(245, 158, 11, 0.1); border: 1.5px solid rgba(245, 158, 11, 0.35); border-radius: 14px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 14px;">
+                            <i class="bi bi-exclamation-triangle-fill text-warning fs-5 flex-shrink-0" style="margin-top: 2px;"></i>
+                            <div>
+                                <h6 class="fw-bold text-white mb-1" style="font-size: 0.92rem;">Are you sure you want to shortlist this candidate?</h6>
+                                <p class="text-pearl small mb-0" style="color: #fde68a; font-size: 0.84rem; line-height: 1.55;">
+                                    This action will mark <strong>{{ cand_name }}</strong> as Shortlisted, trigger a celebratory in-app notification, and dispatch the official Shortlisted notification email. <strong>This action cannot be undone.</strong>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="cp-status-notice" style="display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px; border-radius: 12px;">
+                            <i class="bi bi-envelope-check text-success fs-5 flex-shrink-0" style="margin-top: 2px;"></i>
+                            <div class="small text-pearl" style="color: #cbd5e1; font-size: 0.84rem; line-height: 1.55;">
+                                An official Shortlisted email with company inquiry instructions will be dispatched to <strong>{{ app.candidate.user.email if app.candidate and app.candidate.user else 'candidate' }}</strong>.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-top border-secondary border-opacity-25 px-4 py-3" style="background: rgba(15, 23, 42, 0.8);">
+                        <button type="button" class="btn btn-sm btn-cp-ghost px-4 py-2" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="cp-modal-btn-submit" style="background: linear-gradient(135deg, #d97706, #f59e0b); border-color: rgba(245, 158, 11, 0.85); color: #000; font-weight: 700; box-shadow: 0 4px 16px rgba(245, 158, 11, 0.45);">
+                            <i class="bi bi-star-fill fs-6"></i>
+                            <span>Confirm Shortlist</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Action 3: Reject Application (Spacious & Clean) -->
+    <div class="modal fade" id="rejectModal{{ app.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0" style="background: #0b1120; border: 1.5px solid rgba(239, 68, 68, 0.35) !important; box-shadow: 0 25px 70px rgba(0,0,0,0.95); border-radius: 18px; overflow: hidden;">
+                <form method="POST" action="{{ url_for('employer.reject_candidate', app_id=app.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="modal-header border-bottom border-secondary border-opacity-25 px-4 py-3" style="background: rgba(15, 23, 42, 0.95);">
+                        <div class="d-flex align-items-center">
+                            <div class="cp-modal-icon-wrap" style="background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 0 16px rgba(239, 68, 68, 0.55);">
+                                <i class="bi bi-x-circle-fill text-white fs-5"></i>
+                            </div>
+                            <div>
+                                <h5 class="modal-title fw-bold text-white mb-1" style="font-size: 1.15rem;">Reject Application</h5>
+                                <div class="text-pearl small" style="color: #94a3b8; font-size: 0.82rem;">Candidate: <strong class="text-danger">{{ cand_name }}</strong> · Role: {{ job_title }}</div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body p-4">
+                        <div style="margin-bottom: 22px;">
+                            <label class="form-label small fw-bold text-white mb-2" style="display: flex; align-items: center; gap: 10px;">
+                                <i class="bi bi-list-check text-danger fs-6 flex-shrink-0"></i>
+                                <span>Select Standard Rejection Reason *</span>
+                            </label>
+                            <select name="reason" class="form-select" onchange="toggleCustomReason(this, 'customReasonWrap{{ app.id }}')" style="background: #0f172a; color: #fff; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 10px 14px; font-size: 0.88rem;">
+                                <option value="Position requirements mismatch">Position requirements mismatch</option>
+                                <option value="Qualifications gap">Qualifications gap</option>
+                                <option value="Location mismatch">Location mismatch</option>
+                                <option value="Position filled">Position filled</option>
+                                <option value="Other">Other (custom written reason)</option>
+                            </select>
+                        </div>
+
+                        <div class="d-none" id="customReasonWrap{{ app.id }}" style="margin-bottom: 22px;">
+                            <label class="form-label small fw-bold text-white mb-2" style="display: flex; align-items: center; gap: 10px;">
+                                <i class="bi bi-pencil-square text-danger fs-6 flex-shrink-0"></i>
+                                <span>Custom Rejection Reason</span>
+                            </label>
+                            <textarea name="custom_reason" class="form-control" rows="2" placeholder="Specify custom reason..." style="background: #0f172a; color: #fff; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 10px 14px; font-size: 0.88rem;"></textarea>
+                        </div>
+
+                        <div class="p-3 rounded-3" style="background: rgba(239, 68, 68, 0.08); border: 1.5px solid rgba(239, 68, 68, 0.3); border-radius: 12px; margin-top: 16px; margin-bottom: 6px; display: flex; align-items: flex-start; gap: 14px;">
+                            <i class="bi bi-envelope-exclamation-fill text-danger fs-5 flex-shrink-0" style="margin-top: 2px;"></i>
+                            <p class="text-pearl small mb-0" style="color: #cbd5e1; font-size: 0.85rem; line-height: 1.55;">
+                                An automated notification will be sent: <em>"Your application for the {{ job_title }} position has been rejected because: [Reason]."</em>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-top border-secondary border-opacity-25 px-4 py-3" style="background: rgba(15, 23, 42, 0.8);">
+                        <button type="button" class="btn btn-sm btn-cp-ghost px-4 py-2" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="cp-modal-btn-submit" style="background: linear-gradient(135deg, #dc2626, #ef4444); border-color: rgba(239, 68, 68, 0.85); color: #fff; box-shadow: 0 4px 16px rgba(239, 68, 68, 0.45);">
+                            <i class="bi bi-x-circle-fill fs-6"></i>
+                            <span>Confirm Rejection</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interview Outcome Modal (Spacious & Clean) -->
+    {% set interview = app.interviews.all()[-1] if (app.interviews and app.interviews.all()) else None %}
+    {% if interview %}
+    <div class="modal fade" id="interviewOutcomeModal{{ interview.id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 520px;">
+            <div class="modal-content border-0" style="background: #0b1120; border: 1.5px solid rgba(167, 139, 250, 0.35) !important; box-shadow: 0 25px 70px rgba(0,0,0,0.95); border-radius: 18px; overflow: hidden; max-height: calc(100vh - 2rem);">
+                <form method="POST" action="{{ url_for('employer.record_interview_outcome', interview_id=interview.id) }}" class="d-flex flex-column h-100 m-0">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="modal-header border-bottom border-secondary border-opacity-25 px-4 py-2.5 flex-shrink-0" style="background: rgba(15, 23, 42, 0.95);">
+                        <div class="d-flex align-items-center">
+                            <div class="cp-modal-icon-wrap" style="background: linear-gradient(135deg, #7c3aed, #a855f7); box-shadow: 0 0 16px rgba(168, 85, 247, 0.55);">
+                                <i class="bi bi-clipboard-check-fill text-white fs-5"></i>
+                            </div>
+                            <div>
+                                <h5 class="modal-title fw-bold text-white mb-0" style="font-size: 1.1rem;">Record Interview Outcome</h5>
+                                <div class="text-pearl small" style="color: #94a3b8; font-size: 0.8rem;">Candidate: <strong class="text-purple" style="color: #c084fc;">{{ cand_name }}</strong> · Role: {{ job_title }}</div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body px-4 py-3" style="overflow-y: auto;">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-white mb-1.5">Interview Outcome *</label>
+                            <select name="outcome" class="form-select" required onchange="toggleOutcomeSalary(this, 'salaryOfferedWrap{{ interview.id }}')" style="background: #0f172a; color: #fff; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 8px 12px; font-size: 0.88rem;">
+                                <option value="">Select outcome...</option>
+                                <option value="Passed">🎉 Passed — Hire (Job starting date will be communicated via email)</option>
+                                <option value="Failed">❌ Failed — Thank You For Coming (Not Selected)</option>
+                                <option value="Rescheduled">🔄 Rescheduled — We Will Reschedule Your Interview (Email sent soon)</option>
+                            </select>
+                        </div>
+
+                        {% set job_default_salary = (app.job.salary_range if app.job.salary_range else ('PKR ' ~ '{:,}'.format(app.job.salary_min) ~ ' - ' ~ '{:,}'.format(app.job.salary_max) ~ ' / month' if (app.job.salary_min and app.job.salary_max) else ('PKR ' ~ '{:,}'.format(app.job.salary_max) ~ ' / month' if app.job.salary_max else 'PKR 180,000 - 250,000 / month'))) %}
+                        <div class="mb-3" id="salaryOfferedWrap{{ interview.id }}" style="display: none;">
+                            <label class="form-label small fw-bold text-white mb-1.5 d-flex align-items-center justify-content-between">
+                                <span><i class="bi bi-cash-stack text-success me-1"></i>Offered Salary</span>
+                                <span class="text-secondary fw-normal" style="font-size: 0.74rem;">Pre-filled from job (Editable)</span>
+                            </label>
+                            <input type="text" name="salary_offered" class="form-control" value="{{ job_default_salary }}" placeholder="e.g. PKR 180,000 - 250,000 / month" style="background: #0f172a; color: #38bdf8; font-weight: 600; border: 1.5px solid rgba(56, 189, 248, 0.4); border-radius: 10px; padding: 8px 12px; font-size: 0.88rem;">
+                            <small class="text-secondary mt-1 d-block" style="font-size: 0.74rem; color: #94a3b8 !important;">This salary will be included in the candidate's offer dossier and hiring email.</small>
+                        </div>
+
+                        <div class="p-2 rounded-3 mb-2.5" style="background: rgba(124, 58, 237, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 10px;">
+                            <p class="text-pearl small mb-0" style="color: #cbd5e1; font-size: 0.78rem; line-height: 1.4;">
+                                <i class="bi bi-info-circle-fill text-purple me-1" style="color: #c084fc;"></i>
+                                Selecting an outcome automatically updates application status and dispatches the corresponding official notification.
+                            </p>
+                        </div>
+
+                        <div class="mb-1">
+                            <label class="form-label small fw-bold text-white mb-1.5">Interview Notes / Evaluation Remarks</label>
+                            <textarea name="notes" class="form-control" rows="2" placeholder="Add feedback, performance remarks, or reason..." style="background: #0f172a; color: #fff; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 8px 12px; font-size: 0.88rem;"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer border-top border-secondary border-opacity-25 px-4 py-2.5 flex-shrink-0" style="background: rgba(15, 23, 42, 0.85);">
+                        <button type="button" class="btn btn-sm btn-cp-ghost px-3 py-1.5" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="cp-modal-btn-submit py-1.5 px-3" style="background: linear-gradient(135deg, #7c3aed, #a855f7); border-color: rgba(168, 85, 247, 0.85); color: #fff; box-shadow: 0 4px 16px rgba(168, 85, 247, 0.45);">
+                            <i class="bi bi-clipboard-check-fill fs-6"></i>
+                            <span>Record Outcome</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endfor %}
+{# ── Candidate Profile Full Modal (With Glowing Futuristic Orbital Ring Loader) ── #}
+<div class="modal fade" id="employerCandidateModal" tabindex="-1" aria-labelledby="empModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0">
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-bold" id="empModalTitle">
+                    <i class="bi bi-shield-shaded text-info me-2"></i>Candidate Full Metrics &amp; Dossier
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" id="employerCandidateModalBody">
+                {# Initial High-End Glowing Orbital Loader #}
+                <div class="cp-glow-loader-wrap text-center py-5">
+                    <div class="cp-glow-loader-orbit mb-4">
+                        <div class="cp-glow-ring cp-ring-1"></div>
+                        <div class="cp-glow-ring cp-ring-2"></div>
+                        <div class="cp-glow-ring cp-ring-3"></div>
+                        <div class="cp-glow-core">
+                            <i class="bi bi-person-bounding-box text-white" style="font-size: 1.6rem;"></i>
+                        </div>
+                    </div>
+                    <h5 class="fw-bold text-white mb-2" style="letter-spacing: -0.3px;">
+                        <span style="background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                            Loading Candidate Dossier &amp; Verified Metrics...
+                        </span>
+                    </h5>
+                    <p class="text-muted small mb-0" style="max-width: 420px; margin: 0 auto;">
+                        Extracting verified credentials, education history, portfolio assets, and application details
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        const todayStr = new Date().toISOString().split('T')[0];
+        document.querySelectorAll('input[name="interview_date"]').forEach(input => {
+            input.setAttribute('min', todayStr);
+        });
+    } catch (e) {
+        console.error('Error setting interview date minimums:', e);
+    }
+});
+
+function openCandidateModal(candId, appId) {
+    try {
+        const modalEl = document.getElementById('employerCandidateModal');
+        const bodyEl = document.getElementById('employerCandidateModalBody');
+
+        if (!modalEl || !bodyEl) {
+            console.error('Modal elements not found');
+            return;
+        }
+
+        // Futuristic Glowing Loader HTML
+        bodyEl.innerHTML = `
+            <div class="cp-glow-loader-wrap text-center py-5">
+                <div class="cp-glow-loader-orbit mb-4">
+                    <div class="cp-glow-ring cp-ring-1"></div>
+                    <div class="cp-glow-ring cp-ring-2"></div>
+                    <div class="cp-glow-ring cp-ring-3"></div>
+                    <div class="cp-glow-core">
+                        <i class="bi bi-person-bounding-box text-white" style="font-size: 1.6rem;"></i>
+                    </div>
+                </div>
+                <h5 class="fw-bold text-white mb-2" style="letter-spacing: -0.3px;">
+                    <span style="background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        Loading Candidate Dossier &amp; Verified Metrics...
+                    </span>
+                </h5>
+                <p class="text-muted small mb-0" style="max-width: 420px; margin: 0 auto;">
+                    Extracting verified credentials, education history, portfolio assets, and application details
+                </p>
+            </div>
+        `;
+        const bsModal = new bootstrap.Modal(modalEl);
+        bsModal.show();
+
+        const endpoint = '/employer/candidate/' + candId + (appId ? '?application_id=' + appId : '');
+        fetch(endpoint, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(html => {
+            bodyEl.innerHTML = html;
+        })
+        .catch(err => {
+            console.error('Failed to load candidate profile:', err);
+            bodyEl.innerHTML = `
+                <div class="p-5 text-center">
+                    <i class="bi bi-exclamation-octagon display-4 text-danger d-block mb-3"></i>
+                    <h5 class="text-danger fw-bold mb-1">Error Loading Candidate Profile</h5>
+                    <p class="text-muted small mb-3">Unable to retrieve candidate dossier from server. Please try again.</p>
+                    <button type="button" class="btn btn-sm btn-cp-outline px-4 py-2" onclick="openCandidateModal(${candId}, ${appId || 0})">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Retry Loading
+                    </button>
+                </div>
+            `;
+        });
+    } catch (error) {
+        console.error('Error opening candidate modal:', error);
+    }
+}
+
+function insertMsgTemplate(textareaId, type, candName, jobTitle, compName, compEmail, compLoc) {
+    const el = document.getElementById(textareaId);
+    if (!el) return;
+    const email = compEmail || 'analysis.workforce@gmail.com';
+    const loc = compLoc || 'Suite #504, 5th Floor, Executive Tower, Dolmen Mall Clifton, Marine Drive, Karachi, Pakistan';
+    if (type === 'interview') {
+        el.value = `Dear ${candName},\n\n🎉 Congratulations! We are pleased to invite you for an in-person On-Site Interview for the ${jobTitle} position at ${compName}.\n\nOfficial Interview Details:\n• Position: ${jobTitle}\n• Date & Day: Monday (Upcoming)\n• Time: 11:30 AM PKT\n• Mode: On-Site In-Person Interview\n• Venue / Address: ${loc}\n\nPlease confirm your attendance by replying to this message. For any immediate queries or assistance, feel free to email our hiring desk at ${email}.`;
+    } else if (type === 'screening') {
+        el.value = `Dear ${candName},\n\nThank you for applying for the ${jobTitle} position at ${compName}. We have reviewed your verified credentials and would like to conduct an initial discussion regarding your background.\n\nPlease let us know your availability. For any queries, you can reach our talent team at ${email}.`;
+    } else {
+        el.value = `Dear ${candName},\n\nThank you for your interest in ${compName} regarding the ${jobTitle} role. We are actively reviewing your application and will share the next steps shortly. Feel free to contact us at ${email}.`;
+    }
+}
+
+function insertEmailTemplate(subId, bodyId, type, candName, jobTitle, compName, compEmail, compLoc) {
+    const subEl = document.getElementById(subId);
+    const bodyEl = document.getElementById(bodyId);
+    if (!bodyEl) return;
+    const email = compEmail || 'analysis.workforce@gmail.com';
+    const loc = compLoc || 'Suite #504, 5th Floor, Executive Tower, Dolmen Mall Clifton, Marine Drive, Karachi, Pakistan';
+    if (type === 'interview') {
+        if (subEl) subEl.value = `🎉 Official On-Site Interview Invitation — ${jobTitle} at ${compName}`;
+        bodyEl.value = `Dear ${candName},\n\n🎉 Congratulations! Thank you for applying for the ${jobTitle} position at ${compName}. We were impressed by your verified background and are pleased to invite you for an in-person On-Site Interview.\n\nInterview Schedule & Venue:\n• Position: ${jobTitle}\n• Proposed Date & Day: Monday\n• Time: 11:30 AM PKT\n• Mode: On-Site In-Person Interview\n• Venue / Address: ${loc}\n\nPlease reply to this email or confirm through your CareerPearls portal if this time works for you. For any directions or queries, contact us at ${email}.`;
+    } else {
+        if (subEl) subEl.value = `Application Update — ${jobTitle} at ${compName}`;
+        bodyEl.value = `Dear ${candName},\n\nThank you for applying to ${compName} for the ${jobTitle} position. We wanted to inform you that your application is under active consideration by our talent team.\n\nWe will reach out with next steps soon. For any questions, contact us at ${email}.`;
+    }
+}
+
+function toggleCustomReason(selectEl, customWrapId) {
+    try {
+        const wrap = document.getElementById(customWrapId);
+        if (wrap) {
+            if (selectEl.value === 'Other') {
+                wrap.classList.remove('d-none');
+            } else {
+                wrap.classList.add('d-none');
+            }
+        }
+    } catch (error) {
+        console.error('Error toggling custom reason:', error);
+    }
+}
+
+function handleInterviewModeChange(selectEl, locInputId, defaultLoc) {
+    const locEl = document.getElementById(locInputId);
+    if (!locEl) return;
+    const mode = selectEl.value;
+    if (mode === 'On-Site') {
+        locEl.value = defaultLoc || 'Suite #504, 5th Floor, Executive Tower, Dolmen Mall Clifton, Marine Drive, Karachi, Pakistan';
+        locEl.placeholder = 'Office Address or Location Details';
+    } else if (mode === 'Google Meet') {
+        locEl.value = 'https://meet.google.com/cp-interview-' + Math.random().toString(36).substring(2, 7);
+        locEl.placeholder = 'Google Meet URL';
+    } else if (mode === 'Zoom Meeting') {
+        locEl.value = 'https://zoom.us/j/' + Math.floor(100000000 + Math.random() * 900000000) + ' (Passcode: CP2026)';
+        locEl.placeholder = 'Zoom Meeting URL & Passcode';
+    } else if (mode === 'Phone Call') {
+        locEl.value = 'Direct Phone Call from Recruiter';
+        locEl.placeholder = 'Phone Call Details';
+    }
+}
+
+function insertScheduleTemplate(roundId, modeId, locId, msgId, type, candName, jobTitle, compName, compLoc, compEmail) {
+    const roundEl = document.getElementById(roundId);
+    const modeEl = document.getElementById(modeId);
+    const locEl = document.getElementById(locId);
+    const msgEl = document.getElementById(msgId);
+
+    const email = compEmail || 'analysis.workforce@gmail.com';
+    const loc = compLoc || 'Suite #504, 5th Floor, Executive Tower, Dolmen Mall Clifton, Marine Drive, Karachi, Pakistan';
+
+    if (type === 'onsite') {
+        if (roundEl) roundEl.value = 'In-Person On-Site Interview';
+        if (modeEl) modeEl.value = 'On-Site';
+        if (locEl) locEl.value = loc;
+        if (msgEl) msgEl.value = `Dear ${candName},\n\n🎉 Congratulations! We are pleased to invite you for an in-person On-Site Interview for the ${jobTitle} position at ${compName}.\n\nPlease bring an updated copy of your portfolio and CV. Feel free to contact our hiring desk at ${email} for any queries or directions.`;
+    } else if (type === 'technical') {
+        if (roundEl) roundEl.value = 'Technical Assessment & Architecture Round';
+        if (modeEl) modeEl.value = 'Google Meet';
+        if (locEl) locEl.value = 'https://meet.google.com/cp-tech-' + Math.random().toString(36).substring(2, 7);
+        if (msgEl) msgEl.value = `Dear ${candName},\n\nWe have reviewed your technical background and would like to invite you for an online Technical Coding & Architecture Assessment for the ${jobTitle} position at ${compName}.\n\nPlease ensure you have a stable internet connection and access to your development environment. Feel free to contact us at ${email}.`;
+    } else {
+        if (roundEl) roundEl.value = 'Initial Screening & Culture Discussion';
+        if (modeEl) modeEl.value = 'Google Meet';
+        if (locEl) locEl.value = 'https://meet.google.com/cp-screen-' + Math.random().toString(36).substring(2, 7);
+        if (msgEl) msgEl.value = `Dear ${candName},\n\nThank you for applying to ${compName} for the ${jobTitle} role. We would like to schedule an initial discussion to explore your experience and career goals.\n\nLooking forward to speaking with you. For questions, contact us at ${email}.`;
+    }
+}
+
+function openScheduleModalFromDossier(appId) {
+    try {
+        const candModalEl = document.getElementById('candidateModal');
+        if (candModalEl) {
+            const candModal = bootstrap.Modal.getInstance(candModalEl);
+            if (candModal) candModal.hide();
+        }
+        setTimeout(() => {
+            const schedModalEl = document.getElementById('scheduleModal' + appId);
+            if (schedModalEl) {
+                const schedModal = new bootstrap.Modal(schedModalEl);
+                schedModal.show();
+            }
+        }, 350);
+    } catch (e) {
+        console.error('Error opening schedule modal from dossier:', e);
+    }
+}
+
+function openMessageModalFromDossier(appId) {
+    try {
+        const candModalEl = document.getElementById('candidateModal');
+        if (candModalEl) {
+            const candModal = bootstrap.Modal.getInstance(candModalEl);
+            if (candModal) candModal.hide();
+        }
+        setTimeout(() => {
+            const msgModalEl = document.getElementById('messageModal' + appId);
+            if (msgModalEl) {
+                const msgModal = new bootstrap.Modal(msgModalEl);
+                msgModal.show();
+            }
+        }, 350);
+    } catch (e) {
+        console.error('Error opening message modal from dossier:', e);
+    }
+}
+
+function openRejectModalFromDossier(appId) {
+    try {
+        const candModalEl = document.getElementById('candidateModal');
+        if (candModalEl) {
+            const candModal = bootstrap.Modal.getInstance(candModalEl);
+            if (candModal) candModal.hide();
+        }
+        setTimeout(() => {
+            const rejModalEl = document.getElementById('rejectModal' + appId);
+            if (rejModalEl) {
+                const rejModal = new bootstrap.Modal(rejModalEl);
+                rejModal.show();
+            }
+        }, 350);
+    } catch (e) {
+        console.error('Error opening reject modal from dossier:', e);
+    }
+}
+
+function toggleOutcomeSalary(selectEl, targetId) {
+    const target = document.getElementById(targetId);
+    if (target) {
+        if (selectEl.value === 'Passed') {
+            target.style.display = 'block';
+        } else {
+            target.style.display = 'none';
+        }
+    }
+}
+
+window.toggleOutcomeSalary = toggleOutcomeSalary;
+window.handleInterviewModeChange = handleInterviewModeChange;
+window.insertScheduleTemplate = insertScheduleTemplate;
+window.openScheduleModalFromDossier = openScheduleModalFromDossier;
+window.openMessageModalFromDossier = openMessageModalFromDossier;
+window.openRejectModalFromDossier = openRejectModalFromDossier;
+window.toggleCustomReason = toggleCustomReason;
+window.openCandidateModal = openCandidateModal;
+window.insertMsgTemplate = insertMsgTemplate;
+window.insertEmailTemplate = insertEmailTemplate;
+</script>
+{% endblock %}

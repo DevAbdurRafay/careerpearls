@@ -1,0 +1,334 @@
+{% extends "admin/admin_base.html" %}
+{% from '_loading_states.html' import loading_spinner %}
+
+{% block admin_content %}
+<div class="admin-stat-grid">
+    <div class="admin-stat-card">
+        <div class="admin-stat-icon blue"><i class="bi bi-people"></i></div>
+        <div><div class="admin-stat-value" data-stat="total_users">{{ total_users }}</div><div class="admin-stat-label">Total Users</div></div>
+    </div>
+    <div class="admin-stat-card">
+        <div class="admin-stat-icon purple"><i class="bi bi-person"></i></div>
+        <div><div class="admin-stat-value" data-stat="candidates">{{ candidates }}</div><div class="admin-stat-label">Candidates</div></div>
+    </div>
+    <div class="admin-stat-card">
+        <div class="admin-stat-icon green"><i class="bi bi-building"></i></div>
+        <div><div class="admin-stat-value" data-stat="employers">{{ employers }}</div><div class="admin-stat-label">Employers</div></div>
+    </div>
+    <div class="admin-stat-card">
+        <div class="admin-stat-icon blue"><i class="bi bi-briefcase"></i></div>
+        <div><div class="admin-stat-value" data-stat="active_jobs">{{ active_jobs }}</div><div class="admin-stat-label">Active Jobs</div></div>
+    </div>
+    <div class="admin-stat-card">
+        <div class="admin-stat-icon orange"><i class="bi bi-clock-history"></i></div>
+        <div><div class="admin-stat-value">{{ pending_jobs }}</div><div class="admin-stat-label">Pending Jobs</div></div>
+    </div>
+    <div class="admin-stat-card">
+        <div class="admin-stat-icon red"><i class="bi bi-flag"></i></div>
+        <div><div class="admin-stat-value" data-stat="pending_complaints">{{ pending_complaints }}</div><div class="admin-stat-label">Pending Complaints</div></div>
+    </div>
+</div>
+
+<!-- Employer Verification Section -->
+<div class="admin-card mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="admin-card-title mb-0">Employer Verification Status</div>
+        <a href="{{ url_for('admin.manage_employers') }}" class="btn btn-sm btn-outline-info admin-btn-sm">Manage Employers</a>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="p-3 rounded" style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3);">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="badge bg-warning text-dark fs-6" data-stat="pending_employers">{{ pending_employers }}</div>
+                    <span class="text-white">Pending Verification</span>
+                </div>
+                <small class="text-muted">Employers awaiting admin approval</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 rounded" style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3);">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="badge bg-success fs-6" data-stat="verified_employers">{{ verified_employers }}</div>
+                    <span class="text-white">Verified Employers</span>
+                </div>
+                <small class="text-muted">Can post jobs immediately</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 rounded" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="badge bg-danger fs-6" data-stat="rejected_employers">{{ rejected_employers }}</div>
+                    <span class="text-white">Rejected Employers</span>
+                </div>
+                <small class="text-muted">Verification failed</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Complaints & Platform Safety Status Section -->
+<div class="admin-card mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="admin-card-title mb-0 d-flex align-items-center gap-2">
+            <i class="bi bi-shield-exclamation text-danger"></i>
+            <span>Complaints &amp; Safety Desk Status</span>
+        </div>
+        <a href="{{ url_for('admin.manage_complaints') }}" class="btn btn-sm btn-outline-info admin-btn-sm">Manage Complaints Desk</a>
+    </div>
+    <div class="row g-3">
+        <div class="col-md-3 col-sm-6">
+            <a href="{{ url_for('admin.manage_complaints', status='Pending') }}" class="text-decoration-none d-block p-3 rounded" style="background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="badge bg-warning text-dark fs-6">{{ pending_complaints }}</div>
+                    <span class="text-white fw-semibold">Pending Review</span>
+                </div>
+                <small class="text-muted d-block mt-1">Awaiting investigation</small>
+            </a>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <a href="{{ url_for('admin.manage_complaints', status='In Review') }}" class="text-decoration-none d-block p-3 rounded" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="badge bg-info text-dark fs-6">{{ in_review_complaints }}</div>
+                    <span class="text-white fw-semibold">In Review</span>
+                </div>
+                <small class="text-muted d-block mt-1">Currently being handled</small>
+            </a>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <a href="{{ url_for('admin.manage_complaints', status='Resolved') }}" class="text-decoration-none d-block p-3 rounded" style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="badge bg-success fs-6">{{ resolved_complaints }}</div>
+                    <span class="text-white fw-semibold">Resolved</span>
+                </div>
+                <small class="text-muted d-block mt-1">Successfully settled</small>
+            </a>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <a href="{{ url_for('admin.manage_complaints', status='Rejected') }}" class="text-decoration-none d-block p-3 rounded" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="badge bg-danger fs-6">{{ rejected_complaints }}</div>
+                    <span class="text-white fw-semibold">Rejected / Dismissed</span>
+                </div>
+                <small class="text-muted d-block mt-1">Invalid reports</small>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Current Logged-In Employer Section -->
+{% if recent_employer %}
+<div class="admin-card mb-4">
+    <div class="admin-card-title mb-3">Recent Employer Registration</div>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="p-3 rounded" style="background: rgba(79, 172, 254, 0.1); border: 1px solid rgba(79, 172, 254, 0.3);">
+                <small class="text-muted d-block mb-1">Employer Name</small>
+                <strong class="text-white">{{ recent_employer.name }}</strong>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="p-3 rounded" style="background: rgba(79, 172, 254, 0.1); border: 1px solid rgba(79, 172, 254, 0.3);">
+                <small class="text-muted d-block mb-1">Email</small>
+                <strong class="text-white">{{ recent_employer.email }}</strong>
+            </div>
+        </div>
+        {% if recent_employer.recruiter and recent_employer.recruiter.company %}
+        <div class="col-md-6">
+            <div class="p-3 rounded" style="background: rgba(79, 172, 254, 0.1); border: 1px solid rgba(79, 172, 254, 0.3);">
+                <small class="text-muted d-block mb-1">Company Name</small>
+                <strong class="text-white">{{ recent_employer.recruiter.company.name }}</strong>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="p-3 rounded" style="background: rgba(79, 172, 254, 0.1); border: 1px solid rgba(79, 172, 254, 0.3);">
+                <small class="text-muted d-block mb-1">Company Size</small>
+                <strong class="text-white" data-company-size>{{ recent_employer.recruiter.company.company_size or 'Not specified' }}</strong>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="p-3 rounded" style="background: rgba(79, 172, 254, 0.1); border: 1px solid rgba(79, 172, 254, 0.3);">
+                <small class="text-muted d-block mb-1">Company Logo</small>
+                <div data-employer-logo>
+                {% if recent_employer.recruiter.company.logo_path %}
+                <img src="{{ url_for('static', filename='uploads/' + recent_employer.recruiter.company.logo_path) }}" alt="Company Logo" style="max-width: 60px; max-height: 60px; border-radius: 8px;">
+                {% else %}
+                <span class="text-muted small">No logo uploaded</span>
+                {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="p-3 rounded" style="background: rgba(79, 172, 254, 0.1); border: 1px solid rgba(79, 172, 254, 0.3);">
+                <small class="text-muted d-block mb-1">Registration Date</small>
+                <strong class="text-white">{{ recent_employer.created_at.strftime('%b %d, %Y') if recent_employer.created_at else 'N/A' }}</strong>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="p-3 rounded" style="background: rgba(79, 172, 254, 0.1); border: 1px solid rgba(79, 172, 254, 0.3);">
+                <small class="text-muted d-block mb-1">Verification Status</small>
+                <span class="badge {% if recent_employer.recruiter.company.verification_status == 'Approved' %}bg-success{% elif recent_employer.recruiter.company.verification_status == 'Rejected' %}bg-danger{% elif recent_employer.recruiter.company.verification_status == 'Pending Verification' or recent_employer.recruiter.company.verification_status == 'pending' or recent_employer.recruiter.company.verification_status is none %}bg-warning text-dark{% else %}bg-info{% endif %}" data-verification-status>
+                    {{ recent_employer.recruiter.company.verification_status or 'Pending Verification' }}
+                </span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<div class="admin-chart-row">
+    <div class="admin-card admin-chart-card">
+        <div class="admin-card-title">New Signups (30 Days)</div>
+        <canvas id="signupChart" height="200" data-labels="{{ signup_labels | tojson }}" data-counts="{{ signup_counts | tojson }}"></canvas>
+    </div>
+    <div class="admin-card admin-chart-card">
+        <div class="admin-card-title">Applications per Week</div>
+        <canvas id="appChart" height="200" data-labels="{{ app_labels | tojson }}" data-counts="{{ app_counts | tojson }}"></canvas>
+    </div>
+    <div class="admin-card admin-chart-card">
+        <div class="admin-card-title">Jobs by Status</div>
+        <canvas id="jobStatusChart" height="200" data-labels="{{ job_status_labels | tojson }}" data-counts="{{ job_status_counts | tojson }}"></canvas>
+    </div>
+</div>
+
+<div class="admin-card">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="admin-card-title mb-0">Recent Activity</div>
+        <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-sm btn-outline-info admin-btn-sm">View All</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table admin-table table-dark table-hover">
+            <thead><tr><th>Action</th><th>User</th><th>Entity</th><th>Time</th></tr></thead>
+            <tbody>
+            {% for log in recent_logs %}
+            <tr>
+                <td>{{ log.action }}</td>
+                <td>{{ log.user.name if log.user else '—' }}</td>
+                <td>{{ log.entity_type or '—' }}{% if log.entity_id %} #{{ log.entity_id }}{% endif %}</td>
+                <td class="text-muted"><span class="cp-local-time" data-utc="{{ log.created_at.isoformat() }}Z">{{ log.created_at.strftime('%b %d, %I:%M %p') }}</span></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-muted">No activity yet.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const chartOpts = { plugins: { legend: { labels: { color: '#9ca3af', font: { size: 11 } } } }, scales: { x: { ticks: { color: '#9ca3af', font: { size: 10 } } }, y: { ticks: { color: '#9ca3af', font: { size: 10 } } } } };
+
+// Initialize charts with data from data attributes
+const signupChart = document.getElementById('signupChart');
+if (signupChart) {
+    const signupLabels = JSON.parse(signupChart.dataset.labels || '[]');
+    const signupCounts = JSON.parse(signupChart.dataset.counts || '[]');
+    new Chart(signupChart, {
+        type: 'line',
+        data: { labels: signupLabels, datasets: [{ label: 'Signups', data: signupCounts, borderColor: '#4facfe', backgroundColor: 'rgba(79,172,254,0.1)', fill: true, tension: 0.3 }] },
+        options: chartOpts
+    });
+}
+
+const appChart = document.getElementById('appChart');
+if (appChart) {
+    const appLabels = JSON.parse(appChart.dataset.labels || '[]');
+    const appCounts = JSON.parse(appChart.dataset.counts || '[]');
+    new Chart(appChart, {
+        type: 'bar',
+        data: { labels: appLabels, datasets: [{ label: 'Applications', data: appCounts, backgroundColor: '#7b2ff7' }] },
+        options: { ...chartOpts, plugins: { legend: { display: false } } }
+    });
+}
+
+const jobStatusChart = document.getElementById('jobStatusChart');
+if (jobStatusChart) {
+    const jobStatusLabels = JSON.parse(jobStatusChart.dataset.labels || '[]');
+    const jobStatusCounts = JSON.parse(jobStatusChart.dataset.counts || '[]');
+    new Chart(jobStatusChart, {
+        type: 'doughnut',
+        data: { labels: jobStatusLabels, datasets: [{ data: jobStatusCounts, backgroundColor: ['#22c55e','#fbbf24','#ef4444','#9ca3af','#a855f7','#4facfe'] }] },
+        options: { plugins: { legend: { position: 'bottom', labels: { color: '#9ca3af', font: { size: 10 } } } } }
+    });
+}
+
+// Real-time data syncing for admin dashboard
+function fetchDashboardData() {
+    fetch('/api/admin/dashboard-data')
+        .then(response => response.json())
+        .then(data => {
+            if (data.recent_employer) {
+                updateRecentEmployerSection(data.recent_employer);
+            }
+            if (data.stats) {
+                updateStats(data.stats);
+            }
+        })
+        .catch(error => console.error('Error fetching dashboard data:', error));
+}
+
+function updateRecentEmployerSection(employer) {
+    const employerSection = document.querySelector('.admin-card.mb-4');
+    if (!employerSection) return;
+    
+    // Update company logo
+    const logoContainer = employerSection.querySelector('[data-employer-logo]');
+    if (logoContainer && employer.company.logo_path) {
+        logoContainer.innerHTML = `<img src="/static/uploads/${employer.company.logo_path}" alt="Company Logo" style="max-width: 60px; max-height: 60px; border-radius: 8px;">`;
+    }
+    
+    // Update company size
+    const companySize = employerSection.querySelector('[data-company-size]');
+    if (companySize) {
+        companySize.textContent = employer.company.company_size || 'Not specified';
+    }
+    
+    // Update verification status
+    const verificationStatus = employerSection.querySelector('[data-verification-status]');
+    if (verificationStatus) {
+        const status = employer.company.verification_status || 'Pending Verification';
+        verificationStatus.textContent = status;
+        
+        let badgeClass = 'bg-info';
+        if (status === 'Approved') {
+            badgeClass = 'bg-success';
+        } else if (status === 'Rejected') {
+            badgeClass = 'bg-danger';
+        } else if (status === 'Pending Verification' || status === 'pending' || status === null) {
+            badgeClass = 'bg-warning text-dark';
+        }
+        
+        verificationStatus.className = `badge ${badgeClass}`;
+    }
+}
+
+function updateStats(stats) {
+    // Update statistic cards
+    const statElements = {
+        'total_users': stats.total_users,
+        'candidates': stats.candidates,
+        'employers': stats.employers,
+        'active_jobs': stats.active_jobs,
+        'pending_complaints': stats.pending_complaints
+    };
+    
+    for (const [key, value] of Object.entries(statElements)) {
+        const element = document.querySelector(`[data-stat="${key}"]`);
+        if (element) {
+            element.textContent = value;
+        }
+    }
+}
+
+// Fetch dashboard data every 15 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    // Initial fetch
+    fetchDashboardData();
+    
+    // Periodic updates
+    setInterval(fetchDashboardData, 15000);
+});
+</script>
+{% endblock %}

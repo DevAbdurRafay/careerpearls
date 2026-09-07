@@ -1,0 +1,71 @@
+﻿{% extends "email/_base.html" %}
+{% block email_title %}Complaint Update: {{ ticket_id }} is {{ new_status }} — CareerPearls{% endblock %}
+{% block email_preheader %}Update regarding your complaint ticket {{ ticket_id }}. Status has been updated to {{ new_status }}.{% endblock %}
+{% block email_heading %}Complaint Status Update{% endblock %}
+
+{% block email_body %}
+<p style="margin:0 0 16px;color:#e8eaf0;font-size:15px;">Dear <strong>{{ complainant_name or 'User' }}</strong>,</p>
+
+<div style="background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(34, 197, 94, 0.08)); border: 1.5px solid rgba(56, 189, 248, 0.35); border-radius: 12px; padding: 16px; margin-bottom: 22px;">
+    <p style="margin:0;color:#38bdf8;font-size:15px;font-weight:700;">
+        📋 Ticket Status Updated
+    </p>
+    <p style="margin:6px 0 0;color:#e2e8f0;font-size:14px;line-height:1.5;">
+        Your reported issue (Ticket ID: <strong>{{ ticket_id }}</strong>) has been processed by our Trust &amp; Safety administration team.
+    </p>
+</div>
+
+<h4 style="margin:0 0 12px;color:#38bdf8;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">
+    Resolution Summary
+</h4>
+
+<table width="100%" cellpadding="12" cellspacing="0" style="background:#0f172a;border:1px solid rgba(56, 189, 248, 0.25);border-radius:12px;margin-bottom:20px;font-size:14px;color:#e8eaf0;">
+    <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <td width="32%" style="color:#38bdf8;font-weight:600;">Ticket ID:</td>
+        <td style="color:#ffffff;font-weight:700;font-size:15px;">{{ ticket_id }}</td>
+    </tr>
+    <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <td style="color:#38bdf8;font-weight:600;">New Status:</td>
+        <td>
+            {% if new_status == 'Resolved' %}
+            <span style="display:inline-block;background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.4);border-radius:6px;padding:2px 10px;font-size:13px;font-weight:700;">Resolved</span>
+            {% elif new_status == 'In Review' or new_status == 'Under Review' %}
+            <span style="display:inline-block;background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.4);border-radius:6px;padding:2px 10px;font-size:13px;font-weight:700;">{{ new_status }}</span>
+            {% elif new_status == 'Dismissed' or new_status == 'Rejected' %}
+            <span style="display:inline-block;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.4);border-radius:6px;padding:2px 10px;font-size:13px;font-weight:700;">{{ new_status }}</span>
+            {% else %}
+            <span style="display:inline-block;background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:2px 10px;font-size:13px;font-weight:700;">{{ new_status }}</span>
+            {% endif %}
+        </td>
+    </tr>
+    {% if category %}
+    <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <td style="color:#38bdf8;font-weight:600;">Category:</td>
+        <td style="color:#cbd5e1;">{{ category }}</td>
+    </tr>
+    {% endif %}
+</table>
+
+{% if admin_note %}
+<!-- Admin Resolution Note -->
+<h4 style="margin:0 0 10px;color:#4ade80;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">
+    Admin Resolution Remarks
+</h4>
+<div style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(74, 222, 128, 0.3); border-left: 4px solid #4ade80; border-radius: 8px; padding: 14px 16px; margin-bottom: 22px;">
+    <p style="margin:0;color:#f1f5f9;font-size:14px;line-height:1.6;white-space:pre-wrap;">{{ admin_note }}</p>
+</div>
+{% endif %}
+
+{% if description %}
+<!-- Original Complaint Description -->
+<h4 style="margin:0 0 10px;color:#94a3b8;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">
+    Original Report Description
+</h4>
+<div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 12px 14px; margin-bottom: 22px;">
+    <p style="margin:0;color:#cbd5e1;font-size:13px;line-height:1.5;white-space:pre-wrap;">{{ description }}</p>
+</div>
+{% endif %}
+
+<p style="margin:0 0 4px;color:#94a3b8;font-size:13px;">Best regards,</p>
+<p style="margin:0;color:#ffffff;font-size:15px;font-weight:700;">CareerPearls Trust &amp; Safety Team</p>
+{% endblock %}

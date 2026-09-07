@@ -1,0 +1,64 @@
+{% extends "email/_base.html" %}
+{% block email_title %}Job Offer: {{ job_title }} — {{ company_name }}{% endblock %}
+{% block email_preheader %}Congratulations {{ candidate_name }}, {{ company_name }} has extended an employment offer for the {{ job_title }} position.{% endblock %}
+{% block email_heading %}Job Offer &amp; Next Steps{% endblock %}
+
+{% block email_body %}
+<p style="margin:0 0 16px;color:#e8eaf0;font-size:15px;">Dear <strong>{{ candidate_name }}</strong>,</p>
+
+<div style="background: linear-gradient(135deg, rgba(34, 197, 94, 0.16), rgba(16, 185, 129, 0.08)); border: 1.5px solid rgba(34, 197, 94, 0.45); border-radius: 12px; padding: 18px 20px; margin-bottom: 22px;">
+    <p style="margin:0;color:#4ade80;font-size:16px;font-weight:700;">
+        🎉 Congratulations on your selection!
+    </p>
+    <p style="margin:8px 0 0;color:#e2e8f0;font-size:14px;line-height:1.55;">
+        Following your interview evaluation, <strong>{{ company_name }}</strong> is delighted to officially extend an offer for the <strong>{{ job_title }}</strong> role.
+    </p>
+</div>
+
+<h4 style="margin:0 0 12px;color:#38bdf8;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">
+    Position Details
+</h4>
+
+<table width="100%" cellpadding="12" cellspacing="0" style="background:#0f172a;border:1px solid rgba(34, 197, 94, 0.3);border-radius:12px;margin-bottom:24px;font-size:14px;color:#e8eaf0;">
+    <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <td width="34%" style="color:#38bdf8;font-weight:600;">Position:</td>
+        <td style="color:#ffffff;font-weight:700;font-size:15px;">{{ job_title }}</td>
+    </tr>
+    <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <td style="color:#38bdf8;font-weight:600;">Hiring Company:</td>
+        <td style="color:#ffffff;">{{ company_name }}</td>
+    </tr>
+    <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <td style="color:#38bdf8;font-weight:600;">Status:</td>
+        <td><span style="display:inline-block;background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.4);border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700;">Hired / Selected</span></td>
+    </tr>
+    {% if salary_offered %}
+    <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <td style="color:#38bdf8;font-weight:600;">Offered Salary:</td>
+        <td style="color:#4ade80;font-weight:700;font-size:15px;">{{ salary_offered }}</td>
+    </tr>
+    {% endif %}
+    <tr>
+        <td style="color:#38bdf8;font-weight:600;">Next Communication:</td>
+        <td style="color:#fbbf24;font-weight:600;line-height:1.5;">Official job starting date &amp; onboarding contract will be sent to your email within a few days.</td>
+    </tr>
+</table>
+
+<div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+    <h5 style="margin:0 0 6px;color:#38bdf8;font-size:14px;font-weight:700;">📌 What Happens Next?</h5>
+    <p style="margin:0;color:#cbd5e1;font-size:13px;line-height:1.55;">
+        1. Our HR &amp; onboarding team will contact you with your formal employment contract.<br>
+        2. Your exact <strong>Job Starting Date</strong>, orientation timings, and workspace credentials will be confirmed.<br>
+        3. Please check your inbox regularly for subsequent onboarding instructions.
+    </p>
+</div>
+
+<div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px 16px; margin-bottom: 22px;">
+    <p style="margin:0;color:#94a3b8;font-size:13px;">
+        ✉️ Questions regarding your offer? Contact the recruitment team at: <a href="mailto:{{ company_email }}" style="color:#38bdf8;font-weight:600;text-decoration:none;">{{ company_email or 'support@careerpearls.com' }}</a>
+    </p>
+</div>
+
+<p style="margin:0 0 4px;color:#94a3b8;font-size:13px;">Warm welcome to the team,</p>
+<p style="margin:0;color:#ffffff;font-size:15px;font-weight:700;">{{ company_name }} Hiring Team</p>
+{% endblock %}

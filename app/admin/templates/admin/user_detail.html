@@ -1,0 +1,299 @@
+{% extends "admin/admin_base.html" %}
+{% block admin_content %}
+<div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{{ url_for('admin.manage_users') }}" class="btn btn-sm btn-outline-secondary admin-btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Back to Users
+    </a>
+    <h2 class="admin-page-title mb-0" style="font-size:1rem;">User Profile &mdash; {{ user.name }}</h2>
+</div>
+
+<div class="row g-3">
+    <!-- LEFT: Account Info -->
+    <div class="col-lg-4">
+        <div class="admin-card">
+            <div class="text-center mb-3">
+                {% set cand = user.candidate %}
+                {% set rec = user.recruiter %}
+                {% if cand and cand.profile_image %}
+                <img src="{{ url_for('uploaded_file', filename=cand.profile_image) }}" alt="Photo"
+                     style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid rgba(79,172,254,0.3);">
+                {% else %}
+                <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#4facfe,#7b2ff7);display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:2rem;font-weight:700;color:#fff;">
+                    {{ user.name[0]|upper if user.name else '?' }}
+                </div>
+                {% endif %}
+                <div class="mt-2 fw-bold" style="font-size:1rem;">{{ user.name }}</div>
+                <div class="text-muted small">{{ user.email }}</div>
+                <div class="mt-2 d-flex justify-content-center gap-2 flex-wrap">
+                    <span class="pill pill-active">{{ user.role|capitalize }}</span>
+                    {% if user.is_active %}
+                    <span class="pill pill-active">Active</span>
+                    {% else %}
+                    <span class="pill pill-inactive">Inactive</span>
+                    {% endif %}
+                </div>
+            </div>
+            <hr style="border-color:var(--admin-border);">
+            <div class="small">
+                <div class="d-flex justify-content-between py-1"><span class="text-muted">ID</span><span>#{{ user.id }}</span></div>
+                <div class="d-flex justify-content-between py-1"><span class="text-muted">Auth</span><span>{{ user.oauth_provider or 'Email/Password' }}</span></div>
+                <div class="d-flex justify-content-between py-1"><span class="text-muted">Registered</span><span>{{ user.created_at.strftime('%b %d, %Y') }}</span></div>
+                <div class="d-flex justify-content-between py-1"><span class="text-muted">Approval</span><span class="pill pill-{% if user.approval_status == 'approved' %}active{% elif user.approval_status == 'pending' %}pending{% elif user.approval_status == 'rejected' %}rejected{% elif user.approval_status == 'deactivated' %}closed{% else %}active{% endif %}">{{ user.approval_status|capitalize }}</span></div>
+            </div>
+            {% if not user.is_admin() %}
+            <hr style="border-color:var(--admin-border);">
+            <div>
+                <form method="POST" action="{{ url_for('admin.toggle_user', user_id=user.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm w-100 py-2 fw-semibold d-inline-flex align-items-center justify-content-center gap-2" 
+                            style="{% if user.is_active %}background: rgba(245, 158, 11, 0.14); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35);{% else %}background: rgba(16, 185, 129, 0.14); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35);{% endif %} border-radius: 10px; font-size: 0.86rem;">
+                        <i class="bi bi-{{ 'pause-circle' if user.is_active else 'play-circle' }}"></i>
+                        <span>{{ 'Deactivate Account' if user.is_active else 'Activate Account' }}</span>
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- RIGHT: Profile Details -->
+    <div class="col-lg-8">
+        {% if user.candidate %}
+        {% set c = user.candidate %}
+        <!-- Candidate Profile -->
+        <div class="admin-card mb-3">
+            <div class="admin-card-title d-flex align-items-center gap-2">
+                <i class="bi bi-person-badge text-accent"></i> Candidate Profile
+                {% if c.is_location_verified %}
+                <span class="badge bg-success ms-auto"><i class="bi bi-patch-check-fill me-1"></i>Location Verified</span>
+                {% else %}
+                <span class="badge bg-warning text-dark ms-auto">Location Unverified</span>
+                {% endif %}
+            </div>
+            <div class="row g-2 small">
+                <div class="col-sm-6"><span class="text-muted">Full Name</span><div class="fw-500 mt-1">{{ c.full_name or '—' }}</div></div>
+                <div class="col-sm-6"><span class="text-muted">Phone</span><div class="mt-1">{{ c.phone or '—' }}</div></div>
+                <div class="col-sm-6"><span class="text-muted">Location</span><div class="mt-1">{{ c.location or '—' }}</div></div>
+                <div class="col-sm-6"><span class="text-muted">Availability</span><div class="mt-1">{{ c.availability or '—' }}</div></div>
+                <div class="col-sm-6"><span class="text-muted">Work Mode</span><div class="mt-1">{{ c.work_mode or '—' }}</div></div>
+                <div class="col-sm-6"><span class="text-muted">Career Status</span><div class="mt-1">{{ c.career_status|capitalize if c.career_status else '—' }}</div></div>
+                <div class="col-12"><span class="text-muted">Headline</span><div class="mt-1">{{ c.headline or '—' }}</div></div>
+                {% if c.bio %}
+                <div class="col-12"><span class="text-muted">Bio</span><div class="mt-1" style="white-space:pre-wrap;max-height:120px;overflow-y:auto;">{{ c.bio }}</div></div>
+                {% endif %}
+            </div>
+            {% if c.github_url or c.linkedin_url or c.kaggle_url or c.portfolio_url %}
+            <div class="mt-3 d-flex flex-wrap gap-2">
+                {% if c.linkedin_url %}<a href="{{ c.linkedin_url }}" target="_blank" class="btn btn-sm btn-outline-info admin-btn-sm"><i class="bi bi-linkedin me-1"></i>LinkedIn</a>{% endif %}
+                {% if c.github_url %}<a href="{{ c.github_url }}" target="_blank" class="btn btn-sm btn-outline-secondary admin-btn-sm"><i class="bi bi-github me-1"></i>GitHub</a>{% endif %}
+                {% if c.kaggle_url %}<a href="{{ c.kaggle_url }}" target="_blank" class="btn btn-sm btn-outline-secondary admin-btn-sm"><i class="bi bi-box me-1"></i>Kaggle</a>{% endif %}
+                {% if c.portfolio_url %}<a href="{{ c.portfolio_url }}" target="_blank" class="btn btn-sm btn-outline-secondary admin-btn-sm"><i class="bi bi-globe me-1"></i>Portfolio</a>{% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Skills -->
+        {% set skills = c.skills.all() %}
+        {% if skills %}
+        <div class="admin-card mb-3">
+            <div class="admin-card-title"><i class="bi bi-lightning text-accent me-2"></i>Skills ({{ skills|length }})</div>
+            <div class="d-flex flex-wrap gap-2">
+                {% for sk in skills %}
+                <span class="badge" style="background:rgba(79,172,254,0.12);color:#4facfe;border:1px solid rgba(79,172,254,0.2);font-size:0.75rem;padding:0.3rem 0.6rem;border-radius:8px;">
+                    {{ sk.skill_name }}{% if sk.proficiency_level %} <span style="opacity:0.7;">— {{ sk.proficiency_level }}</span>{% endif %}
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Education -->
+        {% set edus = c.education.order_by('id').all() %}
+        {% if edus %}
+        <div class="admin-card mb-3">
+            <div class="admin-card-title"><i class="bi bi-mortarboard text-accent me-2"></i>Education ({{ edus|length }})</div>
+            {% for edu in edus %}
+            <div class="small {% if not loop.last %}border-bottom pb-2 mb-2{% endif %}" style="border-color:var(--admin-border)!important;">
+                <div class="fw-600">{{ edu.degree or '—' }} {% if edu.field_of_study %}<span class="text-muted">in {{ edu.field_of_study }}</span>{% endif %}</div>
+                <div>{{ edu.institution or '—' }}</div>
+                <div class="text-muted">{{ edu.start_year or '' }}{% if edu.end_year %} – {{ edu.end_year }}{% elif edu.is_current %} – Present{% endif %}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Experience -->
+        {% set exps = c.experience.order_by('id').all() %}
+        {% if exps %}
+        <div class="admin-card mb-3">
+            <div class="admin-card-title"><i class="bi bi-briefcase text-accent me-2"></i>Experience ({{ exps|length }})</div>
+            {% for exp in exps %}
+            <div class="small {% if not loop.last %}border-bottom pb-2 mb-2{% endif %}" style="border-color:var(--admin-border)!important;">
+                <div class="fw-600">{{ exp.title or '—' }}</div>
+                <div>{{ exp.company_name or '—' }}</div>
+                <div class="text-muted">{{ exp.start_date or '' }}{% if exp.end_date %} – {{ exp.end_date }}{% else %} – Present{% endif %}</div>
+                {% if exp.description %}<div class="mt-1" style="color:#9ca3af;white-space:pre-wrap;">{{ exp.description[:300] }}{% if exp.description|length > 300 %}…{% endif %}</div>{% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Applications -->
+        {% set apps = applications %}
+        {% if apps %}
+        <div class="admin-card mb-3">
+            <div class="admin-card-title"><i class="bi bi-file-text text-accent me-2"></i>Recent Applications ({{ applications|length }} total)</div>
+            <div class="table-responsive">
+                <table class="table admin-table table-dark table-hover mb-0">
+                    <thead><tr><th>Job Title</th><th>Company</th><th>Status</th><th>Applied</th></tr></thead>
+                    <tbody>
+                    {% for app in apps %}
+                    <tr>
+                        <td>{{ app.job.title if app.job else '—' }}</td>
+                        <td class="text-muted">{{ app.job.company.name if app.job and app.job.company else '—' }}</td>
+                        <td><span class="pill pill-{{ 'active' if app.status == 'Selected' else 'pending' if app.status in ('Applied','Under Review') else 'flagged' if app.status == 'Rejected' else 'closed' }}">{{ app.status }}</span></td>
+                        <td class="text-muted">{{ app.applied_at.strftime('%b %d, %Y') if app.applied_at else '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Location Verification Action -->
+        <div class="admin-card">
+            <div class="admin-card-title"><i class="bi bi-geo-alt text-accent me-2"></i>Location Verification</div>
+            <p class="small text-muted mb-3">Current status: <strong>{{ 'Verified ✓' if c.is_location_verified else 'Not Verified' }}</strong>
+            {% if c.location_verified_at %} on {{ c.location_verified_at.strftime('%b %d, %Y') }}{% endif %}</p>
+            <form method="POST" action="{{ url_for('admin.verify_candidate_location', candidate_id=c.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                {% if c.is_location_verified %}
+                <input type="hidden" name="action" value="unverify">
+                <button type="submit" class="btn btn-sm btn-outline-warning admin-btn-sm">Remove Location Verification</button>
+                {% else %}
+                <input type="hidden" name="action" value="verify">
+                <button type="submit" class="btn btn-sm btn-success admin-btn-sm">Verify Location</button>
+                {% endif %}
+            </form>
+        </div>
+
+        {% elif user.recruiter %}
+        {% set r = user.recruiter %}
+        {% set co = r.company %}
+        <!-- Employer / Recruiter Profile -->
+        <div class="admin-card mb-3">
+            <div class="admin-card-title d-flex align-items-center gap-2">
+                <i class="bi bi-building text-accent"></i> Employer Profile
+                {% if co and co.is_verified %}
+                <span class="badge bg-success ms-auto"><i class="bi bi-patch-check-fill me-1"></i>Verified Company</span>
+                {% elif co %}
+                <span class="badge bg-warning text-dark ms-auto">{{ co.verification_status }}</span>
+                {% endif %}
+            </div>
+            <div class="row g-2 small">
+                <div class="col-sm-6"><span class="text-muted">Recruiter Name</span><div class="mt-1 fw-500">{{ r.full_name or user.name }}</div></div>
+                <div class="col-sm-6"><span class="text-muted">Title / Position</span><div class="mt-1">{{ r.title or '—' }}</div></div>
+                {% if co %}
+                <div class="col-sm-6"><span class="text-muted">Company</span><div class="mt-1 fw-600">{{ co.name }}</div></div>
+                <div class="col-sm-6"><span class="text-muted">Industry</span><div class="mt-1">{{ co.industry or '—' }}</div></div>
+                <div class="col-sm-6"><span class="text-muted">Company Size</span><div class="mt-1">{{ co.size or '—' }}</div></div>
+                <div class="col-sm-6"><span class="text-muted">Location</span><div class="mt-1">{{ co.location or '—' }}</div></div>
+                <div class="col-sm-6"><span class="text-muted">Official Email</span><div class="mt-1">{{ co.official_email or '—' }}</div></div>
+                <div class="col-sm-6"><span class="text-muted">Domain</span><div class="mt-1">{{ co.domain or co.website or '—' }}</div></div>
+                <div class="col-sm-6"><span class="text-muted">NTN ID</span><div class="mt-1">{{ co.ntn_id or '—' }}</div></div>
+                <div class="col-sm-6"><span class="text-muted">Phone</span><div class="mt-1">{{ co.phone or '—' }}</div></div>
+                {% if co.description %}
+                <div class="col-12"><span class="text-muted">About Company</span><div class="mt-1" style="white-space:pre-wrap;max-height:100px;overflow-y:auto;">{{ co.description }}</div></div>
+                {% endif %}
+                {% if co.website %}
+                <div class="col-12 mt-2">
+                    <a href="{{ co.website }}" target="_blank" class="btn btn-sm btn-outline-info admin-btn-sm"><i class="bi bi-globe me-1"></i>Visit Website</a>
+                </div>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        {% if co %}
+        <!-- Company jobs -->
+        {% set jobs = co.jobs.order_by('created_at').limit(10).all() if co.jobs else [] %}
+        {% if jobs %}
+        <div class="admin-card mb-3">
+            <div class="admin-card-title"><i class="bi bi-briefcase text-accent me-2"></i>Posted Jobs ({{ co.jobs.count() }} total)</div>
+            <div class="table-responsive">
+                <table class="table admin-table table-dark table-hover mb-0">
+                    <thead><tr><th>Title</th><th>Status</th><th>Approval</th><th>Posted</th></tr></thead>
+                    <tbody>
+                    {% for job in jobs %}
+                    <tr>
+                        <td>{{ job.title }}</td>
+                        <td><span class="pill pill-{{ 'active' if job.status == 'active' else 'closed' if job.status == 'closed' else 'flagged' }}">{{ job.status }}</span></td>
+                        <td><span class="pill pill-{{ 'active' if job.approval_status == 'approved' else 'pending' if job.approval_status == 'pending' else 'flagged' }}">{{ job.approval_status }}</span></td>
+                        <td class="text-muted">{{ job.created_at.strftime('%b %d, %Y') if job.created_at else '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Employer verification actions -->
+        <div class="admin-card">
+            <div class="admin-card-title"><i class="bi bi-building-check text-accent me-2"></i>Employer Verification Actions</div>
+            <p class="small text-muted mb-3">Current status: <strong>{{ co.verification_status }}</strong>
+            {% if co.rejection_reason %}<br><span class="text-danger">Reason: {{ co.rejection_reason }}</span>{% endif %}</p>
+            <div class="d-flex flex-wrap gap-2">
+                <form method="POST" action="{{ url_for('admin.verify_employer', company_id=co.id, action='approve') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm btn-success admin-btn-sm"><i class="bi bi-check-circle me-1"></i>Approve</button>
+                </form>
+                <form method="POST" action="{{ url_for('admin.verify_employer', company_id=co.id, action='flag') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm btn-outline-danger admin-btn-sm"><i class="bi bi-flag me-1"></i>Flag</button>
+                </form>
+                <button class="btn btn-sm btn-outline-warning admin-btn-sm" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                    <i class="bi bi-x-circle me-1"></i>Reject
+                </button>
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- Admin or no profile -->
+        <div class="admin-card">
+            <div class="admin-card-title"><i class="bi bi-shield text-accent me-2"></i>Administrator Account</div>
+            <p class="text-muted small">This is an admin account. No candidate or employer profile is associated.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+
+
+<!-- Reject Modal for Employer -->
+{% if user.recruiter and user.recruiter.company %}
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-header border-secondary">
+                <h6 class="modal-title">Reject Employer</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('admin.verify_employer', company_id=user.recruiter.company.id, action='reject') }}">
+                <div class="modal-body">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <label class="form-label small">Rejection Reason</label>
+                    <textarea name="reason" class="form-control form-control-sm bg-dark border-secondary text-white" rows="3" placeholder="Reason for rejection..."></textarea>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-sm btn-warning">Confirm Reject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

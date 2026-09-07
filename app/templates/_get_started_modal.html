@@ -1,0 +1,115 @@
+<!-- Get Started / Role Selection Modal -->
+<div class="modal fade" id="getStartedModal" tabindex="-1" aria-labelledby="getStartedModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0" style="background: #0b1120; border: 1.5px solid rgba(56, 189, 248, 0.35) !important; box-shadow: 0 25px 70px rgba(0,0,0,0.95); border-radius: 20px; overflow: hidden;">
+            
+            {# Modal Header #}
+            <div class="modal-header border-bottom border-secondary border-opacity-25 px-4 py-3.5" style="background: rgba(15, 23, 42, 0.95);">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width: 44px; height: 44px; min-width: 44px; border-radius: 12px; background: linear-gradient(135deg, #0284c7, #2563eb); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 16px rgba(37, 99, 235, 0.55);">
+                        <i class="bi bi-stars text-white fs-5"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold text-white mb-0.5" id="getStartedModalLabel" style="font-size: 1.2rem; letter-spacing: -0.2px;">Get Started on CareerPearls</h5>
+                        <p class="text-pearl small mb-0" style="color: #94a3b8; font-size: 0.84rem;">Select your account type to proceed to registration or login</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            {# Modal Body: Dual Role Cards #}
+            <div class="modal-body p-4 p-md-5" style="background: radial-gradient(circle at 50% 0%, rgba(30, 41, 59, 0.5), #0b1120 75%);">
+                <div class="row g-4">
+                    
+                    {# 1. Candidate Card #}
+                    <div class="col-md-6">
+                        <div class="h-100 p-4 rounded-4 d-flex flex-column justify-content-between position-relative" 
+                             style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid rgba(56, 189, 248, 0.35); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45); transition: all 0.3s ease;">
+                            <div>
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <div style="width: 48px; height: 48px; border-radius: 14px; background: rgba(56, 189, 248, 0.15); border: 1.5px solid rgba(56, 189, 248, 0.4); display: flex; align-items: center; justify-content: center; color: #38bdf8; font-size: 1.4rem;">
+                                        <i class="bi bi-person-badge-fill"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold text-white mb-0" style="font-size: 1.12rem;">I'm a Candidate</h5>
+                                        <span class="badge bg-primary-subtle text-info border border-info border-opacity-25" style="font-size: 0.72rem;">Job Seeker</span>
+                                    </div>
+                                </div>
+                                <p class="text-pearl small mb-3" style="color: #cbd5e1; font-size: 0.86rem; line-height: 1.55;">
+                                    Discover verified jobs, submit 1-click applications, verify credentials, and track your interview invitations.
+                                </p>
+                                <ul class="list-unstyled small text-pearl mb-4" style="color: #94a3b8; font-size: 0.82rem; line-height: 1.8;">
+                                    <li><i class="bi bi-check-circle-fill text-info me-2"></i>Explore 1,000+ top jobs in Pakistan</li>
+                                    <li><i class="bi bi-check-circle-fill text-info me-2"></i>Direct chat with hiring managers</li>
+                                    <li><i class="bi bi-check-circle-fill text-info me-2"></i>Real-time application &amp; interview status</li>
+                                </ul>
+                            </div>
+                            <div class="d-flex flex-column gap-2">
+                                <a href="{{ url_for('auth.register', role='candidate') }}" class="btn btn-sm py-2.5 fw-bold text-white text-center d-flex align-items-center justify-content-center gap-2" 
+                                   style="background: linear-gradient(135deg, #0284c7, #2563eb); border: none; border-radius: 10px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45); font-size: 0.9rem;">
+                                    <i class="bi bi-person-plus-fill"></i>
+                                    <span>Register as Candidate</span>
+                                </a>
+                                <a href="{{ url_for('auth.login', role='candidate') }}" class="btn btn-sm py-2 fw-semibold text-center d-flex align-items-center justify-content-center gap-2" 
+                                   style="background: rgba(56, 189, 248, 0.1); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; font-size: 0.84rem;">
+                                    <i class="bi bi-box-arrow-in-right"></i>
+                                    <span>Candidate Sign In</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# 2. Employer Card #}
+                    <div class="col-md-6">
+                        <div class="h-100 p-4 rounded-4 d-flex flex-column justify-content-between position-relative" 
+                             style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid rgba(168, 85, 247, 0.35); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45); transition: all 0.3s ease;">
+                            <div>
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <div style="width: 48px; height: 48px; border-radius: 14px; background: rgba(168, 85, 247, 0.15); border: 1.5px solid rgba(168, 85, 247, 0.4); display: flex; align-items: center; justify-content: center; color: #c084fc; font-size: 1.4rem;">
+                                        <i class="bi bi-building-fill-check"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="fw-bold text-white mb-0" style="font-size: 1.12rem;">I'm an Employer</h5>
+                                        <span class="badge px-2.5 py-0.5" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); font-size: 0.72rem;">Hiring &amp; HR Team</span>
+                                    </div>
+                                </div>
+                                <p class="text-pearl small mb-3" style="color: #cbd5e1; font-size: 0.86rem; line-height: 1.55;">
+                                    Post job openings, review verified candidate credentials, shortlist talent, and dispatch official interview invitations.
+                                </p>
+                                <ul class="list-unstyled small text-pearl mb-4" style="color: #94a3b8; font-size: 0.82rem; line-height: 1.8;">
+                                    <li><i class="bi bi-check-circle-fill text-purple me-2" style="color: #c084fc;"></i>Post and manage verified job vacancies</li>
+                                    <li><i class="bi bi-check-circle-fill text-purple me-2" style="color: #c084fc;"></i>Review dossiers, resumes &amp; certs</li>
+                                    <li><i class="bi bi-check-circle-fill text-purple me-2" style="color: #c084fc;"></i>Schedule On-Site &amp; Video Interviews</li>
+                                </ul>
+                            </div>
+                            <div class="d-flex flex-column gap-2">
+                                <a href="{{ url_for('auth.register', role='employer') }}" class="btn btn-sm py-2.5 fw-bold text-white text-center d-flex align-items-center justify-content-center gap-2" 
+                                   style="background: linear-gradient(135deg, #7c3aed, #9333ea); border: none; border-radius: 10px; box-shadow: 0 4px 14px rgba(147, 51, 234, 0.45); font-size: 0.9rem;">
+                                    <i class="bi bi-plus-circle-fill"></i>
+                                    <span>Register as Employer</span>
+                                </a>
+                                <a href="{{ url_for('auth.login', role='employer') }}" class="btn btn-sm py-2 fw-semibold text-center d-flex align-items-center justify-content-center gap-2" 
+                                   style="background: rgba(168, 85, 247, 0.1); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 10px; font-size: 0.84rem;">
+                                    <i class="bi bi-box-arrow-in-right"></i>
+                                    <span>Employer Sign In</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            {# Modal Footer #}
+            <div class="modal-footer border-top border-secondary border-opacity-25 px-4 py-3 d-flex align-items-center justify-content-between flex-wrap gap-2" style="background: rgba(15, 23, 42, 0.9);">
+                <div class="small text-pearl" style="color: #94a3b8; font-size: 0.84rem;">
+                    Already have an account? <a href="{{ url_for('auth.login') }}" class="text-info fw-semibold text-decoration-none">Sign In directly</a>
+                </div>
+                <div class="small text-muted" style="font-size: 0.78rem;">
+                    CareerPearls Platform
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

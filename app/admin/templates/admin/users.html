@@ -1,0 +1,218 @@
+{% extends "admin/admin_base.html" %}
+
+{% block extra_head %}
+<style>
+.cp-user-action-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    padding: 7px 16px !important;
+    border-radius: 10px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    white-space: nowrap !important;
+}
+.cp-user-profile {
+    background: rgba(56, 189, 248, 0.12) !important;
+    color: #38bdf8 !important;
+    border: 1px solid rgba(56, 189, 248, 0.35) !important;
+}
+.cp-user-profile:hover {
+    background: rgba(56, 189, 248, 0.25) !important;
+    border-color: rgba(56, 189, 248, 0.8) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
+}
+.cp-user-deactivate {
+    background: rgba(245, 158, 11, 0.12) !important;
+    color: #fbbf24 !important;
+    border: 1px solid rgba(245, 158, 11, 0.35) !important;
+}
+.cp-user-deactivate:hover {
+    background: rgba(245, 158, 11, 0.25) !important;
+    border-color: rgba(245, 158, 11, 0.8) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+}
+.cp-user-activate {
+    background: rgba(16, 185, 129, 0.12) !important;
+    color: #34d399 !important;
+    border: 1px solid rgba(16, 185, 129, 0.35) !important;
+}
+.cp-user-activate:hover {
+    background: rgba(16, 185, 129, 0.25) !important;
+    border-color: rgba(16, 185, 129, 0.8) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="container-fluid py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 p-4 rounded-4" 
+         style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.8)); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);">
+        <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center justify-content-center flex-shrink-0" 
+                 style="width: 54px; height: 54px; border-radius: 16px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.25)); border: 1px solid rgba(139, 92, 246, 0.4); box-shadow: 0 0 20px rgba(139, 92, 246, 0.25);">
+                <i class="bi bi-people fs-3" style="color: #c084fc;"></i>
+            </div>
+            <div>
+                <h3 class="fw-bold mb-1 text-white" style="letter-spacing: -0.5px;">User Directory</h3>
+                <p class="text-pearl small mb-0" style="color: #94a3b8;">Manage candidates, verified employers, and system administrators.</p>
+            </div>
+        </div>
+        <div>
+            <span class="badge px-3 py-2 rounded-pill d-inline-flex align-items-center gap-2" style="background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); font-size: 0.82rem; font-weight: 600;">
+                <i class="bi bi-person-check-fill"></i><span>{{ users.total }} Total Accounts</span>
+            </span>
+        </div>
+    </div>
+
+    <div class="rounded-4 mb-4 p-3" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 14px rgba(0,0,0,0.2);">
+        <form method="GET" class="row g-2 align-items-center">
+            <div class="col-md-7">
+                <div class="input-group">
+                    <span class="input-group-text border-0 ps-3 pe-2" style="background: rgba(11, 16, 27, 0.95); color: #94a3b8; border-radius: 10px 0 0 10px;">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" name="q" class="form-control border-0 py-2.5" value="{{ search }}" style="background: rgba(11, 16, 27, 0.95); color: #fff; font-size: 0.9rem; border-radius: 0 10px 10px 0;" placeholder="Search by name, email, or role...">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="role" class="form-select border-0 py-2.5" style="background: rgba(11, 16, 27, 0.95); color: #fff; font-size: 0.9rem; border-radius: 10px;">
+                    <option value="">All Roles</option>
+                    {% for r in ['candidate','employer','admin'] %}
+                    <option value="{{ r }}" {% if role_filter == r %}selected{% endif %}>{{ r|capitalize }}s</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-sm w-100 py-2 fw-semibold d-inline-flex align-items-center justify-content-center gap-2" style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; border: none; border-radius: 10px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);">
+                    <i class="bi bi-filter"></i><span>Filter</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div class="rounded-4 overflow-hidden mb-4" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="border-collapse: separate; border-spacing: 0; min-width: 950px;">
+                <thead style="background: rgba(11, 16, 27, 0.98);">
+                    <tr>
+                        <th class="text-white fw-bold py-3 px-4" style="font-size: 0.88rem; min-width: 240px;">User</th>
+                        <th class="text-white fw-bold py-3 px-3" style="font-size: 0.88rem; min-width: 220px;">Email</th>
+                        <th class="text-white fw-bold py-3 px-3" style="font-size: 0.88rem; min-width: 140px;">Role</th>
+                        <th class="text-white fw-bold py-3 px-3" style="font-size: 0.88rem; min-width: 130px;">Status</th>
+                        <th class="text-white fw-bold py-3 px-3" style="font-size: 0.88rem; min-width: 130px;">Registered</th>
+                        <th class="text-white fw-bold py-3 px-4 text-end" style="font-size: 0.88rem; min-width: 230px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for user in users.items %}
+                <tr style="background: {% if loop.index is odd %}rgba(15,23,42,0.6){% else %}rgba(11,16,27,0.4){% endif %}; border-bottom: 1px solid rgba(255,255,255,0.05); transition: all 0.2s ease;">
+                    <td class="px-4 py-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0" 
+                                 style="width: 42px; height: 42px; border-radius: 12px; background: {% if user.is_admin() %}linear-gradient(135deg, #ef4444, #b91c1c){% elif user.is_employer() %}linear-gradient(135deg, #0284c7, #2563eb){% else %}linear-gradient(135deg, #8b5cf6, #6d28d9){% endif %}; font-size: 0.95rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+                                {{ user.name[0]|upper if user.name else 'U' }}
+                            </div>
+                            <div>
+                                <div class="fw-bold text-white fs-6 mb-1">{{ user.name }}</div>
+                                {% if user.is_employer() and user.recruiter and user.recruiter.company %}
+                                <div class="small" style="color: #94a3b8; font-size: 0.8rem;">{{ user.recruiter.company.name }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td class="py-3 px-3 text-pearl small">{{ user.email }}</td>
+                    <td class="py-3 px-3">
+                        {% if user.is_admin() %}
+                        <span class="badge px-3 py-1.5 rounded-pill d-inline-flex align-items-center gap-1" style="background: rgba(239, 68, 68, 0.14); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); font-size: 0.78rem; font-weight: 600;">
+                            <i class="bi bi-shield-lock-fill"></i><span>Admin</span>
+                        </span>
+                        {% elif user.is_employer() %}
+                        <span class="badge px-3 py-1.5 rounded-pill d-inline-flex align-items-center gap-1" style="background: rgba(59, 130, 246, 0.14); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.35); font-size: 0.78rem; font-weight: 600;">
+                            <i class="bi bi-building"></i><span>Employer</span>
+                        </span>
+                        {% else %}
+                        <span class="badge px-3 py-1.5 rounded-pill d-inline-flex align-items-center gap-1" style="background: rgba(168, 85, 247, 0.14); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.35); font-size: 0.78rem; font-weight: 600;">
+                            <i class="bi bi-person"></i><span>Candidate</span>
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="py-3 px-3">
+                        {% if user.is_active %}
+                        <span class="badge px-3 py-1.5 rounded-pill d-inline-flex align-items-center gap-1" style="background: rgba(16, 185, 129, 0.14); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); font-size: 0.78rem; font-weight: 600;">
+                            <i class="bi bi-check-circle-fill"></i><span>Active</span>
+                        </span>
+                        {% else %}
+                        <span class="badge px-3 py-1.5 rounded-pill d-inline-flex align-items-center gap-1" style="background: rgba(148, 163, 184, 0.14); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.35); font-size: 0.78rem; font-weight: 500;">
+                            <i class="bi bi-pause-circle"></i><span>Inactive</span>
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="py-3 px-3 text-pearl small">{{ user.created_at.strftime('%b %d, %Y') }}</td>
+                    <td class="text-end px-4 py-3" style="white-space: nowrap;">
+                        <div class="d-inline-flex align-items-center gap-2">
+                            {# Profile button #}
+                            <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" 
+                               class="btn btn-sm cp-user-action-btn cp-user-profile"
+                               title="View Full Profile">
+                                <i class="bi bi-eye"></i><span>Profile</span>
+                            </a>
+                            
+                            {# Deactivate / Activate button (Proper shape & spacing, NO delete button) #}
+                            {% if not user.is_admin() %}
+                            <form method="POST" action="{{ url_for('admin.toggle_user', user_id=user.id) }}" class="d-inline m-0 p-0">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                {% if user.is_active %}
+                                <button type="submit" class="btn btn-sm cp-user-action-btn cp-user-deactivate" title="Deactivate User">
+                                    <i class="bi bi-pause-circle"></i><span>Deactivate</span>
+                                </button>
+                                {% else %}
+                                <button type="submit" class="btn btn-sm cp-user-action-btn cp-user-activate" title="Activate User">
+                                    <i class="bi bi-play-circle"></i><span>Activate</span>
+                                </button>
+                                {% endif %}
+                            </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if users.pages > 1 %}
+        <div class="p-3 border-top border-secondary">
+            <nav>
+                <ul class="pagination pagination-sm mb-0 justify-content-center">
+                    {% for p in users.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if p %}
+                        <li class="page-item {% if p == users.page %}active{% endif %}">
+                            <a class="page-link border-secondary"
+                               style="background: rgba(15,23,42,0.8); color: #9ca3af;"
+                               href="{{ url_for('admin.manage_users', page=p, role=role_filter, q=search) }}">
+                                {{ p }}
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link border-secondary">…</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

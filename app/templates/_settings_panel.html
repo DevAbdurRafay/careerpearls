@@ -1,0 +1,332 @@
+{% if not (current_user is defined and current_user and current_user.is_authenticated and current_user.is_admin()) and not (request.endpoint and 'admin' in request.endpoint) and not (request.path and request.path.startswith('/admin')) %}
+<!-- Docked Edge-Tab Theme Toggle (Global Shared Component) -->
+<style>
+/* ==========================================================================
+   Docked Edge-Tab Theme Toggle
+   ========================================================================== */
+.cp-theme-edge-tab {
+    position: fixed;
+    right: 0 !important;
+    top: 50%;
+    transform: translateY(-50%) translateX(calc(100% - 30px));
+    z-index: 99999 !important;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-right: none;
+    border-radius: 16px 0 0 16px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.38), 0 0 14px rgba(56, 189, 248, 0.15);
+    transition: transform 380ms cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 300ms ease,
+                background-color 300ms ease,
+                border-color 300ms ease;
+}
+
+:root[data-theme="light"] .cp-theme-edge-tab {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-right: none;
+    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.12), 0 0 14px rgba(2, 132, 199, 0.18);
+}
+
+.cp-theme-edge-tab:hover,
+.cp-theme-edge-tab.is-expanded {
+    transform: translateY(-50%) translateX(0);
+    box-shadow: -8px 0 28px rgba(0, 0, 0, 0.5), 0 0 22px rgba(56, 189, 248, 0.35);
+}
+
+:root[data-theme="light"] .cp-theme-edge-tab:hover,
+:root[data-theme="light"] .cp-theme-edge-tab.is-expanded {
+    box-shadow: -8px 0 28px rgba(0, 0, 0, 0.16), 0 0 22px rgba(2, 132, 199, 0.3);
+}
+
+.cp-theme-edge-tab.is-dragging {
+    transition: box-shadow 300ms ease, background-color 300ms ease !important;
+    cursor: grabbing !important;
+}
+
+.cp-edge-tab-inner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px 10px 8px;
+    min-height: 48px;
+}
+
+.cp-edge-tab-grip {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    opacity: 0.5;
+    flex-shrink: 0;
+    transition: opacity 250ms ease;
+}
+
+.cp-theme-edge-tab:hover .cp-edge-tab-grip,
+.cp-theme-edge-tab.is-expanded .cp-edge-tab-grip,
+.cp-theme-edge-tab.is-dragging .cp-edge-tab-grip {
+    opacity: 0.9;
+}
+
+.cp-grip-bar {
+    display: block;
+    width: 3px;
+    height: 6px;
+    background: #94a3b8;
+    border-radius: 2px;
+}
+
+:root[data-theme="light"] .cp-grip-bar {
+    background: #64748b;
+}
+
+.cp-edge-tab-icon-wrap {
+    position: relative;
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.cp-edge-icon {
+    position: absolute;
+    font-size: 1.25rem;
+    line-height: 1;
+    transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 400ms ease,
+                color 300ms ease;
+}
+
+/* Dark Mode Icon States */
+.cp-icon-moon {
+    color: #38bdf8;
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.cp-icon-sun {
+    color: #f59e0b;
+    opacity: 0;
+    transform: translateY(16px) scale(0.6);
+}
+
+/* Light Mode Icon States */
+:root[data-theme="light"] .cp-icon-moon {
+    opacity: 0;
+    transform: translateY(16px) scale(0.6);
+}
+
+:root[data-theme="light"] .cp-icon-sun {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.cp-edge-tab-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: #e2e8f0;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateX(4px);
+    transition: opacity 300ms ease, transform 300ms ease, color 300ms ease;
+}
+
+:root[data-theme="light"] .cp-edge-tab-label {
+    color: #0f172a;
+}
+
+.cp-theme-edge-tab:hover .cp-edge-tab-label,
+.cp-theme-edge-tab.is-expanded .cp-edge-tab-label {
+    opacity: 1;
+    transform: translateX(0);
+}
+</style>
+
+<div class="cp-theme-edge-tab" id="cpEdgeThemeTab" role="button" tabindex="0" aria-label="Toggle Light and Dark Theme" title="Toggle Theme (Light / Dark) • Drag to move vertically">
+    <div class="cp-edge-tab-inner">
+        <!-- Grip Indicator (Tactile visual hint on docked edge) -->
+        <div class="cp-edge-tab-grip" aria-hidden="true">
+            <span class="cp-grip-bar"></span>
+            <span class="cp-grip-bar"></span>
+            <span class="cp-grip-bar"></span>
+        </div>
+        
+        <!-- Animated Sun / Moon Icon Container -->
+        <div class="cp-edge-tab-icon-wrap" id="cpEdgeIconWrap" aria-hidden="true">
+            <i class="bi bi-moon-stars-fill cp-edge-icon cp-icon-moon" id="cpEdgeMoonIcon"></i>
+            <i class="bi bi-sun-fill cp-edge-icon cp-icon-sun" id="cpEdgeSunIcon"></i>
+        </div>
+
+        <!-- Text Label (expands on hover/active) -->
+        <span class="cp-edge-tab-label" id="cpEdgeTabLabel">Dark</span>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const edgeTab = document.getElementById('cpEdgeThemeTab');
+    const labelEl = document.getElementById('cpEdgeTabLabel');
+    if (!edgeTab) return;
+
+    let isTouch = false;
+    window.addEventListener('touchstart', function() {
+        isTouch = true;
+    }, { passive: true, once: true });
+
+    // 1. Initial theme load & vertical position restore
+    let currentTheme = '{{ current_user.theme_mode if (current_user.is_authenticated and current_user.theme_mode) else "" }}';
+    if (!currentTheme) {
+        currentTheme = localStorage.getItem('cp-theme-mode') || 'light';
+    }
+    applyTheme(currentTheme);
+
+    const savedTop = localStorage.getItem('cp-edge-tab-top');
+    if (savedTop) {
+        const parsedTop = parseFloat(savedTop);
+        if (!isNaN(parsedTop) && parsedTop >= 40 && parsedTop <= (window.innerHeight - 40)) {
+            edgeTab.style.top = parsedTop + 'px';
+        }
+    }
+
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('cp-theme-mode', theme);
+        if (labelEl) {
+            labelEl.textContent = theme === 'dark' ? 'Dark Mode' : 'Light Mode';
+        }
+    }
+
+    function toggleTheme() {
+        const activeTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        const targetTheme = activeTheme === 'dark' ? 'light' : 'dark';
+        applyTheme(targetTheme);
+        savePreferences(targetTheme);
+    }
+
+    // 2. Strict Vertical Dragging Along Right Border
+    let isPointerDown = false;
+    let hasMoved = false;
+    let startY = 0;
+    let initialTop = 0;
+    let justDragged = false;
+
+    edgeTab.addEventListener('pointerdown', function(e) {
+        // Only primary button
+        if (e.button !== 0 && e.pointerType === 'mouse') return;
+        
+        isPointerDown = true;
+        hasMoved = false;
+        startY = e.clientY;
+        
+        const rect = edgeTab.getBoundingClientRect();
+        initialTop = rect.top + (rect.height / 2);
+        
+        edgeTab.setPointerCapture(e.pointerId);
+    });
+
+    edgeTab.addEventListener('pointermove', function(e) {
+        if (!isPointerDown) return;
+        
+        const dy = e.clientY - startY;
+        if (!hasMoved && Math.abs(dy) > 5) {
+            hasMoved = true;
+            edgeTab.classList.add('is-dragging');
+        }
+        
+        if (hasMoved) {
+            // Strict vertical-only movement, clamped inside viewport
+            const minTop = 45;
+            const maxTop = window.innerHeight - 45;
+            const newTop = Math.max(minTop, Math.min(maxTop, initialTop + dy));
+            
+            edgeTab.style.top = newTop + 'px';
+            edgeTab.style.right = '0px'; // Enforce docked to right border
+        }
+    });
+
+    function finishDrag(e) {
+        if (!isPointerDown) return;
+        isPointerDown = false;
+        
+        try {
+            edgeTab.releasePointerCapture(e.pointerId);
+        } catch (err) {}
+
+        if (hasMoved) {
+            edgeTab.classList.remove('is-dragging');
+            justDragged = true;
+            setTimeout(function() {
+                justDragged = false;
+            }, 150);
+            
+            // Snap firmly and save vertical position
+            const rect = edgeTab.getBoundingClientRect();
+            const currentCenter = rect.top + (rect.height / 2);
+            const clampedCenter = Math.max(45, Math.min(window.innerHeight - 45, currentCenter));
+            
+            edgeTab.style.top = clampedCenter + 'px';
+            edgeTab.style.right = '0px';
+            localStorage.setItem('cp-edge-tab-top', clampedCenter);
+        }
+    }
+
+    edgeTab.addEventListener('pointerup', finishDrag);
+    edgeTab.addEventListener('pointercancel', finishDrag);
+
+    // 3. Click / Tap Handling
+    edgeTab.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (justDragged || hasMoved) return;
+        
+        if (isTouch) {
+            // Touch devices: single tap expands, second tap toggles theme
+            if (!edgeTab.classList.contains('is-expanded')) {
+                edgeTab.classList.add('is-expanded');
+                return;
+            }
+        }
+        
+        toggleTheme();
+    });
+
+    // 4. Auto-Collapse on Outside Click
+    document.addEventListener('click', function(e) {
+        if (edgeTab.classList.contains('is-expanded') && !edgeTab.contains(e.target)) {
+            edgeTab.classList.remove('is-expanded');
+        }
+    });
+
+    // 5. Auto-Collapse on Escape Key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && edgeTab.classList.contains('is-expanded')) {
+            edgeTab.classList.remove('is-expanded');
+        }
+    });
+
+    // 6. Save preferences to Server
+    function savePreferences(theme) {
+        {% if current_user.is_authenticated %}
+        fetch('/api/user/settings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ theme_mode: theme })
+        }).catch(function(err) {
+            console.log('Error saving theme settings:', err);
+        });
+        {% endif %}
+    }
+});
+</script>
+{% endif %}

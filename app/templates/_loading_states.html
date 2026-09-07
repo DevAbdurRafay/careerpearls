@@ -1,0 +1,34 @@
+{% macro loading_spinner(size='normal', text='Loading...') %}
+<div class="cp-loading-spinner">
+    <div class="spinner-border" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    {% if text %}
+    <div class="cp-loading-spinner-text">{{ text }}</div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro loading_skeleton_card() %}
+<div class="cp-skeleton-card cp-loading-skeleton"></div>
+{% endmacro %}
+
+{% macro loading_skeleton_text(lines=3) %}
+{% for i in range(lines) %}
+<div class="cp-loading-skeleton {% if i == 0 %}cp-skeleton-text-lg{% elif i == lines-1 %}cp-skeleton-text-sm{% else %}cp-skeleton-text{% endif %}"></div>
+{% endfor %}
+{% endmacro %}
+
+{% macro loading_skeleton_avatar() %}
+<div class="cp-loading-skeleton cp-skeleton-avatar"></div>
+{% endmacro %}
+
+{% macro loading_skeleton_row(items=4) %}
+<div class="row g-3">
+    {% for i in range(items) %}
+    <div class="col-md-3">
+        <div class="cp-skeleton-card cp-loading-skeleton"></div>
+    </div>
+    {% endfor %}
+</div>
+{% endmacro %}

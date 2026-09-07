@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block email_title %}CareerPearls{% endblock %}</title>
+</head>
+<body style="margin:0;padding:0;background:#070b14;font-family:'Segoe UI',Inter,-apple-system,BlinkMacSystemFont,Arial,sans-serif;">
+    <!-- Preheader Snippet for Clean Notification Previews -->
+    <div style="display:none;font-size:1px;color:#070b14;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;mso-hide:all;">
+        {% block email_preheader %}{% endblock %}
+        &nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+    </div>
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#070b14;padding:32px 16px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:520px;background:linear-gradient(165deg,#0a0e1a 0%,#111827 100%);border:1px solid rgba(255,255,255,0.08);border-radius:16px;overflow:hidden;">
+                    <tr>
+                        <td style="padding:24px 32px 18px;text-align:center;background:linear-gradient(135deg,rgba(79,172,254,0.12),rgba(123,47,247,0.12));border-bottom:1px solid rgba(255,255,255,0.06);">
+                            <p style="margin:0 0 4px;font-size:11px;letter-spacing:0.35em;text-transform:uppercase;color:rgba(200,210,225,0.75);">CareerPearls</p>
+                            <h1 style="margin:0;font-size:20px;font-weight:700;color:#e8eaf0;">{% block email_heading %}CareerPearls{% endblock %}</h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:28px 32px 32px;color:#c8d2de;font-size:15px;line-height:1.65;">
+                            {% block email_body %}{% endblock %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:0 32px 24px;text-align:center;">
+                            <p style="margin:0;font-size:12px;color:#6b7280;">Where Great Talent Meets Great Opportunity</p>
+                            <p style="margin:8px 0 0;font-size:11px;color:#4b5563;">&copy; {{ year }} CareerPearls. All rights reserved.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

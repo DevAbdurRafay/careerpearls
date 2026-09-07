@@ -1,0 +1,36 @@
+{% if current_user.is_authenticated %}
+{% if current_user.is_candidate() %}
+    {% set cand = gattr(current_user, 'candidate') %}
+    {% set profile_name = (cand.full_name if (cand and cand.full_name) else current_user.name) %}
+    {% set profile_image = (cand.profile_image if (cand and cand.profile_image) else '') %}
+    {% set profile_url = url_for('candidate.profile') %}
+    {% set initial_char = profile_name[0]|upper if profile_name else 'C' %}
+{% elif current_user.is_employer() %}
+    {% set recruiter = gattr(current_user, 'recruiter') %}
+    {% set company = gattr(recruiter, 'company') if recruiter else None %}
+    {% set profile_name = (company.name if (company and company.name) else current_user.name) %}
+    {% set profile_image = (company.logo_path if (company and company.logo_path) else '') %}
+    {% set profile_url = url_for('employer.company_profile') %}
+    {% set initial_char = profile_name[0]|upper if profile_name else 'E' %}
+{% else %}
+    {% set profile_name = current_user.name %}
+    {% set profile_image = '' %}
+    {% set profile_url = '#' %}
+    {% set initial_char = profile_name[0]|upper if profile_name else 'U' %}
+{% endif %}
+
+<a class="cp-nav-profile-link {% if request.endpoint in ['candidate.profile', 'employer.company_profile'] %}active{% endif %}"
+   href="{{ profile_url }}"
+   {% if request.endpoint in ['candidate.profile', 'employer.company_profile'] %}aria-current="page"{% endif %}
+   data-bs-toggle="tooltip" data-bs-placement="bottom" title="{{ current_user.email }}">
+    <span class="cp-nav-avatar">
+        {% if profile_image %}
+        <img src="{{ url_for('uploaded_file', filename=profile_image) }}" alt="{{ profile_name }}" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <span class="cp-nav-avatar-initial" style="display:none;">{{ initial_char }}</span>
+        {% else %}
+        <span class="cp-nav-avatar-initial">{{ initial_char }}</span>
+        {% endif %}
+    </span>
+    <span class="cp-nav-profile-name text-truncate" style="max-width: 140px;">{{ profile_name }}</span>
+</a>
+{% endif %}

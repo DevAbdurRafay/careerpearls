@@ -1,0 +1,130 @@
+{% extends "auth_base.html" %}
+{% block title %}Register — CareerPearls{% endblock %}
+
+{% block content %}
+<div class="auth-split">
+    {% set page = 'register' %}
+    {% include '_auth_showcase.html' %}
+    <div class="auth-form-side">
+        <div class="auth-form-inner auth-form-enter">
+            <div class="auth-back-link mb-3 auth-field-enter">
+                <a href="{{ url_for('index') }}" class="btn-auth-back-icon" title="Back to Main Page" aria-label="Back to Main Page">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </a>
+            </div>
+
+            <h3 class="auth-form-title auth-field-enter">Create Account</h3>
+            <p class="auth-form-sub auth-field-enter auth-field-enter-1">Join CareerPearls today and start your journey</p>
+
+            <div class="role-tabs-wrapper mb-4 auth-field-enter auth-field-enter-2">
+                <div class="role-tabs-slider {% if role == 'employer' %}slide-right{% endif %}"></div>
+                <div class="role-tabs">
+                    <a href="{{ url_for('auth.register', role='candidate') }}" class="role-tab {% if role != 'employer' %}active{% endif %}">Register as Candidate</a>
+                    <a href="{{ url_for('auth.register', role='employer') }}" class="role-tab {% if role == 'employer' %}active{% endif %}">Register as Employer</a>
+                </div>
+            </div>
+
+            <form method="POST" class="auth-form" action="{{ url_for('auth.register', role=role) }}">
+                {{ form.hidden_tag() }}
+                <input type="hidden" name="role" value="{{ role }}">
+
+                <div class="form-group-spaced auth-field-enter auth-field-enter-3">
+                    {{ form.name.label(class="form-label") }}
+                    {{ form.name(class="form-control cp-input-glow") }}
+                    {% for e in form.name.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                </div>
+
+                <div class="form-group-spaced auth-field-enter auth-field-enter-4">
+                    {{ form.email.label(class="form-label") }}
+                    {{ form.email(class="form-control cp-input-glow") }}
+                    {% for e in form.email.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                </div>
+
+                <div class="form-group-spaced auth-field-enter auth-field-enter-5">
+                    {{ form.password.label(class="form-label") }}
+                    {{ form.password(class="form-control cp-input-glow" ~ (" is-invalid" if form.password.errors else ""), id="regPassword", autocomplete="new-password") }}
+
+                    <!-- Live Password Strength Meter Bar -->
+                    <div class="cp-pw-strength-wrap mt-2" id="pwStrengthWrap" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small text-pearl" style="font-size: 0.76rem;">Strength:</span>
+                            <span class="small fw-bold" id="pwStrengthLabel" style="font-size: 0.76rem; color: #ef4444;">Too Weak</span>
+                        </div>
+                        <div class="progress" style="height: 5px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden;">
+                            <div class="progress-bar transition-all" id="pwStrengthBar" role="progressbar" style="width: 0%; background-color: #ef4444; transition: width 0.3s ease, background-color 0.3s ease;"></div>
+                        </div>
+                    </div>
+
+                    <p class="cp-password-hint mt-1 mb-0" id="pwRequirementHint">
+                        Must include uppercase, lowercase, a number, and a special character (min. 8 characters).
+                    </p>
+                    {% for error in form.password.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-group-spaced auth-field-enter auth-field-enter-6">
+                    {{ form.confirm_password.label(class="form-label") }}
+                    {{ form.confirm_password(class="form-control cp-input-glow" ~ (" is-invalid" if form.confirm_password.errors else ""), id="regConfirmPassword", autocomplete="new-password") }}
+                    <!-- Live Match Status Feedback -->
+                    <div id="pwMatchFeedback" class="small mt-1.5 fw-semibold" style="display: none; font-size: 0.8rem;"></div>
+                    {% for error in form.confirm_password.errors %}
+                    <div class="invalid-feedback d-block">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="form-check mb-3 auth-field-enter auth-field-enter-6">
+                    <input class="form-check-input" type="checkbox" name="privacy_consent" id="privacyConsent" required>
+                    <label class="form-check-label text-pearl small" for="privacyConsent" style="font-size:0.82rem;">
+                        I accept the <a href="{{ url_for('privacy_policy') }}" target="_blank" class="text-cp-accent text-decoration-none">Privacy Policy</a> and <a href="{{ url_for('terms_of_service') }}" target="_blank" class="text-cp-accent text-decoration-none">Terms of Service</a>.
+                    </label>
+                    <div id="privacyConsentError" class="invalid-feedback text-danger small mt-1 fw-semibold" style="display:none;">Please accept the privacy policy to register.</div>
+                </div>
+
+                <div class="auth-field-enter auth-field-enter-7">
+                    {{ form.submit(class="btn btn-cp-primary w-100 btn-auth-submit", id="btnRegisterSubmit", disabled=true, style="opacity: 0.55; cursor: not-allowed;") }}
+                </div>
+            </form>
+
+            <div class="oauth-divider auth-field-enter auth-field-enter-8"><span>or</span></div>
+            <div class="auth-field-enter auth-field-enter-9">
+                {% include '_google_oauth_btn.html' %}
+            </div>
+
+            <p class="text-center mt-4 text-pearl mb-0 auth-field-enter auth-field-enter-10">
+                Already have an account?
+                <a href="{{ url_for('auth.login', role=role) }}" class="text-decoration-none auth-link fw-medium">Sign In</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+window.authHeroAccents = {{ (
+    ['Start hiring smarter today','Your recruitment journey begins','Build teams that win']
+    if role == 'employer' else
+    ['Start your journey today','Join thousands of professionals','Your success starts here']
+)|tojson }};
+window.authPrimaryTaglines = {{ (
+    ['Your recruitment hub','Build teams faster','Access top talent','Grow your company']
+    if role == 'employer' else
+    ['Your career journey begins','Your dream job awaits','Your next role is here','Your success story starts now']
+)|tojson }};
+window.authSecondaryTaglines = {{ (
+    ['Smart hiring tools','Candidate matching','Pipeline management','Interview scheduling']
+    if role == 'employer' else
+    ['Profile builder','Job discovery','Application tracker','Skill matching']
+)|tojson }};
+window.authFloatTags = {{ (
+    ['Recruit','Match','Interview','Hire','Onboard','Scale']
+    if role == 'employer' else
+    ['Explore','Apply','Grow','Learn','Connect','Succeed']
+)|tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+{% endblock %}

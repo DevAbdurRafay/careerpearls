@@ -1,0 +1,53 @@
+{% extends "email/_base.html" %}
+{% block email_title %}Interview Update: {{ job_title }} — {{ company_name }}{% endblock %}
+{% block email_preheader %}Thank you {{ candidate_name }} for taking the time to interview for the {{ job_title }} role at {{ company_name }}.{% endblock %}
+{% block email_heading %}Interview Evaluation Update{% endblock %}
+
+{% block email_body %}
+<p style="margin:0 0 16px;color:#e8eaf0;font-size:15px;">Dear <strong>{{ candidate_name }}</strong>,</p>
+
+<div style="background: linear-gradient(135deg, rgba(71, 85, 105, 0.25), rgba(30, 41, 59, 0.35)); border: 1.5px solid rgba(148, 163, 184, 0.3); border-radius: 12px; padding: 18px; margin-bottom: 22px;">
+    <p style="margin:0;color:#f1f5f9;font-size:15px;font-weight:700;">
+        Interview Status Update
+    </p>
+    <p style="margin:8px 0 0;color:#cbd5e1;font-size:14px;line-height:1.6;">
+        Thank you for taking the time to interview with <strong>{{ company_name }}</strong> for the <strong>{{ job_title }}</strong> position. We appreciate the effort you put into the evaluation process.
+    </p>
+</div>
+
+<div style="background:#0f172a;border:1px solid rgba(255, 255, 255, 0.08);border-radius:12px;padding:16px;margin-bottom:22px;">
+    <table width="100%" cellpadding="8" cellspacing="0" style="font-size:14px;color:#e8eaf0;">
+        <tr>
+            <td width="32%" style="color:#94a3b8;font-weight:600;">Position:</td>
+            <td style="color:#ffffff;font-weight:600;">{{ job_title }}</td>
+        </tr>
+        <tr>
+            <td style="color:#94a3b8;font-weight:600;">Company:</td>
+            <td style="color:#ffffff;">{{ company_name }}</td>
+        </tr>
+        <tr>
+            <td style="color:#94a3b8;font-weight:600;">Status:</td>
+            <td style="color:#cbd5e1;">Interview Process Concluded</td>
+        </tr>
+        {% if reason %}
+        <tr>
+            <td style="color:#94a3b8;font-weight:600;">Evaluation Remarks:</td>
+            <td style="color:#cbd5e1;font-style:italic;line-height:1.5;">{{ reason }}</td>
+        </tr>
+        {% endif %}
+    </table>
+</div>
+
+<p style="color:#cbd5e1;font-size:14px;line-height:1.6;margin-bottom:22px;">
+    While our team was impressed with your background and qualifications, we have decided to move forward with other candidates whose experience more closely matches our immediate technical needs.
+</p>
+
+<div style="background: rgba(56, 189, 248, 0.06); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 10px; padding: 14px; margin-bottom: 22px;">
+    <p style="margin:0;color:#cbd5e1;font-size:13px;line-height:1.5;">
+        🌟 We will keep your verified profile in our talent pool for future openings that match your skill set. We sincerely wish you the best of luck in your career search and future professional endeavors!
+    </p>
+</div>
+
+<p style="margin:0 0 4px;color:#94a3b8;font-size:13px;">Warm regards,</p>
+<p style="margin:0;color:#ffffff;font-size:15px;font-weight:700;">{{ company_name }} Hiring Team</p>
+{% endblock %}

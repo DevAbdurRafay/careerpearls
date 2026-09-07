@@ -1,0 +1,313 @@
+<div class="cp-candidate-full-profile">
+    <!-- Header -->
+    <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom" style="border-color:var(--cp-border)!important">
+        <div class="position-relative flex-shrink-0" style="width: 68px; height: 68px; min-width: 68px; max-width: 68px;">
+            {% if candidate and candidate.profile_image %}
+            <img src="{{ url_for('uploaded_file', filename=candidate.profile_image) }}" 
+                 alt="{{ candidate.full_name or 'Candidate' }}" 
+                 class="rounded-circle" 
+                 width="68" height="68" 
+                 style="width: 68px !important; height: 68px !important; min-width: 68px !important; max-width: 68px !important; min-height: 68px !important; max-height: 68px !important; object-fit: cover !important; border: 2.5px solid #0284c7; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.25); display: block;" 
+                 data-profile-lightbox 
+                 onerror="this.style.display='none'; const fb = this.nextElementSibling; if(fb){ fb.classList.remove('d-none'); fb.classList.add('d-flex'); }">
+            <div class="rounded-circle bg-secondary text-white align-items-center justify-content-center fw-bold fs-4 d-none" 
+                 style="width: 68px !important; height: 68px !important; min-width: 68px !important; max-width: 68px !important; min-height: 68px !important; max-height: 68px !important; border: 2px solid rgba(255,255,255,0.2);">
+                {{ (candidate.full_name or 'Candidate')[0]|upper }}
+            </div>
+            {% else %}
+            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center fw-bold fs-4" 
+                 style="width: 68px !important; height: 68px !important; min-width: 68px !important; max-width: 68px !important; min-height: 68px !important; max-height: 68px !important; border: 2px solid rgba(255,255,255,0.2);">
+                {{ (candidate.full_name or 'Candidate')[0]|upper }}
+            </div>
+            {% endif %}
+        </div>
+        <div>
+            <h4 class="fw-bold mb-1" style="font-size: 1.25rem;">{{ candidate.full_name if candidate else 'N/A' }}</h4>
+            {% if candidate and candidate.headline %}<p class="text-cp-accent mb-1" style="font-size: 0.9rem;">{{ candidate.headline }}</p>{% endif %}
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                {% if candidate and candidate.career_status %}
+                <span class="badge cp-modal-badge" style="font-size: 0.75rem;">{{ candidate.career_status|replace('_',' ')|title }}</span>
+                {% endif %}
+                {% if candidate and candidate.work_mode %}
+                <span class="badge cp-modal-badge" style="font-size: 0.75rem;">{{ work_mode_labels.get(candidate.work_mode, candidate.work_mode|replace('_',' ')|title) }}</span>
+                {% endif %}
+                {% if candidate and candidate.location %}
+                <span class="small ms-1" style="font-size: 0.8rem;"><i class="bi bi-geo-alt"></i> {{ candidate.location }}</span>
+                {% if candidate.is_location_verified %}
+                <span class="badge bg-success-subtle text-success border border-success ms-1" style="font-size: 0.7rem;"><i class="bi bi-patch-check-fill me-1"></i>Verified</span>
+                {% endif %}
+                {% endif %}
+            </div>
+            <!-- External Links -->
+            {% if candidate and (candidate.linkedin_url or candidate.github_url or candidate.portfolio_url or candidate.kaggle_url) %}
+            <div class="d-flex flex-wrap gap-2 mt-2">
+                {% if candidate.linkedin_url %}
+                <a href="{{ candidate.linkedin_url }}" target="_blank" rel="noopener noreferrer" class="cp-social-badge cp-social-linkedin" title="LinkedIn Profile">
+                    <i class="bi bi-linkedin me-1"></i>LinkedIn
+                </a>
+                {% endif %}
+                {% if candidate.github_url %}
+                <a href="{{ candidate.github_url }}" target="_blank" rel="noopener noreferrer" class="cp-social-badge cp-social-github" title="GitHub Profile">
+                    <i class="bi bi-github me-1"></i>GitHub
+                </a>
+                {% endif %}
+                {% if candidate.portfolio_url %}
+                <a href="{{ candidate.portfolio_url }}" target="_blank" rel="noopener noreferrer" class="cp-social-badge cp-social-portfolio" title="Portfolio Website">
+                    <i class="bi bi-globe me-1"></i>Portfolio
+                </a>
+                {% endif %}
+                {% if candidate.kaggle_url %}
+                <a href="{{ candidate.kaggle_url }}" target="_blank" rel="noopener noreferrer" class="cp-social-badge cp-social-kaggle" title="Kaggle Profile">
+                    <i class="bi bi-diagram-3-fill me-1"></i>Kaggle
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Contact & Availability Bar -->
+    <div class="row g-2 mb-4 p-3 rounded cp-modal-contact-bar" style="font-size: 0.85rem;">
+        <div class="col-md-4">
+            <small class="d-block" style="font-size: 0.75rem;">Email Contact</small>
+            <strong style="font-size: 0.85rem;">{{ candidate.user.email if candidate and candidate.user else 'N/A' }}</strong>
+        </div>
+        {% if candidate and candidate.phone %}
+        <div class="col-md-4">
+            <small class="d-block" style="font-size: 0.75rem;">Phone Number</small>
+            <strong style="font-size: 0.85rem;">{{ candidate.phone }}</strong>
+        </div>
+        {% endif %}
+        {% if candidate and candidate.availability %}
+        <div class="col-md-4">
+            <small class="d-block" style="font-size: 0.75rem;">Availability</small>
+            <strong class="text-cp-accent" style="font-size: 0.85rem;">{{ candidate.availability|replace('_',' ')|title }}</strong>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Bio / About -->
+    {% if candidate and candidate.bio %}
+    <div class="mb-4">
+        <h6 class="fw-bold mb-2" style="font-size: 0.95rem;">About Candidate</h6>
+        <p class="small mb-0" style="line-height:1.55; font-size: 0.85rem;">{{ candidate.bio }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Internship Experience -->
+    {% if candidate and candidate.has_internship %}
+    <div class="mb-4">
+        <h6 class="fw-bold mb-2" style="font-size: 0.95rem;">Internship Experience</h6>
+        <div class="p-2.5 rounded" style="background: rgba(79, 172, 254, 0.08); border-left: 3px solid #4facfe;">
+            <p class="small mb-0" style="font-size: 0.85rem;">{{ candidate.internship_details or 'Candidate has confirmed prior internship experience.' }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Skills -->
+    {% set skills = candidate.skills.all() if candidate and candidate.skills else [] %}
+    {% if skills %}
+    <div class="mb-4">
+        <h6 class="fw-bold mb-2" style="font-size: 0.95rem;">Skills &amp; Expertise</h6>
+        <div class="d-flex flex-wrap gap-2">
+            {% for skill in skills %}
+            <span class="badge cp-modal-skill-chip px-2.5 py-1.5" style="font-size: 0.75rem;">
+                {{ skill.skill_name }} · <span class="text-cp-accent">{{ skill.proficiency_level }}</span>
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Education -->
+    {% set edu_list = candidate.education.all() if candidate and candidate.education else [] %}
+    {% if edu_list %}
+    <div class="mb-4">
+        <h6 class="fw-bold mb-2" style="font-size: 0.95rem;">Education</h6>
+        {% for edu in edu_list %}
+        <div class="mb-2 pb-2 border-bottom" style="border-color:var(--cp-border)!important">
+            <strong class="small d-block" style="font-size: 0.88rem;">{{ edu.degree }}</strong>
+            <span class="small d-block" style="font-size: 0.8rem;">
+                {{ edu.institution }}{% if edu.field_of_study %} · {{ edu.field_of_study }}{% endif %}
+                {% if edu.end_date %} · {{ edu.end_date.strftime('%Y') }}{% elif edu.is_current %} · Present{% endif %}
+            </span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Resume Section -->
+    {% set resumes = candidate.resumes.order_by(Resume.uploaded_at.desc()).all() if candidate and candidate.resumes else [] %}
+    {% if resumes %}
+    <div class="mb-4">
+        <h6 class="fw-bold mb-2" style="font-size: 0.95rem;">Resume / CV</h6>
+        {% for r in resumes %}
+        <div class="p-2.5 rounded d-flex align-items-center justify-content-between mb-2 cp-modal-resume-box">
+            <div class="d-flex align-items-center gap-2">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4facfe" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span class="small fw-semibold text-truncate" style="max-width:260px; font-size: 0.85rem;" title="{{ r.display_name or (r.file_path|display_filename) }}">
+                    {{ r.display_name or (r.file_path|display_filename) }}
+                </span>
+            </div>
+            <div class="d-flex align-items-center">
+                <a href="{{ url_for('uploaded_file', filename=r.file_path) }}" target="_blank" class="btn btn-sm px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-2 cp-modal-act-btn cp-modal-btn-view" style="text-decoration: none;">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                    <span>View Resume</span>
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Certifications Section -->
+    {% set certs = candidate.certifications.all() if candidate and candidate.certifications else [] %}
+    {% if certs %}
+    <div class="mb-4">
+        <h6 class="fw-bold mb-2.5 d-flex align-items-center gap-2" style="font-size: 0.95rem;">
+            <i class="bi bi-award-fill text-warning"></i>
+            <span>Certifications &amp; Credentials</span>
+        </h6>
+        <div class="d-flex flex-column gap-2.5">
+            {% for cert in certs %}
+            <div class="p-3 rounded-3 cp-modal-cert-card">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                    
+                    {# Left: Icon & Details #}
+                    <div class="d-flex align-items-start gap-3 flex-grow-1" style="min-width: 240px;">
+                        <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.25)); border: 1.5px solid rgba(245, 158, 11, 0.45); box-shadow: 0 0 12px rgba(245, 158, 11, 0.25);">
+                            <i class="bi bi-patch-check-fill text-warning fs-5"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+                                <strong style="font-size: 0.92rem; letter-spacing: -0.2px;">{{ cert.title }}</strong>
+                                <span class="badge px-2 py-0.5 rounded-pill" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); font-size: 0.72rem; font-weight: 600;">
+                                    Verified Credential
+                                </span>
+                            </div>
+                            
+                            <div class="d-flex align-items-center flex-wrap gap-2 small mb-1.5" style="font-size: 0.82rem;">
+                                <span><i class="bi bi-building text-info me-1"></i><strong class="text-info">{{ cert.issuing_organization }}</strong></span>
+                                {% if cert.issue_year %}
+                                <span class="text-muted">·</span>
+                                <span><i class="bi bi-calendar-check text-warning me-1"></i>{{ cert.issue_year }}</span>
+                                {% endif %}
+                            </div>
+
+                            {% if cert.description %}
+                            <p class="small mb-2" style="font-size: 0.83rem; line-height: 1.5; padding: 8px 12px; border-radius: 8px;">
+                                {{ cert.description }}
+                            </p>
+                            {% endif %}
+
+                            {% if cert.file_path %}
+                            <div class="d-inline-flex align-items-center gap-1.5 px-2.5 py-1 rounded-2 cert-filename-box" style="font-size: 0.76rem;">
+                                <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
+                                <span class="text-truncate" style="max-width: 260px;" title="{{ cert.display_name or (cert.file_path|display_filename) }}">
+                                    {{ cert.display_name or (cert.file_path|display_filename) }}
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# Right: View Action Button #}
+                    {% if cert.file_path %}
+                    <div class="d-flex align-items-center flex-shrink-0 align-self-start">
+                        <a href="{{ url_for('uploaded_file', filename=cert.file_path) }}" target="_blank" class="btn btn-sm px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-2 cp-modal-act-btn cp-modal-btn-view" style="text-decoration: none;">
+                            <i class="bi bi-box-arrow-up-right"></i>
+                            <span>View Certificate</span>
+                        </a>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- No Resume/Certification Fallback -->
+    {% if not resumes and not certs %}
+    <div class="mb-4">
+        <div class="p-3 rounded text-center" style="background: rgba(79, 172, 254, 0.05); border: 1px dashed rgba(79, 172, 254, 0.3);">
+            <p class="text-pearl small mb-0"><i class="bi bi-info-circle me-1"></i>No resume or certifications uploaded by this candidate yet.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions Bar -->
+    {% if application %}
+    <div class="mt-4 pt-3 border-top" style="border-color:var(--cp-border)!important">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <h6 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                <i class="bi bi-lightning-charge-fill text-warning"></i>
+                <span>Evaluation for: <strong class="text-info">{{ application.job.title if application.job else 'Position' }}</strong></span>
+            </h6>
+            <div class="d-flex align-items-center gap-2">
+                <span class="small" style="font-size: 0.78rem;">Application Status:</span>
+                {% if application.status == 'Shortlisted' %}
+                <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill shadow-sm"><i class="bi bi-star-fill me-1"></i>Shortlisted</span>
+                {% elif application.status == 'Selected' %}
+                <span class="badge bg-success text-white fw-bold px-2.5 py-1 rounded-pill shadow-sm"><i class="bi bi-award-fill me-1"></i>Hired / Selected</span>
+                {% elif application.status == 'Interview Scheduled' %}
+                <span class="badge px-2.5 py-1 rounded-pill shadow-sm" style="background: rgba(99, 102, 241, 0.25); color: #a5b4fc; border: 1px solid rgba(129, 140, 248, 0.5);"><i class="bi bi-calendar2-check-fill me-1"></i>Interview Scheduled</span>
+                {% elif application.status == 'Contacted' %}
+                <span class="badge bg-primary px-2.5 py-1 rounded-pill"><i class="bi bi-chat-dots-fill me-1"></i>Contacted</span>
+                {% elif application.status == 'Rejected' %}
+                <span class="badge bg-danger px-2.5 py-1 rounded-pill"><i class="bi bi-x-circle-fill me-1"></i>Rejected</span>
+                {% elif application.status == 'Under Review' %}
+                <span class="badge bg-info text-dark px-2.5 py-1 rounded-pill"><i class="bi bi-hourglass-split me-1"></i>Under Review (Waitlist)</span>
+                {% else %}
+                <span class="badge bg-secondary px-2.5 py-1 rounded-pill">{{ application.status }}</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="d-flex flex-wrap gap-2.5 align-items-center">
+            {% if application.status == 'Selected' %}
+            {# If candidate is HIRED, show completion status and disable further mutator actions #}
+            <span class="badge px-3 py-1.5 rounded-pill cp-hired-completed-badge d-inline-flex align-items-center gap-1.5 shadow-sm">
+                <i class="bi bi-patch-check-fill"></i>
+                <span>Hired · Process Completed</span>
+            </span>
+            {% else %}
+            {# Candidate NOT hired yet (active or rejected) - all mutator actions available #}
+
+            <!-- 2. Schedule Interview Action -->
+            <button type="button" class="btn btn-sm px-3.5 py-2 fw-semibold d-inline-flex align-items-center gap-2 cp-modal-act-btn cp-modal-btn-schedule" onclick="openScheduleModalFromDossier({{ application.id }})" title="Schedule Official Interview">
+                <i class="bi bi-calendar2-check-fill"></i>
+                <span>Schedule Interview</span>
+            </button>
+
+            <!-- 3. Shortlist Action -->
+            {% if application.status == 'Shortlisted' %}
+            <form method="POST" action="{{ url_for('employer.unshortlist_candidate', app_id=application.id) }}" class="d-inline m-0 p-0">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm px-3.5 py-2 fw-semibold d-inline-flex align-items-center gap-2 cp-modal-act-btn cp-modal-btn-shortlist active" title="Shortlist is active. Click to remove.">
+                    <i class="bi bi-star-fill"></i>
+                    <span>Shortlisted</span>
+                </button>
+            </form>
+            {% else %}
+            <form method="POST" action="{{ url_for('employer.shortlist_candidate', app_id=application.id) }}" class="d-inline m-0 p-0">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm px-3.5 py-2 fw-semibold d-inline-flex align-items-center gap-2 cp-modal-act-btn cp-modal-btn-shortlist" title="Shortlist Candidate">
+                    <i class="bi bi-star"></i>
+                    <span>Shortlist</span>
+                </button>
+            </form>
+            {% endif %}
+
+            <!-- 4. Reject Action -->
+            {% if application.status != 'Rejected' %}
+            <button type="button" class="btn btn-sm px-3.5 py-2 fw-semibold d-inline-flex align-items-center gap-2 cp-modal-act-btn cp-modal-btn-reject" onclick="openRejectModalFromDossier({{ application.id }})" title="Reject Application">
+                <i class="bi bi-x-circle-fill"></i>
+                <span>Reject</span>
+            </button>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>

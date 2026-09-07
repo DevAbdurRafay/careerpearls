@@ -1,0 +1,26 @@
+<div class="modal fade" id="photoCropModal" tabindex="-1" aria-labelledby="photoCropModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 600px;">
+        <div class="modal-content cp-crop-modal" style="background: var(--cp-bg-card); border: 1px solid var(--cp-border); border-radius: 20px; overflow: hidden;">
+            <div class="modal-header border-0 pb-3" style="background: linear-gradient(135deg, rgba(79, 172, 254, 0.1), rgba(123, 47, 247, 0.1)); padding: 1.5rem 2rem;">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <h5 class="modal-title mb-1" id="photoCropModalLabel" style="font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 1.25rem; color: var(--cp-text);">Crop Profile Photo</h5>
+                        <p class="text-pearl small mb-0" style="font-size: 0.85rem; color: var(--cp-text-muted);">Adjust the crop area to position your photo perfectly</p>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="filter: brightness(0.8);"></button>
+                </div>
+            </div>
+            <div class="modal-body p-4">
+                <div class="cp-crop-stage" style="background: #000; border-radius: 12px; overflow: hidden; max-height: 400px; min-height: 300px;">
+                    <img id="photoCropImage" src="" alt="Crop preview" style="max-width: 100%; display: block;">
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0 pb-4" style="padding: 1.5rem 2rem;">
+                <div class="d-flex gap-3 justify-content-end">
+                    <button type="button" class="btn btn-cp-outline px-4 py-2.5" data-bs-dismiss="modal" style="border-radius: 12px; font-weight: 500;">Cancel</button>
+                    <button type="button" class="btn btn-cp-primary px-4 py-2.5" id="photoCropConfirm" style="border-radius: 12px; font-weight: 600; background: linear-gradient(135deg, #4facfe 0%, #7b2ff7 100%); border: none;">Apply Crop</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

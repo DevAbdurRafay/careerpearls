@@ -1,0 +1,80 @@
+{% from '_form_labels.html' import optional_label %}
+
+<form method="POST" class="cp-wizard-form" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="cp-wizard-subsection">
+        <h3 class="cp-wizard-subsection-title">{{ optional_label('Education') }}</h3>
+        {% if education %}
+        <ul class="cp-wizard-list mb-3">
+            {% for edu in education %}
+            <li><strong>{{ edu.degree }}</strong> — {{ edu.institution }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label" for="institution">Institution</label>
+                <input type="text" name="institution" id="institution" class="form-control cp-input-glow">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="degree">Degree / Program</label>
+                <input type="text" name="degree" id="degree" class="form-control cp-input-glow">
+            </div>
+        </div>
+    </div>
+
+    <div class="cp-wizard-subsection">
+        <h3 class="cp-wizard-subsection-title">{{ optional_label('Skills') }}</h3>
+        {% if skills %}
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            {% for skill in skills %}
+            <span class="cp-skill-pill">{{ skill.skill_name }} · {{ skill.proficiency_level }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label" for="skill_name">Skill name</label>
+                <input type="text" name="skill_name" id="skill_name" class="form-control cp-input-glow" list="onboardingSkillsDatalist" placeholder="Search or type a skill...">
+                <datalist id="onboardingSkillsDatalist">
+                    {% for sk in predefined_skills %}
+                    <option value="{{ sk }}">
+                    {% endfor %}
+                </datalist>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="proficiency_level">Proficiency</label>
+                <select name="proficiency_level" id="proficiency_level" class="form-select cp-input-glow">
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate" selected>Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                    <option value="Expert">Expert</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="cp-wizard-subsection">
+        <h3 class="cp-wizard-subsection-title">{{ optional_label('Resume') }}</h3>
+        {% if resumes %}
+        <ul class="cp-wizard-list mb-3">
+            {% for resume in resumes %}
+            <li>{{ resume.file_path.split('/')[-1] }}{% if resume.is_primary %} <span class="cp-badge-mini">Primary</span>{% endif %}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        <label class="form-label" for="resume">Upload resume (PDF, JPEG, PNG only)</label>
+        <input type="file" name="resume" id="resume" class="form-control cp-input-glow" accept=".pdf,.jpg,.jpeg,.png">
+    </div>
+
+    <div class="cp-wizard-actions">
+        {% if edit_mode %}
+        <a href="{{ url_for('candidate.profile') }}" class="btn btn-cp-outline">Cancel</a>
+        {% else %}
+        <a href="{{ url_for('candidate.onboarding', step=4) }}" class="btn btn-cp-outline">Back</a>
+        <button type="submit" name="action" value="skip" class="btn btn-cp-outline">Skip &amp; Finish</button>
+        {% endif %}
+        <button type="submit" class="btn btn-cp-primary px-4">Complete Setup</button>
+    </div>
+</form>

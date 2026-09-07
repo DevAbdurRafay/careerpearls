@@ -1,0 +1,16 @@
+{% extends "email/_base.html" %}
+{% block email_title %}New Contact Message — CareerPearls{% endblock %}
+{% block email_heading %}New Website Inquiry{% endblock %}
+
+{% block email_body %}
+<p style="margin:0 0 16px;color:#e8eaf0;font-size:16px;">You have received a new contact message from the website:</p>
+
+<table width="100%" cellpadding="8" cellspacing="0" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;margin-bottom:20px;font-size:14px;color:#e8eaf0;">
+    <tr><td width="30%" style="color:#9ca3af;font-weight:600;">Name:</td><td>{{ name }}</td></tr>
+    <tr><td style="color:#9ca3af;font-weight:600;">Email:</td><td><a href="mailto:{{ email }}" style="color:#4facfe;">{{ email }}</a></td></tr>
+    <tr><td style="color:#9ca3af;font-weight:600;">Phone:</td><td>{{ phone }}</td></tr>
+</table>
+
+<p style="margin:0 0 8px;color:#9ca3af;font-size:13px;font-weight:600;text-transform:uppercase;">Message:</p>
+<div style="background:rgba(79,172,254,0.06);border-left:3px solid #4facfe;padding:12px 16px;border-radius:6px;color:#e8eaf0;font-size:14px;white-space:pre-wrap;">{{ message }}</div>
+{% endblock %}

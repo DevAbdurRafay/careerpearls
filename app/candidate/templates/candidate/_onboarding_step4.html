@@ -1,0 +1,79 @@
+{% from '_form_labels.html' import required_label, optional_label %}
+
+<form method="POST" class="cp-wizard-form">
+    {{ professional_form.hidden_tag() }}
+
+    <div class="form-group-spaced">
+        <label class="form-label" for="headline">{{ required_label('Professional Headline') }}</label>
+        {{ professional_form.headline(class="form-control cp-input-glow" ~ (" is-invalid" if professional_form.headline.errors else ""), id="headline", placeholder="e.g. Computer Science Student | Aspiring Data Analyst") }}
+        {% for error in professional_form.headline.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="form-group-spaced">
+        <label class="form-label" for="availability">{{ required_label('Availability') }}</label>
+        {{ professional_form.availability(class="form-select cp-input-glow" ~ (" is-invalid" if professional_form.availability.errors else ""), id="availability") }}
+        {% for error in professional_form.availability.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="form-group-spaced">
+        <label class="form-label" for="work_mode">{{ required_label('Work Preference') }}</label>
+        {{ professional_form.work_mode(class="form-select cp-input-glow" ~ (" is-invalid" if professional_form.work_mode.errors else ""), id="work_mode") }}
+        {% for error in professional_form.work_mode.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="form-group-spaced">
+        <label class="form-label" for="has_internship">{{ required_label('Internship Experience') }}</label>
+        {{ professional_form.has_internship(class="form-select cp-input-glow" ~ (" is-invalid" if professional_form.has_internship.errors else ""), id="has_internship") }}
+        {% for error in professional_form.has_internship.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="form-group-spaced" id="step4InternshipWrap" style="display:none">
+        <label class="form-label" for="internship_details">{{ optional_label('Internship Details') }} <small class="text-pearl">(Max 500 characters)</small></label>
+        {{ professional_form.internship_details(class="form-control cp-input-glow" ~ (" is-invalid" if professional_form.internship_details.errors else ""), id="internship_details", rows=3, maxlength="500", placeholder="e.g. 3-month internship at ABC Corp as Software Intern") }}
+        {% for error in professional_form.internship_details.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    <div class="form-group-spaced">
+        <label class="form-label" for="bio">{{ optional_label('About You') }} <small class="text-pearl">(Max 500 characters)</small></label>
+        {{ professional_form.bio(class="form-control cp-input-glow" ~ (" is-invalid" if professional_form.bio.errors else ""), id="bio", rows=4, maxlength="500", placeholder="Tell us about yourself...") }}
+        {% for error in professional_form.bio.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+        {% endfor %}
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var sel = document.getElementById('has_internship');
+        var wrap = document.getElementById('step4InternshipWrap');
+        function toggle() {
+            if (sel && wrap) {
+                wrap.style.display = sel.value === 'yes' ? 'block' : 'none';
+            }
+        }
+        if (sel) {
+            sel.addEventListener('change', toggle);
+            toggle();
+        }
+    });
+    </script>
+
+    <div class="cp-wizard-actions">
+        {% if edit_mode %}
+        <a href="{{ url_for('candidate.profile') }}" class="btn btn-cp-outline">Cancel</a>
+        {% else %}
+        <a href="{{ url_for('candidate.onboarding', step=3) }}" class="btn btn-cp-outline">Back</a>
+        <button type="submit" name="action" value="skip" class="btn btn-cp-outline">Skip for now</button>
+        {% endif %}
+        {{ professional_form.submit(class="btn btn-cp-primary px-4") }}
+    </div>
+</form>

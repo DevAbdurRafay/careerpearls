@@ -1,0 +1,107 @@
+{% extends "base_simple.html" %}
+{% block title %}Browse Jobs — CareerPearls{% endblock %}
+{% from '_empty_states.html' import empty_state_job_search %}
+{% from '_job_card.html' import render_job_card %}
+
+{% block extra_head %}
+<style>
+/* Light theme variant for job list page */
+:root[data-theme="light"] .cp-card[style*="background: var(--cp-bg-card)"] {
+    background: #f5f5f5 !important;
+    border: 1px solid #e0e0e0 !important;
+}
+:root[data-theme="light"] .cp-card[style*="background: var(--cp-bg-card)"] .text-white {
+    color: #111827 !important;
+}
+:root[data-theme="light"] .cp-card[style*="background: var(--cp-bg-card)"] .text-pearl {
+    color: #6b7280 !important;
+}
+:root[data-theme="light"] .cp-btn-nav-home {
+    background: linear-gradient(135deg, #4facfe, #7b2ff7) !important;
+    color: #ffffff !important;
+    border: none !important;
+    margin-right: 40px;
+}
+:root[data-theme="light"] .cp-btn-nav-home:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4) !important;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pt-0">
+    <div class="container" style="max-width: 1380px;">
+        <div class="cp-card mb-4" style="background: var(--cp-bg-card); border: 1px solid var(--cp-border); border-radius: 16px; padding: 1.25rem;">
+            <form method="GET" class="row g-2 align-items-center">
+                <div class="col-12 mb-2">
+                    <h1 class="display-6 fw-bold mb-1">Find Your Next <span class="brand-career">Opportunity</span></h1>
+                    <p class="text-pearl small mb-0">Browse verified positions from top employers</p>
+                </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-pearl">Search Keywords</label>
+                <input type="text" name="q" class="form-control form-control-sm cp-input-glow" value="{{ search }}" placeholder="Job title, skills, company...">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold text-pearl">Category</label>
+                <select name="category" class="form-select form-select-sm cp-input-glow">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold text-pearl">Location</label>
+                <input type="text" name="location" class="form-control form-control-sm cp-input-glow" value="{{ location }}" placeholder="City, Country">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small fw-semibold text-pearl">Job Type</label>
+                <select name="type" class="form-select form-select-sm cp-input-glow">
+                    <option value="">All Types</option>
+                    {% for t in ['Full-time','Part-time','Contract','Internship','Remote'] %}
+                    <option value="{{ t }}" {% if employment_type == t %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold text-pearl">&nbsp;</label>
+                <button type="submit" class="btn btn-cp-primary w-100" style="height: 31px; border-radius: 10px; background: linear-gradient(135deg, #4facfe 0%, #7b2ff7 100%); border: none; font-weight: 600; padding: 0.25rem 1rem;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    Search Jobs
+                </button>
+            </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="container" style="max-width: 1380px;">
+        <div class="row g-4">
+        {% for job in jobs.items %}
+            {{ render_job_card(job, mode='candidate') }}
+        {% else %}
+        <div class="col-12">
+            {{ empty_state_job_search() }}
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if jobs.pages > 1 %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% for p in jobs.iter_pages() %}
+            {% if p %}
+                <li class="page-item {% if p == jobs.page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('jobboard.job_list', page=p, q=search, category=category_id, location=location, type=employment_type) }}">{{ p }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+</div>
+</div>
+{% endblock %}

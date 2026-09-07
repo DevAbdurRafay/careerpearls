@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block title %}Register a Complaint — CareerPearls{% endblock %}
+
+{% block extra_head %}
+<style>
+.cp-btn-nav-home {
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: #f1f5f9 !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 12px !important;
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    padding: 8px 16px !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    text-decoration: none !important;
+}
+.cp-btn-nav-home:hover {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(37, 99, 235, 0.25)) !important;
+    border-color: rgba(56, 189, 248, 0.6) !important;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(56, 189, 248, 0.35);
+}
+.cp-btn-nav-home:hover i {
+    transform: translateX(-3px);
+    color: #38bdf8 !important;
+}
+.cp-btn-nav-home i {
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+/* Light theme variant for complaint form */
+:root[data-theme="light"] .card {
+    background: rgba(255,255,255,0.95) !important;
+    border: 1px solid rgba(0,0,0,0.08) !important;
+}
+:root[data-theme="light"] .text-white {
+    color: #111827 !important;
+}
+:root[data-theme="light"] .text-pearl {
+    color: #6b7280 !important;
+}
+:root[data-theme="light"] .form-label {
+    color: #374151 !important;
+}
+:root[data-theme="light"] .form-control,
+:root[data-theme="light"] .form-select {
+    background: #ffffff !important;
+    border: 1px solid rgba(0,0,0,0.1) !important;
+    color: #000000 !important; /* Pure black for better contrast */
+}
+:root[data-theme="light"] .form-control:focus,
+:root[data-theme="light"] .form-select:focus {
+    border-color: #3b82f6 !important;
+    background: #ffffff !important;
+}
+:root[data-theme="light"] .border-top {
+    border-color: rgba(0,0,0,0.08) !important;
+}
+</style>
+{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top cp-navbar cp-navbar-glass" id="landingNav" 
+     style="top: 0; left: 0; right: 0; width: 100%; height: 72px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); background: rgba(10, 14, 26, 0.94); border-bottom: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 25px rgba(0, 0, 0, 0.45); z-index: 1050;">
+    <div class="container-fluid px-3 px-lg-5 d-flex align-items-center">
+        {% set brand_href = url_for('index') %}
+        <div class="d-flex align-items-center">
+            {% include '_navbar_brand.html' %}
+        </div>
+    </div>
+</nav>
+{% endblock navbar %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            
+            {% if existing_active %}
+            <!-- Existing Active Complaint Notice -->
+            <div class="card mb-4 border-0" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.08)); border: 1.5px solid rgba(245, 158, 11, 0.45) !important; border-radius: 16px; padding: 22px;">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="d-flex align-items-center justify-content-center flex-shrink-0" 
+                         style="width: 46px; height: 46px; border-radius: 12px; background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.4);">
+                        <i class="bi bi-hourglass-split text-warning fs-4"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold text-warning mb-1" style="font-size: 1.1rem;">Active Ticket Under Investigation</h5>
+                        <p class="small mb-2 text-white" style="line-height: 1.55;">
+                            You have an existing complaint <strong>{{ existing_active.ticket_id }}</strong> (<em>"{{ existing_active.subject }}"</em>) currently marked as <strong>{{ existing_active.status }}</strong>.
+                        </p>
+                        <p class="small mb-0 text-white-50" style="font-size: 0.82rem;">
+                            To avoid duplicate reports and ensure rapid investigation, a single email address can only maintain one active ticket at a time until resolved by our Trust &amp; Safety Team.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Page Header Card -->
+            <div class="card mb-4 border-0" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 24px;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex align-items-center justify-content-center flex-shrink-0" 
+                         style="width: 52px; height: 52px; border-radius: 14px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3);">
+                        <i class="bi bi-shield-exclamation text-danger fs-3"></i>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold text-white mb-1" style="font-size: 1.5rem;">Register a Complaint / Report</h3>
+                        <p class="text-pearl small mb-0" style="color: #94a3b8;">
+                            CareerPearls Trust &amp; Safety Team investigates all reports. Every ticket is assigned a verifiable reference ID and reviewed by platform administrators.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Complaint Form -->
+            <div class="card border-0" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; padding: 30px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);">
+                <form method="POST" action="{{ url_for('register_complaint') }}" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    {% if job %}
+                    <input type="hidden" name="target_type" value="Job">
+                    <input type="hidden" name="target_id" value="{{ job.id }}">
+                    {% elif target_type and target_id %}
+                    <input type="hidden" name="target_type" value="{{ target_type }}">
+                    <input type="hidden" name="target_id" value="{{ target_id }}">
+                    {% endif %}
+
+                    <!-- Complainant Details -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-pearl small fw-semibold">Your Full Name</label>
+                            <input type="text" name="complainant_name" class="form-control form-control-sm" 
+                                   value="{% if current_user.is_authenticated %}{{ current_user.name }}{% endif %}" 
+                                   required 
+                                   {% if current_user.is_authenticated %}readonly style="background: rgba(30, 41, 59, 0.6); color: #cbd5e1;"{% endif %}>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-pearl small fw-semibold">Your Email Address</label>
+                            <input type="email" name="complainant_email" class="form-control form-control-sm" 
+                                   value="{% if current_user.is_authenticated %}{{ current_user.email }}{% endif %}" 
+                                   required 
+                                   {% if current_user.is_authenticated %}readonly style="background: rgba(30, 41, 59, 0.6); color: #cbd5e1;"{% endif %}>
+                        </div>
+                    </div>
+
+                    <!-- User Type & Reported Target Context -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-pearl small fw-semibold">Your Account Role</label>
+                            {% set role_name = current_user.role|title if current_user.is_authenticated else 'Guest User' %}
+                            <input type="text" name="user_type" class="form-control form-control-sm" value="{{ role_name }}" readonly style="background: rgba(30, 41, 59, 0.6); color: #38bdf8;">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-pearl small fw-semibold">Reported Entity Target</label>
+                            {% if job %}
+                                <div class="p-2 rounded d-flex align-items-center justify-content-between" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25);">
+                                    <div class="small text-white text-truncate me-2">
+                                        <i class="bi bi-briefcase text-primary me-1"></i><strong>{{ job.title }}</strong> ({{ job.company.name if job.company else 'N/A' }})
+                                    </div>
+                                    <span class="badge bg-primary text-white" style="font-size: 0.7rem;">Job #{{ job.id }}</span>
+                                </div>
+                            {% else %}
+                                <select name="target_type" class="form-select form-select-sm" id="reportedEntitySelect">
+                                    <option value="Platform / UI" {% if target_type == 'Platform' or target_type == 'Platform / UI' or not target_type %}selected{% endif %}>Platform / UI &amp; Technical Bug</option>
+                                    <option value="Job" {% if target_type == 'Job' %}selected{% endif %}>Job Listing</option>
+                                    <option value="Employer" {% if target_type == 'Employer' %}selected{% endif %}>Employer / Organization</option>
+                                    <option value="Candidate" {% if target_type == 'Candidate' %}selected{% endif %}>Candidate Profile</option>
+                                    <option value="General" {% if target_type == 'General' or target_type == 'Other' %}selected{% endif %}>Other / General Inquiry</option>
+                                </select>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Complaint Category -->
+                    <div class="mb-3">
+                        <label class="form-label text-pearl small fw-semibold">Complaint Category *</label>
+                        <select name="category" class="form-select form-select-sm" required>
+                            <option value="" disabled selected>-- Select Nature of Complaint --</option>
+                            
+                            {% if not current_user.is_authenticated or current_user.is_candidate() %}
+                            <optgroup label="Candidate Concerns">
+                                <option value="Fake Job Listing">Fake / Misleading Job Listing</option>
+                                <option value="Employer Not Responding">Employer Not Responding / Ghosting</option>
+                                <option value="Scam/Fraud Request">Scam / Fraud / Payment Request</option>
+                                <option value="Harassment/Inappropriate Behavior">Harassment or Inappropriate Behavior</option>
+                            </optgroup>
+                            {% endif %}
+
+                            {% if not current_user.is_authenticated or current_user.is_employer() %}
+                            <optgroup label="Employer / Recruiter Concerns">
+                                <option value="Fake Candidate Profile">Fake / Plagiarized Candidate Profile</option>
+                                <option value="Spam Applications">Spam / Bot Applications</option>
+                                <option value="No-Show Candidate">No-Show for Confirmed Interview</option>
+                            </optgroup>
+                            {% endif %}
+
+                            <optgroup label="Technical & Platform Issues">
+                                <option value="UI Bug">UI Bug / Visual Glitch</option>
+                                <option value="Payment Issue">Payment / Billing Issue</option>
+                                <option value="Login/Account Access Issue">Login or Account Access Issue</option>
+                                <option value="General Support">Other Violation / General Report</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <!-- Subject -->
+                    <div class="mb-3">
+                        <label class="form-label text-pearl small fw-semibold">Subject / One-Line Summary *</label>
+                        <input type="text" name="subject" class="form-control form-control-sm" placeholder="e.g. Inaccurate salary details on Python Developer job" required>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label class="form-label text-pearl small fw-semibold">Detailed Description of Issue *</label>
+                        <textarea name="description" class="form-control form-control-sm" rows="5" placeholder="Please describe the incident or technical problem with as much context as possible..." required></textarea>
+                    </div>
+
+                    <!-- Proof Attachment -->
+                    <div class="mb-4">
+                        <label class="form-label text-pearl small fw-semibold">
+                            <i class="bi bi-paperclip me-1"></i>Supporting Proof / Attachment (Optional)
+                        </label>
+                        <input type="file" name="attachment" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.pdf">
+                        <div class="form-text small" style="color: #64748b; font-size: 0.78rem;">
+                            Accepted file formats: JPEG, PNG, PDF (Max 10MB). Upload screenshots, correspondence, or documents verifying your report.
+                        </div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="d-flex align-items-center justify-content-between pt-3 border-top" style="border-color: rgba(255, 255, 255, 0.08) !important;">
+                        <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-secondary px-3">
+                            <i class="bi bi-arrow-left me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-sm btn-danger px-4 py-2 fw-semibold">
+                            <i class="bi bi-send-check me-1"></i> Submit Complaint Ticket
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

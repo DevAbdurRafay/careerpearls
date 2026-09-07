@@ -1,0 +1,58 @@
+{# Reusable Education Card Component #}
+{% set s_date = edu.start_date if edu.start_date is defined else None %}
+{% set e_date = edu.end_date if edu.end_date is defined else None %}
+{% set is_cur_edu = edu.is_current or (not e_date) or (e_date.year is defined and e_date.year >= 2026) or (e_date is string and (e_date >= '2026' or 'Expected' in e_date)) %}
+<div class="cp-education-card mb-3 p-3 position-relative {% if is_cur_edu %}current-edu{% endif %}">
+    <div class="d-flex justify-content-between align-items-start">
+        <div class="flex-grow-1">
+            {% if is_cur_edu %}
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge px-2.5 py-1 rounded-pill fw-semibold" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); font-size: 0.74rem;">
+                    <i class="bi bi-mortarboard-fill me-1"></i>Currently Enrolled
+                </span>
+            </div>
+            {% endif %}
+            <h6 class="fw-bold cp-education-degree mb-1">
+                {{ edu.degree if edu.degree else (edu.get('degree') if edu is mapping else '') }}
+            </h6>
+            <div class="cp-education-institution fw-medium fs-6 mb-2">
+                <i class="bi bi-building me-1 opacity-75"></i>
+                {{ edu.institution if edu.institution else (edu.get('institution') if edu is mapping else '') }}
+            </div>
+            {% set field = edu.field_of_study if edu.field_of_study is defined else (edu.get('field_of_study') if edu is mapping else None) %}
+            {% if field %}
+            <div class="mb-2">
+                <span class="badge cp-education-field-badge">
+                    Field: {{ field }}
+                </span>
+            </div>
+            {% endif %}
+            {% set s_date = edu.start_date if edu.start_date is defined else None %}
+            {% set e_date = edu.end_date if edu.end_date is defined else None %}
+            {% if s_date or e_date %}
+            <div class="cp-education-dates small mt-1">
+                <i class="bi bi-calendar3 me-1 opacity-75"></i>
+                {% if s_date %}{{ s_date.strftime('%Y') if s_date is defined and s_date.strftime is defined else s_date }}{% endif %}
+                {% if s_date and e_date %} – {% elif s_date and (edu.is_current or not e_date) %} – {% endif %}
+                {% if e_date %}
+                    {{ e_date.strftime('%Y') if e_date is defined and e_date.strftime is defined else e_date }}{% if edu.is_current or (e_date.year is defined and e_date.year > 2025) %} (Expected){% endif %}
+                {% elif edu.is_current %}
+                    Present
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% set edu_id = edu.id if edu.id is defined else loop.index0 %}
+        {% if edu.id is defined %}
+        <form method="POST" action="{{ url_for('candidate.delete_education', edu_id=edu.id) }}" class="ms-2">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-close cp-btn-close-theme" style="font-size: 0.65rem" title="Remove education entry"></button>
+        </form>
+        {% elif edu is mapping and 'delete_url' in edu %}
+        <form method="POST" action="{{ edu.delete_url }}" class="ms-2">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-close cp-btn-close-theme" style="font-size: 0.65rem" title="Remove education entry"></button>
+        </form>
+        {% endif %}
+    </div>
+</div>

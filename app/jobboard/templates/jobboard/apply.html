@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Apply — {{ job.title }}{% endblock %}
+
+{% block content %}
+<div class="py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="cp-card">
+                <h2>Apply to {{ job.title }}</h2>
+                <p class="text-pearl">{{ job.company.name if job.company else 'Company' }}</p>
+                <hr style="border-color:var(--cp-border)">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.resume_id.label(class="form-label") }}
+                        {{ form.resume_id(class="form-select") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.cover_letter.label(class="form-label") }}
+                        {{ form.cover_letter(class="form-control", rows=6) }}
+                    </div>
+                    {{ form.submit(class="btn btn-cp-primary") }}
+                    <a href="{{ url_for('jobboard.job_detail', job_id=job.id) }}" class="btn btn-cp-outline ms-2">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

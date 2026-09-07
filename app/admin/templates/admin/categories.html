@@ -1,0 +1,60 @@
+{% extends "admin/admin_base.html" %}
+{% block admin_content %}
+<div class="admin-card">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="admin-card-title mb-0">Job Categories</div>
+        <button class="btn btn-sm btn-primary admin-btn-sm" data-bs-toggle="modal" data-bs-target="#addCatModal">
+            <i class="bi bi-plus"></i> Add Category
+        </button>
+    </div>
+    <div class="table-responsive">
+        <table class="table admin-table table-dark table-hover">
+            <thead><tr><th>Name</th><th>Jobs Using</th><th>Actions</th></tr></thead>
+            <tbody>
+            {% for item in categories %}
+            <tr>
+                <td>{{ item.category.name }}</td>
+                <td class="text-muted">{{ item.job_count }}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-info admin-btn-sm" data-bs-toggle="modal" data-bs-target="#editCat{{ item.category.id }}">Edit</button>
+                    <form method="POST" action="{{ url_for('admin.delete_category', cat_id=item.category.id) }}" class="d-inline" onsubmit="return confirm('Delete this category?')">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger admin-btn-sm" {% if item.job_count > 0 %}disabled title="Cannot delete: {{ item.job_count }} jobs use this category"{% endif %}>Delete</button>
+                    </form>
+                </td>
+            </tr>
+            <div class="modal fade" id="editCat{{ item.category.id }}" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                    <div class="modal-content bg-dark border-secondary">
+                        <div class="modal-header border-secondary"><h6 class="modal-title">Edit Category</h6><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+                        <form method="POST" action="{{ url_for('admin.edit_category', cat_id=item.category.id) }}">
+                            <div class="modal-body">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <input type="text" name="name" class="form-control form-control-sm bg-dark border-secondary" value="{{ item.category.name }}" required>
+                            </div>
+                            <div class="modal-footer border-secondary"><button type="submit" class="btn btn-sm btn-primary">Save</button></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="addCatModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-header border-secondary"><h6 class="modal-title">Add Category</h6><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+            <form method="POST" action="{{ url_for('admin.add_category') }}">
+                <div class="modal-body">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="text" name="name" class="form-control form-control-sm bg-dark border-secondary" required>
+                </div>
+                <div class="modal-footer border-secondary"><button type="submit" class="btn btn-sm btn-primary">Add</button></div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

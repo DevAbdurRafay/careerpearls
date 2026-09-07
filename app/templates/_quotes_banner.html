@@ -1,0 +1,106 @@
+<div class="cp-quotes-banner" id="quotesBanner">
+    <div class="cp-quotes-container">
+        <div class="cp-quote-text" id="quoteText"></div>
+        <div class="cp-quote-indicator">
+            <span class="cp-quote-dot" data-index="0"></span>
+            <span class="cp-quote-dot" data-index="1"></span>
+            <span class="cp-quote-dot" data-index="2"></span>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    const candidateQuotes = [
+        "Your next opportunity awaits",
+        "Every application is progress",
+        "Skills open doors to success",
+        "Persistence leads to breakthroughs",
+        "Your dream job is closer",
+        "Growth mindset changes everything",
+        "First impressions matter most",
+        "Invest in yourself daily",
+        "Network with purpose",
+        "Stay curious, keep learning"
+    ];
+
+    const employerQuotes = [
+        "Great teams build great companies",
+        "Right talent transforms business",
+        "Hiring shapes your future",
+        "Invest in people, grow together",
+        "Diversity drives innovation",
+        "Culture attracts top talent",
+        "Leadership starts with hiring",
+        "Build teams that last",
+        "Vision needs execution through people",
+        "Your next hire changes everything"
+    ];
+
+    const darkColors = [
+        'linear-gradient(135deg, #4facfe, #00f2fe)',
+        'linear-gradient(135deg, #7b2ff7, #a855f7)',
+        'linear-gradient(135deg, #f472b6, #ec4899)',
+        'linear-gradient(135deg, #38bdf8, #0ea5e9)',
+        'linear-gradient(135deg, #a78bfa, #8b5cf6)',
+        'linear-gradient(135deg, #fbbf24, #f59e0b)',
+        'linear-gradient(135deg, #34d399, #10b981)',
+        'linear-gradient(135deg, #f87171, #ef4444)'
+    ];
+
+    const lightColors = [
+        'linear-gradient(135deg, #0284c7, #0369a1)', // Rich Cyan / Sapphire Blue
+        'linear-gradient(135deg, #6d28d9, #7c3aed)', // Rich Purple
+        'linear-gradient(135deg, #db2777, #be185d)', // Rich Pink / Rose
+        'linear-gradient(135deg, #0284c7, #2563eb)', // Rich Sky / Ocean Blue
+        'linear-gradient(135deg, #7c3aed, #4f46e5)', // Rich Indigo / Violet
+        'linear-gradient(135deg, #d97706, #b45309)', // Rich Amber / Gold
+        'linear-gradient(135deg, #059669, #047857)', // Rich Emerald Green
+        'linear-gradient(135deg, #dc2626, #b91c1c)'  // Rich Coral Red
+    ];
+
+    const isEmployerDashboard = document.body.classList.contains('employer-page') && 
+                                   window.location.pathname.includes('/employer');
+    
+    const quotes = isEmployerDashboard ? employerQuotes : candidateQuotes;
+    let currentIndex = 0;
+    const quoteText = document.getElementById('quoteText');
+    const dots = document.querySelectorAll('.cp-quote-dot');
+
+    function showQuote(index) {
+        quoteText.style.opacity = '0';
+        quoteText.style.transform = 'translateY(10px)';
+        
+        setTimeout(() => {
+            quoteText.textContent = quotes[index];
+            
+            const isLight = (document.documentElement.getAttribute('data-theme') === 'light') || 
+                            (localStorage.getItem('cp-theme-mode') === 'light');
+            const activeColors = isLight ? lightColors : darkColors;
+            
+            // Set dynamic gradient color
+            const colorIndex = index % activeColors.length;
+            quoteText.style.background = activeColors[colorIndex];
+            quoteText.style.webkitBackgroundClip = 'text';
+            quoteText.style.webkitTextFillColor = 'transparent';
+            quoteText.style.backgroundClip = 'text';
+            
+            quoteText.style.opacity = '1';
+            quoteText.style.transform = 'translateY(0)';
+        }, 300);
+
+        dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === index);
+        });
+    }
+
+    function nextQuote() {
+        currentIndex = (currentIndex + 1) % quotes.length;
+        showQuote(currentIndex);
+    }
+
+    // Initialize
+    showQuote(0);
+    setInterval(nextQuote, 5000);
+})();
+</script>

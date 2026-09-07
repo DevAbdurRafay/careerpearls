@@ -1,0 +1,79 @@
+{% macro empty_state(icon='bi-inbox', title='No results found', description='There are no items to display at this time.', action_text=None, action_url=None, size='normal') %}
+<div class="cp-empty-state {% if size == 'small' %}cp-empty-state-sm{% endif %}">
+    <div class="cp-empty-state-icon">
+        <i class="bi {{ icon }}"></i>
+    </div>
+    <h3 class="cp-empty-state-title">{{ title }}</h3>
+    <p class="cp-empty-state-description">{{ description }}</p>
+    {% if action_text and action_url %}
+    <div class="cp-empty-state-action">
+        <a href="{{ action_url }}" class="btn btn-cp-primary">{{ action_text }}</a>
+    </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro empty_state_applications(job_list_url) %}
+{{ empty_state(
+    icon='bi-inbox',
+    title='No applications yet',
+    description='You haven\'t applied to any jobs yet. Start exploring opportunities!',
+    action_text='Browse Jobs',
+    action_url=job_list_url
+) }}
+{% endmacro %}
+
+{% macro empty_state_jobs(post_job_url) %}
+{{ empty_state(
+    icon='bi-briefcase',
+    title='No jobs posted yet',
+    description='You haven\'t posted any job listings. Start hiring today!',
+    action_text='Post a Job',
+    action_url=post_job_url
+) }}
+{% endmacro %}
+
+{% macro empty_state_job_search() %}
+{{ empty_state(
+    icon='bi-search',
+    title='No jobs found',
+    description='No jobs found matching your criteria. Try adjusting your search filters.'
+) }}
+{% endmacro %}
+
+{% macro empty_state_saved_jobs(job_list_url) %}
+{{ empty_state(
+    icon='bi-heart',
+    title='No saved jobs',
+    description='Save jobs to view them later. Browse our job listings to find opportunities that interest you.',
+    action_text='Browse Jobs',
+    action_url=job_list_url
+) }}
+{% endmacro %}
+
+{% macro empty_state_interviews() %}
+{{ empty_state(
+    icon='bi-calendar-x',
+    title='No upcoming interviews',
+    description='You don\'t have any scheduled interviews at this time.',
+    size='small'
+) }}
+{% endmacro %}
+
+{% macro empty_state_candidates() %}
+{{ empty_state(
+    icon='bi-people',
+    title='No candidates yet',
+    description='No applications have been received for your job postings yet.',
+    size='small'
+) }}
+{% endmacro %}
+
+{% macro empty_state_generic(message='No data available') %}
+{{ empty_state(
+    icon='bi-inbox',
+    title='No data available',
+    description=message,
+    size='small'
+) }}
+{% endmacro %}

@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+{% block title %}Company Profile — CareerPearls{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/onboarding-wizard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid pt-2">
+    <!-- Profile Completeness Indicator -->
+    <div class="cp-card mb-2 p-4 border-0" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(59, 130, 246, 0.12)); border-radius: 18px; border: 1px solid rgba(168, 85, 247, 0.25)!important;">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+            <div class="d-flex align-items-center gap-2">
+                <div class="p-2 rounded-circle" style="background: rgba(168, 85, 247, 0.2);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <div>
+                    <h6 class="fw-bold text-white mb-0">Profile Completion Status</h6>
+                    <small class="text-pearl">Complete your profile to improve verification chances and attract top talent.</small>
+                </div>
+            </div>
+            {% if completion_pct == 100 %}
+            <span class="badge bg-success px-3 py-2 fs-6 rounded-pill"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1"><polyline points="20 6 9 17 4 12"/></svg> 100% Complete</span>
+            {% else %}
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-primary px-3 py-2 fs-6 rounded-pill" style="background: linear-gradient(135deg, #a855f7, #3b82f6)!important;">{{ completion_pct }}% Completed</span>
+            </div>
+            {% endif %}
+        </div>
+        <div class="progress mt-3" style="height: 12px; background: rgba(255,255,255,0.08); border-radius: 20px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated {% if completion_pct == 100 %}bg-success{% else %}bg-info{% endif %}" role="progressbar" style="width: {{ completion_pct }}%; background: linear-gradient(135deg, #a855f7, #3b82f6) !important;" aria-valuenow="{{ completion_pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+    </div>
+
+    <!-- Header Card -->
+    <div class="profile-header-card mb-2">
+        <div class="profile-avatar-wrap">
+            <div class="profile-avatar-preview" id="companyLogoPreview">
+                {% if company.logo_path %}
+                <img src="{{ url_for('uploaded_file', filename=company.logo_path) }}" alt="{{ company.name }}" class="profile-avatar" data-profile-lightbox title="Click to view full logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="profile-avatar-placeholder" style="display:none;">{{ company.name[0]|upper if company.name else 'C' }}</div>
+                {% else %}
+                <div class="profile-avatar-placeholder">{{ company.name[0]|upper if company.name else 'C' }}</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="flex-grow-1">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h2 class="mb-1 fw-bold">{{ company.name }}</h2>
+                    {% if company.industry %}<p class="cp-profile-headline mb-2">{{ company.industry }}</p>{% endif %}
+                    {% if company.founded_date %}
+                    <p class="text-pearl mb-2 small">
+                        <i class="bi bi-calendar3 me-1"></i>
+                        Founded: {{ company.founded_date.strftime('%b %Y') }}
+                        &nbsp;&bull;&nbsp;
+                        <span id="companyAgeDynamic" data-founded="{{ company.founded_date.isoformat() }}">
+                            <span class="text-muted">Calculating...</span>
+                        </span>
+                    </p>
+                    {% endif %}
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        {% if company.is_verified %}
+                        <span class="badge profile-meta-badge profile-meta-badge-accent">Verified Organization</span>
+                        {% endif %}
+                        {% if company.website %}<span class="text-pearl small"><i class="bi bi-globe me-1"></i>{{ company.website }}</span>{% endif %}
+                    </div>
+                </div>
+                <!-- Professional Change Logo Button -->
+                <form method="POST" enctype="multipart/form-data" data-photo-crop-form id="companyLogoForm">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="form_type" value="logo">
+                    <input type="file" id="companyLogoInput" name="logo" accept="image/png,image/jpeg,image/jpg,image/webp" class="d-none" data-photo-crop-input>
+                    <input type="hidden" id="companyLogoCropped" name="cropped_image">
+                    <button type="button" class="btn btn-cp-outline btn-sm" data-photo-crop-trigger="companyLogoInput">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                        Change Logo
+                    </button>
+                    <button type="submit" class="btn btn-cp-success btn-sm" id="companyLogoSave" style="display:none">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><polyline points="20 6 9 17 4 12"/></svg>
+                        Save Logo
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="cp-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="fw-bold text-white mb-0">Company Details</h5>
+                    <button type="button" id="companyEditToggleBtn" class="btn btn-cp-outline btn-sm d-flex align-items-center gap-1" onclick="enableCompanyEdit()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        Edit Details
+                    </button>
+                </div>
+                <form method="POST" id="companyProfileForm">
+                    {{ form.hidden_tag() }}
+                    <fieldset id="companyFieldset" disabled class="border-0 p-0 m-0">
+                        <div class="mb-3">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control cp-input-glow") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.recruiter_name.label(class="form-label") }}
+                            {{ form.recruiter_name(class="form-control cp-input-glow", value=current_user.recruiter.name if current_user.recruiter else '') }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label") }}
+                            {{ form.title(class="form-control cp-input-glow", value=current_user.recruiter.title if current_user.recruiter else '') }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.industry.label(class="form-label") }}
+                            {{ form.industry(class="form-control cp-input-glow") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.company_size.label(class="form-label") }}
+                            {{ form.company_size(class="form-select cp-input-glow") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.location.label(class="form-label") }}
+                            {{ form.location(class="form-control cp-input-glow") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.official_email.label(class="form-label") }}
+                            {{ form.official_email(class="form-control cp-input-glow") }}
+                            <small class="text-pearl-muted">Official business email (separate from login email)</small>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.domain.label(class="form-label") }}
+                            {{ form.domain(class="form-control cp-input-glow") }}
+                            <small class="text-pearl-muted">Company website domain (e.g., example.com)</small>
+                        </div>
+                        <div class="mb-3">
+                            {{ form.phone.label(class="form-label") }}
+                            {{ form.phone(class="form-control cp-input-glow") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.ntn_id.label(class="form-label") }}
+                            {{ form.ntn_id(class="form-control cp-input-glow") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.website.label(class="form-label") }}
+                            {{ form.website(class="form-control cp-input-glow") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control cp-input-glow", rows=5) }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Founded Date</label>
+                            <input type="date" name="founded_date" id="founded_date" class="form-control cp-input-glow"
+                                   value="{{ company.founded_date.strftime('%Y-%m-%d') if company.founded_date else '' }}"
+                                   min="1950-01-01"
+                                   max="{{ now.strftime('%Y-%m-%d') if now is defined and now else '' }}">
+                            <small class="text-pearl-muted">When was your company established (1950 to present)? Company age will be displayed dynamically on your profile.</small>
+                        </div>
+                    </fieldset>
+                    <div id="companyEditActions" class="mt-4 pt-2 border-top d-flex gap-2" style="display:none!important">
+                        <button type="button" class="btn btn-cp-outline px-4 py-2" onclick="cancelCompanyEdit()">Cancel</button>
+                        {{ form.submit(class="btn btn-cp-primary px-4 py-2") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Danger Zone: Account Deactivation -->
+    <div class="row justify-content-center mt-4">
+        <div class="col-lg-8">
+            <div class="cp-card cp-danger-zone-card" style="border: 1.5px solid rgba(239, 68, 68, 0.4);">
+                <div class="card-header cp-danger-zone-header pb-3 mb-2" style="border-bottom: 1.5px solid rgba(239, 68, 68, 0.25);">
+                    <h5 class="mb-0 cp-danger-zone-title text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>Danger Zone</h5>
+                </div>
+                <div class="card-body pt-2">
+                    <div class="alert alert-warning my-3 cp-warning-alert">
+                        <strong class="cp-warning-title"><i class="bi bi-shield-exclamation me-1"></i>Warning:</strong> <span class="cp-warning-text">Deactivating your account will remove your access to the platform. Your email will be freed up for new registrations.</span>
+                    </div>
+                    
+                    <div class="my-4">
+                        <strong class="d-block mb-3" style="letter-spacing: -0.2px;">Company Summary:</strong>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="p-3 rounded h-100 cp-info-box" style="min-height: 80px;">
+                                    <small class="text-pearl d-block mb-1">Company Name</small>
+                                    <strong class="fs-6">{{ company.name }}</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 rounded h-100 cp-info-box" style="min-height: 80px;">
+                                    <small class="text-pearl d-block mb-1">Industry</small>
+                                    <strong class="fs-6">{{ company.industry }}</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 rounded h-100 cp-info-box" style="min-height: 80px;">
+                                    <small class="text-pearl d-block mb-1">Website</small>
+                                    <strong class="fs-6">{{ company.website or 'Not specified' }}</strong>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 rounded h-100 cp-info-box" style="min-height: 80px;">
+                                    <small class="text-pearl d-block mb-1">Verification Status</small>
+                                    <span class="badge {% if company.is_verified %}bg-success{% else %}bg-warning text-dark{% endif %} px-3 py-2">
+                                        {{ company.verification_status }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr style="border-color: rgba(239, 68, 68, 0.3); margin: 1.5rem 0;">
+                    
+                    <form method="POST" action="{{ url_for('employer.deactivate_account') }}" id="deactivateForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="action" value="deactivate">
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Reason for Deactivation</label>
+                            <select name="reason" class="form-select cp-input-glow" required>
+                                <option value="">Select a business reason</option>
+                                <option value="hiring_completed">Completed our hiring goals / Positions filled</option>
+                                <option value="company_restructuring">Company restructuring or budget adjustment</option>
+                                <option value="pause_hiring">Temporarily pausing recruitment operations</option>
+                                <option value="switching_recruitment_method">Switching to alternative hiring channels</option>
+                                <option value="business_downscaling">Business closure or downscaling</option>
+                                <option value="dissatisfied_experience">Candidate response did not match expectations</option>
+                                <option value="other">Other business reason</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label text-danger">Confirm Password <span class="text-danger">*</span></label>
+                            <input type="password" name="password" class="form-control border-danger" required>
+                            {% if not current_user.password_hash %}
+                            <small class="text-warning">Since you use Google Auth, enter your email address to confirm.</small>
+                            {% else %}
+                            <small class="text-muted">Enter your account password to confirm deactivation.</small>
+                            {% endif %}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to deactivate your account? This action cannot be undone.')">
+                            Deactivate Account
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
+<script src="{{ url_for('static', filename='js/photo-crop.js') }}"></script>
+<script>
+(function() {
+    var el = document.getElementById('companyAgeDynamic');
+    if (!el) return;
+    function updateAge() {
+        var founded = new Date(el.dataset.founded + 'T00:00:00');
+        var now = new Date();
+        var years = now.getFullYear() - founded.getFullYear();
+        var months = now.getMonth() - founded.getMonth();
+        var days = now.getDate() - founded.getDate();
+        if (days < 0) { months--; }
+        if (months < 0) { months += 12; years--; }
+        var parts = [];
+        if (years > 0) parts.push(years + (years === 1 ? ' year' : ' years'));
+        if (months > 0) parts.push(months + (months === 1 ? ' month' : ' months'));
+        if (parts.length === 0) parts.push('Less than a month');
+        el.innerHTML = '<span class="text-success fw-semibold"><i class="bi bi-building me-1"></i>' + parts.join(' ') + ' in business</span>';
+    }
+    updateAge();
+    // Update at midnight
+    var now = new Date();
+    var msToMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1) - now;
+    setTimeout(function() { updateAge(); setInterval(updateAge, 86400000); }, msToMidnight);
+})();
+
+function enableCompanyEdit() {
+    try {
+        var fieldset = document.getElementById('companyFieldset');
+        var actions  = document.getElementById('companyEditActions');
+        var toggleBtn = document.getElementById('companyEditToggleBtn');
+        if (fieldset) fieldset.disabled = false;
+        if (actions)  { actions.style.removeProperty('display'); actions.style.setProperty('display', 'flex', 'important'); }
+        if (toggleBtn) toggleBtn.style.display = 'none';
+        
+        // Highlight fields
+        document.querySelectorAll('#companyProfileForm .form-control, #companyProfileForm .form-select').forEach(function(el) {
+            el.style.transition = 'box-shadow 0.35s ease, border-color 0.35s ease';
+            el.style.borderColor = 'var(--accent)';
+            el.style.boxShadow  = '0 0 0 3px var(--accent-glow)';
+        });
+    } catch (error) {
+        console.error('Error enabling company edit:', error);
+    }
+}
+
+function cancelCompanyEdit() {
+    try {
+        var fieldset  = document.getElementById('companyFieldset');
+        var actions   = document.getElementById('companyEditActions');
+        var toggleBtn = document.getElementById('companyEditToggleBtn');
+        if (fieldset) fieldset.disabled = true;
+        if (actions)  actions.style.setProperty('display', 'none', 'important');
+        if (toggleBtn) toggleBtn.style.removeProperty('display');
+        
+        document.querySelectorAll('#companyProfileForm .form-control, #companyProfileForm .form-select').forEach(function(el) {
+            el.style.borderColor = '';
+            el.style.boxShadow  = '';
+        });
+    } catch (error) {
+        console.error('Error canceling company edit:', error);
+    }
+}
+
+// Disable future date selection for founded_date
+const fdInput = document.getElementById('founded_date');
+if (fdInput) {
+    fdInput.setAttribute('max', new Date().toISOString().split('T')[0]);
+}
+</script>
+{% endblock %}

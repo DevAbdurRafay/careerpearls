@@ -1,0 +1,14 @@
+{% extends "admin/admin_base.html" %}
+{% block admin_content %}
+<div class="admin-card">
+    <div class="admin-card-title">Platform Settings</div>
+    <p class="text-muted small mb-0">Configure OAuth, email, and platform settings via the <code>.env</code> file. This page will host runtime settings in a future release.</p>
+    <hr class="border-secondary">
+    <ul class="small text-muted">
+        <li>Google OAuth: set <code>GOOGLE_CLIENT_ID</code> and <code>GOOGLE_CLIENT_SECRET</code></li>
+        <li>GitHub OAuth: set <code>GITHUB_CLIENT_ID</code> and <code>GITHUB_CLIENT_SECRET</code></li>
+        <li>Email: set <code>MAIL_USERNAME</code> and <code>MAIL_PASSWORD</code></li>
+        <li>Database: set <code>DATABASE_URL</code> for PostgreSQL in production</li>
+    </ul>
+</div>
+{% endblock %}

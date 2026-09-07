@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerPearls - Find Your Dream Career</title>
+    {% include '_favicon.html' %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'Gill Sans';
+            src: local('Gill Sans'), local('Gill Sans MT'), local('Gill Sans MT Pro'), local('Gill Sans MT W01');
+            font-weight: normal;
+            font-style: normal;
+        }
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/flash-toast.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+    <script>
+        (function() {
+            var theme = localStorage.getItem('cp-theme-mode') || 'light';
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.setAttribute('data-accent', 'purple');
+        })();
+    </script>
+</head>
+<body class="landing-page">
+{% from '_job_card.html' import render_job_card %}
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top cp-navbar cp-navbar-glass" id="landingNav">
+    <div class="container-fluid px-3 px-lg-5">
+        {% set brand_href = url_for('index') %}
+        {% include '_navbar_brand.html' %}
+        <button class="navbar-toggler border-0 px-1 py-0" type="button" data-bs-toggle="collapse" data-bs-target="#navLanding">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navLanding">
+            <ul class="navbar-nav mx-auto align-items-center gap-1 my-2 my-lg-0 cp-nav-links">
+                <li class="nav-item"><a class="nav-link px-3 active fw-bold text-white" href="{{ url_for('index') }}">Home</a></li>
+                <li class="nav-item"><a class="nav-link px-3" href="#features" data-section="features">Features</a></li>
+                <li class="nav-item"><a class="nav-link px-3" href="#how-it-works" data-section="how-it-works">How It Works</a></li>
+                <li class="nav-item"><a class="nav-link px-3" href="#featured-jobs" data-section="featured-jobs">Jobs</a></li>
+                <li class="nav-item"><a class="nav-link px-3" href="{{ url_for('about') }}">About</a></li>
+                <li class="nav-item"><a class="nav-link px-3" href="#contact" data-section="contact">Contact</a></li>
+            </ul>
+            <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0 cp-nav-user-actions">
+                {% if current_user.is_authenticated and current_user.is_candidate() %}
+                    <a href="{{ url_for('candidate.dashboard') }}" class="btn btn-cp-primary btn-sm px-4 fw-semibold">
+                        <i class="bi bi-speedometer2 me-1"></i>Candidate Dashboard
+                    </a>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-cp-outline px-3 text-danger" title="Logout">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </a>
+                {% elif current_user.is_authenticated and current_user.is_employer() %}
+                    <a href="{{ url_for('employer.dashboard') }}" class="btn btn-cp-primary btn-sm px-4 fw-semibold">
+                        <i class="bi bi-speedometer2 me-1"></i>Employer Dashboard
+                    </a>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-cp-outline px-3 text-danger" title="Logout">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-cp-primary btn-sm px-4 py-2 fw-semibold d-inline-flex align-items-center gap-1.5 text-decoration-none" style="border-radius: 12px; font-size: 0.9rem; box-shadow: 0 4px 18px rgba(2, 132, 199, 0.4);">
+                        <span>Get Started</span>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<section class="lp-hero" id="hero">
+    <div class="lp-hero-bg"></div>
+    <div class="container-xl position-relative" style="z-index:2;">
+        <div class="row align-items-center g-4" style="padding-top: 2.5rem; padding-bottom: 3rem; min-height: calc(100vh - 72px);">
+            <div class="col-lg-7">
+                <div class="lp-badge mb-3"><i class="bi bi-stars me-2"></i>Pakistan's #1 Career Platform</div>
+                <h1 class="lp-hero-title mb-2">Find Your <span class="lp-gradient-text">Dream Career</span> With CareerPearls</h1>
+                <p class="lp-hero-sub mb-3">Connect with top verified employers. Discover opportunities that match your skills. Join 50,000+ professionals building their future.</p>
+                
+                <div class="lp-search-box mb-3">
+                    <form action="{{ url_for('explore') }}" method="GET">
+                        <div class="lp-search-inner">
+                            <div class="lp-search-field lp-search-main">
+                                <i class="bi bi-search lp-field-icon"></i>
+                                <input type="text" name="q" class="lp-field-input" placeholder="Job title, skills, or company...">
+                            </div>
+                            <div class="lp-search-divider d-none d-md-block"></div>
+                            <div class="lp-search-field lp-search-sm d-none d-md-flex dropdown">
+                                <i class="bi bi-geo-alt lp-field-icon"></i>
+                                <input type="hidden" name="location" id="lpCityInput" value="{{ request.args.get('location', '') }}">
+                                <button type="button" class="lp-dropdown-trigger" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span>{% if request.args.get('location') %}{{ request.args.get('location') }}{% else %}All Cities{% endif %}</span>
+                                    <i class="bi bi-chevron-down ms-auto lp-dropdown-chevron"></i>
+                                </button>
+                                <ul class="dropdown-menu lp-custom-dropdown-menu shadow-2xl">
+                                    <li><a class="dropdown-item lp-dd-item {% if not request.args.get('location') %}active{% endif %}" href="#" data-val="">All Cities</a></li>
+                                    <li><a class="dropdown-item lp-dd-item {% if request.args.get('location') == 'Karachi' %}active{% endif %}" href="#" data-val="Karachi">Karachi</a></li>
+                                    <li><a class="dropdown-item lp-dd-item {% if request.args.get('location') == 'Lahore' %}active{% endif %}" href="#" data-val="Lahore">Lahore</a></li>
+                                    <li><a class="dropdown-item lp-dd-item {% if request.args.get('location') == 'Islamabad' %}active{% endif %}" href="#" data-val="Islamabad">Islamabad</a></li>
+                                    <li><a class="dropdown-item lp-dd-item {% if request.args.get('location') == 'Rawalpindi' %}active{% endif %}" href="#" data-val="Rawalpindi">Rawalpindi</a></li>
+                                    <li><a class="dropdown-item lp-dd-item {% if request.args.get('location') == 'Peshawar' %}active{% endif %}" href="#" data-val="Peshawar">Peshawar</a></li>
+                                    <li><a class="dropdown-item lp-dd-item {% if request.args.get('location') == 'Remote' %}active{% endif %}" href="#" data-val="Remote">Remote</a></li>
+                                </ul>
+                            </div>
+                            <div class="lp-search-divider d-none d-md-block"></div>
+                            <div class="lp-search-field lp-search-sm d-none d-md-flex dropdown">
+                                <i class="bi bi-cash-stack lp-field-icon"></i>
+                                <input type="hidden" name="salary" id="lpSalaryInput" value="{{ request.args.get('salary', '') }}">
+                                <button type="button" class="lp-dropdown-trigger" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <span>
+                                        {% if request.args.get('salary') == '30000' %}PKR 30k+
+                                        {% elif request.args.get('salary') == '50000' %}PKR 50k+
+                                        {% elif request.args.get('salary') == '80000' %}PKR 80k+
+                                        {% elif request.args.get('salary') == '100000' %}PKR 100k+
+                                        {% elif request.args.get('salary') == '150000' %}PKR 150k+
+                                        {% else %}Any Salary{% endif %}
+                                    </span>
+                                    <i class="bi bi-chevron-down ms-auto lp-dropdown-chevron"></i>
+                                </button>
+                                <ul class="dropdown-menu lp-custom-dropdown-menu shadow-2xl">
+                                    <li><a class="dropdown-item lp-dd-item {% if not request.args.get('salary') %}active{% endif %}" href="#" data-val="">Any Salary</a></li>
+                                    <li><a class="dropdown-item lp-dd-item {% if request.args.get('salary') == '30000' %}active{% endif %}" href="#" data-val="30000">PKR 30k+</a></li>
+                                    <li><a class="dropdown-item lp-dd-item {% if request.args.get('salary') == '50000' %}active{% endif %}" href="#" data-val="50000">PKR 50k+</a></li>
+                                    <li><a class="dropdown-item lp-dd-item {% if request.args.get('salary') == '80000' %}active{% endif %}" href="#" data-val="80000">PKR 80k+</a></li>
+                                    <li><a class="dropdown-item lp-dd-item {% if request.args.get('salary') == '100000' %}active{% endif %}" href="#" data-val="100000">PKR 100k+</a></li>
+                                    <li><a class="dropdown-item lp-dd-item {% if request.args.get('salary') == '150000' %}active{% endif %}" href="#" data-val="150000">PKR 150k+</a></li>
+                                </ul>
+                            </div>
+                            <button type="submit" class="lp-search-btn"><i class="bi bi-search me-1"></i>Search</button>
+                        </div>
+                    </form>
+                    <div class="lp-search-hints mt-3">
+                        <span class="lp-hint-label">Trending:</span>
+                        <a href="{{ url_for('explore') }}?q=Python+Developer" class="lp-hint-tag">Python Dev</a>
+                        <a href="{{ url_for('explore') }}?q=React+Developer" class="lp-hint-tag">React Dev</a>
+                        <a href="{{ url_for('explore') }}?q=Data+Scientist" class="lp-hint-tag">Data Science</a>
+                        <a href="{{ url_for('explore') }}?q=UI+UX+Designer" class="lp-hint-tag">UI/UX Design</a>
+                    </div>
+                </div>
+                <div class="lp-stats-row">
+                    <div class="lp-stat"><div class="lp-stat-num">{{ active_jobs or '0' }}+</div><div class="lp-stat-lbl">Active Jobs</div></div>
+                    <div class="lp-stat-sep"></div>
+                    <div class="lp-stat"><div class="lp-stat-num">{{ registered_candidates or '0' }}+</div><div class="lp-stat-lbl">Professionals</div></div>
+                    <div class="lp-stat-sep"></div>
+                    <div class="lp-stat"><div class="lp-stat-num">{{ partner_companies or '0' }}+</div><div class="lp-stat-lbl">Companies</div></div>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-flex justify-content-center align-items-center">
+                <div class="lp-hero-visual">
+                    {% if top_paying_job %}
+                    <div class="lp-float-card lp-fc-1">
+                        <div class="lp-fc-icon" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); color: #38bdf8;"><i class="bi bi-diagram-3-fill"></i></div>
+                        <div>
+                            <div class="lp-fc-title">{{ top_paying_job.title }}</div>
+                            <div class="lp-fc-sub">{{ (top_paying_job.company.name if top_paying_job.company else 'Analysis Workforce') }} &bull; {{ (top_paying_job.employment_type|replace('_', ' ')|title if top_paying_job.employment_type else 'Full Time') }}</div>
+                        </div>
+                    </div>
+                    <div class="lp-float-card lp-fc-2">
+                        <div class="lp-fc-icon lp-fc-green"><i class="bi bi-check-circle-fill"></i></div>
+                        <div>
+                            <div class="lp-fc-title">Highest Offer</div>
+                            <div class="lp-fc-sub">
+                                {% if top_paying_job.salary_range %}
+                                    {{ top_paying_job.salary_range }}{% if not ('/ mo' in top_paying_job.salary_range or '/ month' in top_paying_job.salary_range) %} / mo{% endif %}
+                                {% elif top_paying_job.salary_min and top_paying_job.salary_max %}
+                                    PKR {{ '{:,}'.format(top_paying_job.salary_min) }} - {{ '{:,}'.format(top_paying_job.salary_max) }} / mo
+                                {% elif top_paying_job.salary_max %}
+                                    Up to PKR {{ '{:,}'.format(top_paying_job.salary_max) }} / mo
+                                {% else %}
+                                    PKR 180,000 - 280,000 / mo
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="lp-float-card lp-fc-3">
+                        <div class="lp-fc-icon lp-fc-purple"><i class="bi bi-people-fill"></i></div>
+                        <div>
+                            <div class="lp-fc-title">
+                                {% if top_paying_job.applications.count() > 0 %}
+                                    {{ top_paying_job.applications.count() }} Applicant{% if top_paying_job.applications.count() != 1 %}s{% endif %}
+                                {% else %}
+                                    Active Hiring
+                                {% endif %}
+                            </div>
+                            <div class="lp-fc-sub">{% if top_paying_job.applications.count() > 0 %}Applied for this role{% else %}Open for applications{% endif %}</div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="lp-float-card lp-fc-1">
+                        <div class="lp-fc-icon" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); color: #38bdf8;"><i class="bi bi-briefcase-fill"></i></div>
+                        <div>
+                            <div class="lp-fc-title">Direct Hiring Platform</div>
+                            <div class="lp-fc-sub">CareerPearls &bull; Verified Jobs</div>
+                        </div>
+                    </div>
+                    <div class="lp-float-card lp-fc-2">
+                        <div class="lp-fc-icon lp-fc-green"><i class="bi bi-shield-check"></i></div>
+                        <div>
+                            <div class="lp-fc-title">100% Authentic Employers</div>
+                            <div class="lp-fc-sub">Zero Ghost Jobs</div>
+                        </div>
+                    </div>
+                    <div class="lp-float-card lp-fc-3">
+                        <div class="lp-fc-icon lp-fc-purple"><i class="bi bi-lightning-charge-fill"></i></div>
+                        <div>
+                            <div class="lp-fc-title">Direct Talent Pipeline</div>
+                            <div class="lp-fc-sub">Fast-Track Interviews</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="lp-hero-orb lp-orb-1"></div>
+                    <div class="lp-hero-orb lp-orb-2"></div>
+                    <div class="lp-hero-orb lp-orb-3"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="lp-stats-band">
+    <div class="container-xl">
+        <div class="row g-0">
+            <div class="col-6 col-md-3"><div class="lp-band-item"><i class="bi bi-briefcase-fill"></i><div class="lp-band-val">{{ active_jobs or 0 }}</div><div class="lp-band-lbl">Active Jobs</div></div></div>
+            <div class="col-6 col-md-3"><div class="lp-band-item"><i class="bi bi-person-check-fill"></i><div class="lp-band-val">{{ registered_candidates or 0 }}</div><div class="lp-band-lbl">Candidates</div></div></div>
+            <div class="col-6 col-md-3"><div class="lp-band-item"><i class="bi bi-building-fill"></i><div class="lp-band-val">{{ partner_companies or 0 }}</div><div class="lp-band-lbl">Companies</div></div></div>
+            <div class="col-6 col-md-3"><div class="lp-band-item"><i class="bi bi-graph-up-arrow"></i><div class="lp-band-val">{{ avg_offer_value or total_offer_value or 'PKR 0' }}</div><div class="lp-band-lbl">Avg Offer Value</div></div></div>
+        </div>
+    </div>
+</div>
+
+<section class="lp-section" id="companies">
+    <div class="container" style="max-width: 1240px;">
+        <div class="text-center mb-5"><h2 class="lp-section-title">Trusted by Leading Companies</h2><p class="lp-section-sub">Join thousands of companies finding talent on CareerPearls</p></div>
+        <div class="lp-companies-row">
+            <div class="lp-company-card"><div class="lp-co-icon lp-co-cyan"><i class="bi bi-building"></i></div><span>TechCorp</span></div>
+            <div class="lp-company-card"><div class="lp-co-icon lp-co-purple"><i class="bi bi-cpu"></i></div><span>InnovateLabs</span></div>
+            <div class="lp-company-card"><div class="lp-co-icon lp-co-blue"><i class="bi bi-building-check"></i></div><span>Analysis Workforce</span></div>
+            <div class="lp-company-card"><div class="lp-co-icon lp-co-cyan"><i class="bi bi-cloud"></i></div><span>CloudTech</span></div>
+            <div class="lp-company-card"><div class="lp-co-icon lp-co-green"><i class="bi bi-bar-chart"></i></div><span>DataDriven</span></div>
+            <div class="lp-company-card"><div class="lp-co-icon lp-co-gold"><i class="bi bi-bank"></i></div><span>FinanceHub</span></div>
+        </div>
+    </div>
+</section>
+
+<section class="lp-section lp-section-alt" id="features">
+    <div class="container">
+        <div class="text-center mb-5"><h2 class="lp-section-title">Why Choose CareerPearls?</h2><p class="lp-section-sub">Everything you need for a successful career journey</p></div>
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6"><div class="lp-feature-card h-100"><div class="lp-feat-icon lp-feat-blue"><i class="bi bi-shield-check"></i></div><h3>Verified Employers</h3><p>All companies are thoroughly verified. Get authentic job opportunities from trusted organizations only.</p></div></div>
+            <div class="col-lg-4 col-md-6"><div class="lp-feature-card h-100"><div class="lp-feat-icon lp-feat-purple"><i class="bi bi-lightning-charge"></i></div><h3>Instant Applications</h3><p>Apply to multiple jobs with one click using your unified profile and resume across all listings.</p></div></div>
+            <div class="col-lg-4 col-md-6"><div class="lp-feature-card h-100"><div class="lp-feat-icon lp-feat-green"><i class="bi bi-graph-up-arrow"></i></div><h3>Track Progress</h3><p>Monitor your application status in real-time from applied to hired, all in one dashboard.</p></div></div>
+            <div class="col-lg-4 col-md-6"><div class="lp-feature-card h-100"><div class="lp-feat-icon lp-feat-cyan"><i class="bi bi-puzzle"></i></div><h3>Smart Matching</h3><p>AI-powered job recommendations based on your skills, experience, and career preferences.</p></div></div>
+            <div class="col-lg-4 col-md-6"><div class="lp-feature-card h-100"><div class="lp-feat-icon lp-feat-gold"><i class="bi bi-chat-dots"></i></div><h3>Direct Communication</h3><p>Connect directly with recruiters and hiring managers without any delays or middlemen.</p></div></div>
+            <div class="col-lg-4 col-md-6"><div class="lp-feature-card h-100"><div class="lp-feat-icon lp-feat-red"><i class="bi bi-lock"></i></div><h3>Privacy First</h3><p>Your data is secure and only shared with employers you actively choose to apply to.</p></div></div>
+        </div>
+    </div>
+</section>
+
+<section class="lp-section" id="how-it-works">
+    <div class="container">
+        <div class="text-center mb-5"><h2 class="lp-section-title">How It Works</h2><p class="lp-section-sub">Get hired in 3 simple steps</p></div>
+        <div class="row g-4">
+            <div class="col-md-4"><div class="lp-step-card text-center"><div class="lp-step-num lp-step-blue">1</div><h3>Create Your Profile</h3><p>Sign up free and build your professional profile with skills, experience, and resume in minutes.</p></div></div>
+            <div class="col-md-4"><div class="lp-step-card text-center"><div class="lp-step-num lp-step-purple">2</div><h3>Discover Opportunities</h3><p>Browse thousands of verified job listings. Filter by location, salary, and industry to find your fit.</p></div></div>
+            <div class="col-md-4"><div class="lp-step-card text-center"><div class="lp-step-num lp-step-green">3</div><h3>Get Hired</h3><p>Apply instantly, track applications, ace interviews, and land your dream job with ease.</p></div></div>
+        </div>
+    </div>
+</section>
+
+<section class="lp-section lp-section-alt" id="featured-jobs">
+    <div class="container" style="max-width: 1380px;">
+        <div class="text-center mb-5">
+            <h2 class="lp-section-title">Featured Jobs</h2>
+            <p class="lp-section-sub">Explore top opportunities from leading companies</p>
+        </div>
+        <div class="row g-4">
+            {% if featured_jobs %}
+                {% for job in featured_jobs %}
+                    {{ render_job_card(job, mode='public') }}
+                {% endfor %}
+            {% else %}
+                <div class="col-12 text-center py-5 text-muted">
+                    <p>No active featured jobs found at the moment.</p>
+                </div>
+            {% endif %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{{ url_for('explore') }}" class="btn btn-cp-primary px-5 py-3 fs-6"><i class="bi bi-grid me-2"></i>Explore All Jobs</a>
+        </div>
+    </div>
+</section>
+
+<section class="lp-cta-section">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="lp-cta-card lp-cta-blue">
+                    <div class="lp-cta-head">
+                        <div class="lp-cta-icon-wrap lp-ciw-blue"><i class="bi bi-person-workspace"></i></div>
+                        <div><h3 class="mb-1">For Candidates</h3><p class="mb-0 lp-cta-sub">Discover thousands of opportunities and build your dream career today.</p></div>
+                    </div>
+                    <div class="lp-cta-btns">
+                        <a href="{{ url_for('explore') }}" class="lp-cta-btn lp-ctab-blue"><i class="bi bi-search me-1"></i>Browse Jobs</a>
+                        <a href="{{ url_for('auth.register', role='candidate') }}" class="lp-cta-btn lp-ctab-outline-blue"><i class="bi bi-person-plus me-1"></i>Create Profile</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="lp-cta-card lp-cta-purple">
+                    <div class="lp-cta-head">
+                        <div class="lp-cta-icon-wrap lp-ciw-purple"><i class="bi bi-buildings"></i></div>
+                        <div><h3 class="mb-1">For Employers</h3><p class="mb-0 lp-cta-sub">Find top talent from Pakistan's largest professional network today.</p></div>
+                    </div>
+                    <div class="lp-cta-btns">
+                        <a href="{{ url_for('auth.register', role='employer') }}" class="lp-cta-btn lp-ctab-purple"><i class="bi bi-plus-circle me-1"></i>Post a Job</a>
+                        <a href="{{ url_for('auth.login') }}" class="lp-cta-btn lp-ctab-outline-purple"><i class="bi bi-people me-1"></i>Find Talent</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="lp-section lp-section-alt" id="contact">
+    <div class="container">
+        <div class="row g-5">
+            <div class="col-lg-5">
+                <h2 class="lp-section-title mb-3">Contact Us</h2>
+                <p class="lp-section-sub mb-4">Have questions or need assistance? Send us a message and we'll get back to you as soon as possible.</p>
+                <div class="lp-contact-info mb-4">
+                    <div class="lp-contact-item"><div class="lp-contact-icon"><i class="bi bi-envelope-fill"></i></div><span>career.pulse.web@gmail.com</span></div>
+                    <div class="lp-contact-item"><div class="lp-contact-icon"><i class="bi bi-telephone-fill"></i></div><span>+92 300 1234567</span></div>
+                    <div class="lp-contact-item"><div class="lp-contact-icon"><i class="bi bi-geo-alt-fill"></i></div><span>Karachi, Pakistan</span></div>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="lp-contact-form-wrap">
+                    <form action="{{ url_for('contact') }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="row g-3">
+                            <div class="col-sm-6"><input type="text" name="name" class="lp-form-ctrl" placeholder="Your Name" required></div>
+                            <div class="col-sm-6"><input type="email" name="email" class="lp-form-ctrl" placeholder="Your Email" required></div>
+                            <div class="col-12"><input type="tel" name="phone" class="lp-form-ctrl" placeholder="Phone Number (11 digits)" pattern="[0-9]{11}" required></div>
+                            <div class="col-12"><textarea name="message" class="lp-form-ctrl" rows="4" placeholder="Your Message" required></textarea></div>
+                            <div class="col-12"><button type="submit" class="btn btn-cp-primary w-100 py-3"><i class="bi bi-send me-2"></i>Send Message</button></div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer class="lp-footer">
+    <div class="container">
+        <div class="row g-4 mb-4">
+            <div class="col-lg-4">
+                <div class="lp-footer-brand mb-3">
+                    <img src="{{ url_for('static', filename='images/logo-circle.png') }}" alt="Logo" style="width:36px;height:36px;border-radius:50%;object-fit:contain;">
+                    <span class="ms-2 footer-brand-text" style="font-size:1.2rem;font-weight:700;"><span class="footer-career" style="background:linear-gradient(135deg,#4facfe,#7b2ff7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Career</span><span class="footer-pearls" style="color:#e8eaf0;">Pearls</span></span>
+                </div>
+                <p class="lp-footer-text">Your gateway to professional success. Find jobs, connect with employers, and build your career in Pakistan.</p>
+                <div class="lp-social-row mt-3">
+                    <a href="https://www.facebook.com/share/1BfQMvqgUs/" target="_blank" rel="noopener noreferrer" class="lp-social-btn" title="Facebook"><i class="bi bi-facebook"></i></a>
+                    <a href="https://x.com/arphotograph_y" target="_blank" rel="noopener noreferrer" class="lp-social-btn" title="X (Twitter)"><i class="bi bi-twitter-x"></i></a>
+                    <a href="https://www.linkedin.com/in/abdul-rafay-rohail/" target="_blank" rel="noopener noreferrer" class="lp-social-btn" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                    <a href="https://www.instagram.com/abdur._rafay_?igsi=YWJyOXYwNDBpMWRs" target="_blank" rel="noopener noreferrer" class="lp-social-btn" title="Instagram"><i class="bi bi-instagram"></i></a>
+                </div>
+            </div>
+            <div class="col-6 col-lg-2"><h6 class="lp-footer-heading">Platform</h6><ul class="lp-footer-links"><li><a href="#features">Features</a></li><li><a href="#how-it-works">How It Works</a></li><li><a href="#featured-jobs">Browse Jobs</a></li><li><a href="#contact">Contact Us</a></li></ul></div>
+            <div class="col-6 col-lg-2"><h6 class="lp-footer-heading">Candidates</h6><ul class="lp-footer-links"><li><a href="{{ url_for('explore') }}">Browse Jobs</a></li><li><a href="{{ url_for('auth.register', role='candidate') }}">Create Profile</a></li><li><a href="{{ url_for('auth.login') }}">Career Tips</a></li><li><a href="{{ url_for('auth.login') }}">My Applications</a></li></ul></div>
+            <div class="col-6 col-lg-2"><h6 class="lp-footer-heading">Employers</h6><ul class="lp-footer-links"><li><a href="{{ url_for('auth.register', role='employer') }}">Post a Job</a></li><li><a href="{{ url_for('auth.login') }}">Find Talent</a></li><li><a href="{{ url_for('auth.login') }}">Pricing</a></li><li><a href="{{ url_for('auth.login') }}">Dashboard</a></li></ul></div>
+            <div class="col-6 col-lg-2"><h6 class="lp-footer-heading">Company</h6><ul class="lp-footer-links"><li><a href="{{ url_for('about') }}">About Us</a></li><li><a href="{{ url_for('privacy_policy') }}">Privacy Policy</a></li><li><a href="{{ url_for('terms_of_service') }}">Terms of Use</a></li></ul></div>
+        </div>
+        <div class="lp-footer-bottom"><span>&copy; 2026 CareerPearls. All rights reserved.</span><span>Made with <i class="bi bi-heart-fill" style="color:#ef4444;"></i> in Pakistan</span></div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/flash-toast.js') }}"></script>
+{% include '_flash_messages.html' %}
+<script>
+(function() {
+    'use strict';
+    var nav = document.getElementById('landingNav');
+    var isTicking = false;
+
+    function onScrollUpdate() {
+        if (!nav) return;
+        var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+        if (window.scrollY > 60) {
+            nav.style.background = isLight ? 'rgba(255, 255, 255, 0.98)' : 'rgba(10, 14, 26, 0.98)';
+            nav.style.boxShadow = isLight ? '0 4px 20px rgba(0, 0, 0, 0.12)' : '0 4px 20px rgba(0, 0, 0, 0.5)';
+        } else {
+            nav.style.background = '';
+            nav.style.boxShadow = '';
+        }
+        isTicking = false;
+    }
+
+    window.addEventListener('scroll', function() {
+        if (!isTicking) {
+            window.requestAnimationFrame(onScrollUpdate);
+            isTicking = true;
+        }
+    }, { passive: true });
+
+    // Active Section Navbar Highlighting using IntersectionObserver
+    if ('IntersectionObserver' in window) {
+        var navLinks = document.querySelectorAll('.cp-nav-links .nav-link[data-section]');
+        var secObserver = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    var secId = entry.target.getAttribute('id');
+                    navLinks.forEach(function(link) {
+                        if (link.getAttribute('data-section') === secId) {
+                            link.classList.add('active');
+                        } else {
+                            link.classList.remove('active');
+                        }
+                    });
+                }
+            });
+        }, { threshold: 0.25, rootMargin: '-72px 0px -40% 0px' });
+
+        document.querySelectorAll('section[id], div[id]').forEach(function(sec) {
+            if (document.querySelector('.cp-nav-links .nav-link[data-section="' + sec.id + '"]')) {
+                secObserver.observe(sec);
+            }
+        });
+    }
+})();
+</script>
+
+<script>
+document.addEventListener('click', function(e) {
+    var item = e.target.closest('.lp-dd-item');
+    if (!item) return;
+    e.preventDefault();
+    
+    var val = item.getAttribute('data-val') || '';
+    var text = item.innerText.trim();
+    var dropdownWrap = item.closest('.dropdown');
+    if (!dropdownWrap) return;
+    
+    var input = dropdownWrap.querySelector('input[type="hidden"]');
+    var label = dropdownWrap.querySelector('.lp-dropdown-trigger span');
+    
+    if (input) input.value = val;
+    if (label) label.innerText = text;
+    
+    dropdownWrap.querySelectorAll('.lp-dd-item').forEach(function(i) {
+        i.classList.remove('active');
+    });
+    item.classList.add('active');
+    
+    var triggerBtn = dropdownWrap.querySelector('.lp-dropdown-trigger');
+    if (triggerBtn && window.bootstrap && bootstrap.Dropdown) {
+        var bsDd = bootstrap.Dropdown.getInstance(triggerBtn);
+        if (bsDd) bsDd.hide();
+    }
+});
+</script>
+
+<!-- ============================================================
+     PRIVACY POLICY CONSENT BANNER (ACCEPT-ONLY GATE)
+     ============================================================ -->
+<div id="cpPrivacyBanner" class="cp-privacy-banner" style="display:none;" role="dialog" aria-label="Privacy Policy Consent">
+    <div class="cp-pb-inner">
+        <div class="cp-pb-left">
+            <div class="cp-pb-icon"><i class="bi bi-shield-lock-fill"></i></div>
+            <div>
+                <p class="cp-pb-title">Privacy Policy &amp; Terms Agreement 🔒</p>
+                <p class="cp-pb-text">
+                    CareerPearls protects your privacy and strictly enforces platform security.
+                    To use the platform, view jobs, or access your account, please review and accept our
+                    <a href="#" class="cp-pb-link" id="pbPrivacyLink">Privacy Policy</a> and
+                    <a href="#" class="cp-pb-link" id="pbTermsLink">Terms of Use</a>.
+                </p>
+            </div>
+        </div>
+        <div class="cp-pb-actions">
+            <button class="cp-pb-btn-accept" id="cpAcceptBtn"><i class="bi bi-check-lg me-1"></i>I Accept &amp; Continue</button>
+        </div>
+    </div>
+</div>
+
+<!-- PRIVACY POLICY MODAL -->
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content cp-legal-modal">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title text-white fw-bold"><i class="bi bi-shield-lock me-2 text-cp-accent"></i>Privacy Policy</h5>
+            </div>
+            <div class="modal-body cp-legal-body">
+                <p class="text-pearl small">Last updated: August 2026</p>
+                <h6 class="text-white fw-bold mt-3">1. Information We Collect</h6>
+                <p class="text-pearl">We collect information you provide during registration, profile creation, and job applications — including name, email, phone, resume, and work history.</p>
+                <h6 class="text-white fw-bold mt-3">2. How We Use Your Information</h6>
+                <p class="text-pearl">We use your data to match you with relevant job opportunities, allow employers to review your applications (only when you apply), and improve our platform features.</p>
+                <h6 class="text-white fw-bold mt-3">3. Data Sharing</h6>
+                <p class="text-pearl">Your profile is only shared with employers when you actively apply to their listings. We never sell personal data to third parties.</p>
+                <h6 class="text-white fw-bold mt-3">4. Cookies &amp; Tracking</h6>
+                <p class="text-pearl">We use session cookies for authentication and local storage for preferences. We do not use third-party advertising trackers.</p>
+                <h6 class="text-white fw-bold mt-3">5. Your Rights</h6>
+                <p class="text-pearl">You may request account deletion and data removal at any time from your profile settings.</p>
+                <h6 class="text-white fw-bold mt-3">6. Security</h6>
+                <p class="text-pearl">Passwords are hashed. All data is encrypted in transit via HTTPS/TLS. We implement CSRF protection and secure session management.</p>
+                <h6 class="text-white fw-bold mt-3">7. Contact</h6>
+                <p class="text-pearl">Privacy inquiries: <a href="mailto:career.pulse.web@gmail.com" class="text-cp-accent">career.pulse.web@gmail.com</a></p>
+            </div>
+            <div class="modal-footer border-0">
+                <button class="cp-pb-btn-accept px-5 py-2 w-100 fw-bold" id="privacyModalAccept"><i class="bi bi-check-lg me-1"></i>I Accept the Privacy Policy</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TERMS OF USE MODAL -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content cp-legal-modal">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title text-white fw-bold"><i class="bi bi-file-text me-2" style="color:#22c55e"></i>Terms of Use</h5>
+            </div>
+            <div class="modal-body cp-legal-body">
+                <p class="text-pearl small">Last updated: August 2026</p>
+                <h6 class="text-white fw-bold mt-3">1. Acceptance of Terms</h6>
+                <p class="text-pearl">By accessing CareerPearls you agree to these Terms and our Privacy Policy. If you disagree, please do not use the platform.</p>
+                <h6 class="text-white fw-bold mt-3">2. Eligibility</h6>
+                <p class="text-pearl">You must be at least 16 years old. By registering, you confirm that all information provided is accurate and complete.</p>
+                <h6 class="text-white fw-bold mt-3">3. Account Responsibilities</h6>
+                <p class="text-pearl">You are responsible for keeping your credentials confidential. Do not share accounts or impersonate other users or organisations.</p>
+                <h6 class="text-white fw-bold mt-3">4. Prohibited Conduct</h6>
+                <p class="text-pearl">Fraudulent job listings, spam, scraping, or any unlawful use of the platform is strictly prohibited and will result in immediate account suspension.</p>
+                <h6 class="text-white fw-bold mt-3">5. Intellectual Property</h6>
+                <p class="text-pearl">CareerPearls platform, logos, and design are our property. You retain ownership of content you upload (resume, profile photo, etc.).</p>
+                <h6 class="text-white fw-bold mt-3">6. Limitation of Liability</h6>
+                <p class="text-pearl">CareerPearls is not responsible for employer hiring decisions or accuracy of third-party job listings. We connect candidates and employers.</p>
+                <h6 class="text-white fw-bold mt-3">7. Changes to Terms</h6>
+                <p class="text-pearl">We may update these terms at any time. Continued use constitutes acceptance of updated terms.</p>
+            </div>
+            <div class="modal-footer border-0">
+                <button class="cp-pb-btn-accept px-5 py-2 w-100 fw-bold" id="termsModalAccept"><i class="bi bi-check-lg me-1"></i>I Agree to Terms of Use</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    var CONSENT_KEY = 'cp_privacy_accepted';
+    var banner = document.getElementById('cpPrivacyBanner');
+    function showBanner() {
+        if (!banner) return;
+        banner.style.display = 'flex';
+        setTimeout(function() { banner.classList.add('cp-pb-visible'); }, 80);
+    }
+    function hideBanner() {
+        if (!banner) return;
+        banner.classList.remove('cp-pb-visible');
+        setTimeout(function() { banner.style.display = 'none'; }, 380);
+    }
+    function setConsent(val) {
+        localStorage.setItem(CONSENT_KEY, val);
+        localStorage.setItem('cp_consent_date', new Date().toISOString());
+    }
+    if (localStorage.getItem(CONSENT_KEY) !== 'accepted') {
+        setTimeout(showBanner, 1000);
+    }
+
+    var a = document.getElementById('cpAcceptBtn');
+    if (a) a.onclick = function() { setConsent('accepted'); hideBanner(); };
+
+    var pma = document.getElementById('privacyModalAccept');
+    if (pma) pma.onclick = function() {
+        setConsent('accepted');
+        var m = bootstrap.Modal.getInstance(document.getElementById('privacyModal'));
+        if (m) m.hide(); 
+        hideBanner();
+    };
+    var tma = document.getElementById('termsModalAccept');
+    if (tma) tma.onclick = function() {
+        setConsent('accepted');
+        var m = bootstrap.Modal.getInstance(document.getElementById('termsModal'));
+        if (m) m.hide(); 
+        hideBanner();
+    };
+
+    ['navPrivacyLink','pbPrivacyLink'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener('click', function(e) {
+            e.preventDefault();
+            new bootstrap.Modal(document.getElementById('privacyModal')).show();
+        });
+        ['navTermsLink','pbTermsLink'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener('click', function(e) {
+            e.preventDefault();
+            new bootstrap.Modal(document.getElementById('termsModal')).show();
+        });
+    });
+})();
+</script>
+{% include '_settings_panel.html' %}
+</body>
+</html>

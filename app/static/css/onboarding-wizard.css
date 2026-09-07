@@ -1,0 +1,362 @@
+.cp-required {
+    color: #f87171;
+    margin-left: 0.15rem;
+    font-weight: 600;
+}
+
+.cp-optional {
+    display: inline-block;
+    margin-left: 0.45rem;
+    padding: 0.1rem 0.45rem;
+    border-radius: 4px;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(148, 163, 184, 0.95);
+    background: rgba(148, 163, 184, 0.12);
+    vertical-align: middle;
+}
+
+.cp-field-hint {
+    font-size: 0.78rem;
+    color: var(--cp-text-muted);
+    margin: 0.4rem 0 0;
+    line-height: 1.45;
+}
+
+.cp-wizard-shell {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0.5rem 1rem 4rem;
+}
+
+.cp-wizard-identity {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.75rem;
+    background: linear-gradient(135deg, rgba(79, 172, 254, 0.08), rgba(123, 47, 247, 0.06));
+    border: 1px solid rgba(79, 172, 254, 0.18);
+    border-radius: 16px;
+}
+
+.cp-wizard-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid rgba(79, 172, 254, 0.45);
+    background: linear-gradient(135deg, var(--cp-accent-start), var(--cp-accent-end));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cp-wizard-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cp-wizard-avatar-initial {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.cp-wizard-identity-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--cp-text-muted);
+    margin: 0 0 0.15rem;
+}
+
+.cp-wizard-identity-name {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.cp-wizard-progress {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0;
+    margin-bottom: 1.75rem;
+    padding: 0 0.25rem;
+}
+
+.cp-wizard-progress-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.45rem;
+    flex: 0 0 auto;
+    min-width: 72px;
+}
+
+.cp-wizard-progress-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border: 2px solid var(--cp-border);
+    background: var(--cp-bg-elevated);
+    color: var(--cp-text-muted);
+    transition: all 0.25s ease;
+}
+
+.cp-wizard-progress-item.active .cp-wizard-progress-dot {
+    border-color: var(--cp-accent-start);
+    background: linear-gradient(135deg, var(--cp-accent-start), var(--cp-accent-end));
+    color: #fff;
+    box-shadow: 0 0 20px rgba(79, 172, 254, 0.35);
+}
+
+.cp-wizard-progress-item.done .cp-wizard-progress-dot {
+    border-color: rgba(34, 197, 94, 0.5);
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+}
+
+.cp-wizard-progress-label {
+    font-size: 0.68rem;
+    text-align: center;
+    color: var(--cp-text-muted);
+    line-height: 1.25;
+    max-width: 80px;
+}
+
+.cp-wizard-progress-item.active .cp-wizard-progress-label {
+    color: #e2e8f0;
+    font-weight: 500;
+}
+
+.cp-wizard-progress-line {
+    flex: 1;
+    height: 2px;
+    background: var(--cp-border);
+    margin-top: 18px;
+    min-width: 12px;
+}
+
+.cp-wizard-progress-line.done {
+    background: linear-gradient(90deg, rgba(34, 197, 94, 0.6), rgba(79, 172, 254, 0.5));
+}
+
+.cp-wizard-edit-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+    border-radius: 10px;
+    background: rgba(79, 172, 254, 0.08);
+    border: 1px solid rgba(79, 172, 254, 0.2);
+    font-size: 0.875rem;
+}
+
+.cp-wizard-edit-back {
+    color: #4facfe;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.cp-wizard-edit-back:hover {
+    color: #93c5fd;
+}
+
+.cp-wizard-card {
+    background: var(--cp-bg-card);
+    border: 1px solid var(--cp-border);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.cp-wizard-card-header {
+    padding: 1.75rem 2rem 1.25rem;
+    border-bottom: 1px solid var(--cp-border);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.cp-wizard-step-badge {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #4facfe;
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+}
+
+.cp-wizard-title {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin: 0 0 0.35rem;
+}
+
+.cp-wizard-subtitle {
+    color: var(--cp-text-muted);
+    margin: 0;
+    font-size: 0.92rem;
+}
+
+.cp-wizard-body {
+    padding: 1.75rem 2rem 2rem;
+}
+
+.cp-wizard-form .form-label {
+    font-weight: 500;
+    font-size: 0.875rem;
+    margin-bottom: 0.45rem;
+}
+
+.cp-wizard-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--cp-border);
+}
+
+.cp-wizard-subsection {
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--cp-border);
+}
+
+.cp-wizard-subsection:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.cp-wizard-subsection-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.cp-wizard-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--cp-text-muted);
+}
+
+.cp-wizard-list li {
+    padding: 0.35rem 0;
+}
+
+.cp-badge-mini {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    background: rgba(79, 172, 254, 0.15);
+    color: #4facfe;
+    margin-left: 0.35rem;
+}
+
+.cp-skill-pill {
+    font-size: 0.78rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--cp-border);
+}
+
+.cp-photo-upload-block {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--cp-border);
+    border-radius: 14px;
+    padding: 1.25rem;
+    text-align: center;
+}
+
+.cp-photo-upload-preview {
+    width: 140px;
+    height: 140px;
+    margin: 0 auto;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid rgba(79, 172, 254, 0.35);
+    background: var(--cp-bg-elevated);
+}
+
+.cp-photo-upload-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cp-photo-upload-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    color: var(--cp-text-muted);
+    font-size: 0.78rem;
+}
+
+.cp-crop-modal {
+    background: var(--cp-bg-card);
+    border: 1px solid var(--cp-border);
+}
+
+.cp-crop-stage {
+    max-height: 420px;
+    background: #000;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.cp-crop-stage img {
+    display: block;
+    max-width: 100%;
+}
+
+@media (max-width: 768px) {
+    .cp-wizard-progress {
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+
+    .cp-wizard-progress-label {
+        font-size: 0.62rem;
+        max-width: 64px;
+    }
+
+    .cp-wizard-card-header,
+    .cp-wizard-body {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+    }
+
+    .cp-wizard-actions {
+        justify-content: stretch;
+    }
+
+    .cp-wizard-actions .btn {
+        flex: 1 1 auto;
+    }
+}

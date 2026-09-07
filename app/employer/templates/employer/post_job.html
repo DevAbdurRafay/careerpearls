@@ -1,0 +1,451 @@
+{% extends "base.html" %}
+{% block title %}Post a New Job — CareerPearls{% endblock %}
+
+{% block content %}
+<div class="container-fluid pt-2 pb-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-9 col-xl-8">
+            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                <div>
+                    <h3 class="fw-bold mb-1" style="background: linear-gradient(135deg, #4facfe, #7b2ff7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 1rem;">
+                        <i class="bi bi-briefcase-fill me-2" style="-webkit-text-fill-color: #4facfe; font-size: 0.875rem;"></i>Post a New Career Opportunity
+                    </h3>
+                    <p class="text-pearl small mb-0">Publish a job listing to connect with top talent across Pakistan. All fields marked with <span class="text-danger fw-bold">*</span> are mandatory.</p>
+                </div>
+                <a href="{{ url_for('employer.dashboard') }}" class="btn btn-cp-outline btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+
+            <div class="cp-card p-4 p-md-5" style="border: 1px solid rgba(79, 172, 254, 0.25); background: rgba(17, 24, 39, 0.85); backdrop-filter: blur(16px); border-radius: 20px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);">
+                <form method="POST" novalidate id="postJobForm">
+                    {{ form.hidden_tag() }}
+
+                    <!-- Job Title -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-white d-flex justify-content-between" for="title" style="font-size: 0.8rem;">
+                            <span>Job Title <span class="text-danger">*</span></span>
+                            <span class="text-muted small fw-normal" style="font-size: 0.75rem;">Letters, spaces &amp; punctuation only (no numbers)</span>
+                        </label>
+                        {{ form.title(class="form-control cp-input-glow" + (" is-invalid" if form.title.errors else ""), placeholder="e.g. Senior Full Stack Engineer, Product Designer", id="title") }}
+                        {% if form.title.errors %}
+                            <div class="invalid-feedback d-block mt-1">
+                                {% for error in form.title.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Category & Employment Type -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-white" for="category_id" style="font-size: 0.8rem;">
+                                Job Category <span class="text-danger">*</span>
+                            </label>
+                            {{ form.category_id(class="form-select cp-input-glow" + (" is-invalid" if form.category_id.errors else ""), id="category_id") }}
+                            {% if form.category_id.errors %}
+                                <div class="invalid-feedback d-block mt-1">
+                                    {% for error in form.category_id.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-white" for="employment_type" style="font-size: 0.8rem;">
+                                Employment Type <span class="text-danger">*</span>
+                            </label>
+                            {{ form.employment_type(class="form-select cp-input-glow" + (" is-invalid" if form.employment_type.errors else ""), id="employment_type") }}
+                            {% if form.employment_type.errors %}
+                                <div class="invalid-feedback d-block mt-1">
+                                    {% for error in form.employment_type.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Experience Required & Location -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-white" for="experience_required" style="font-size: 0.8rem;">
+                                Experience Required <span class="text-danger">*</span>
+                            </label>
+                            {{ form.experience_required(class="form-select cp-input-glow" + (" is-invalid" if form.experience_required.errors else ""), id="experience_required") }}
+                            {% if form.experience_required.errors %}
+                                <div class="invalid-feedback d-block mt-1">
+                                    {% for error in form.experience_required.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold text-white" for="location" style="font-size: 0.8rem;">
+                                Job Location <span class="text-danger">*</span>
+                            </label>
+                            {{ form.location(class="form-control cp-input-glow" + (" is-invalid" if form.location.errors else ""), placeholder="e.g. Lahore, Karachi, Islamabad or Remote", id="location") }}
+                            {% if form.location.errors %}
+                                <div class="invalid-feedback d-block mt-1">
+                                    {% for error in form.location.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ error }}{% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Salary Range with Multiple Selectable Ranges & Experience Option -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-white d-flex justify-content-between align-items-center" for="salary_range" style="font-size: 0.8rem;">
+                            <span>Salary Range <span class="text-danger">*</span></span>
+                            <span class="text-muted small fw-normal" style="font-size: 0.75rem;">Pick a preset range or modify according to your needs</span>
+                        </label>
+                        
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-6">
+                                <select class="form-select cp-input-glow" id="salaryPresetSelect">
+                                    <option value="">-- Choose Preset Range --</option>
+                                    <option value="Based on Experience">Based on Experience</option>
+                                    <option value="PKR 30,000 - 50,000 / month">PKR 30,000 - 50,000 / month</option>
+                                    <option value="PKR 50,000 - 80,000 / month">PKR 50,000 - 80,000 / month</option>
+                                    <option value="PKR 80,000 - 120,000 / month">PKR 80,000 - 120,000 / month</option>
+                                    <option value="PKR 120,000 - 180,000 / month">PKR 120,000 - 180,000 / month</option>
+                                    <option value="PKR 180,000 - 250,000 / month">PKR 180,000 - 250,000 / month</option>
+                                    <option value="PKR 250,000 - 400,000 / month">PKR 250,000 - 400,000 / month</option>
+                                    <option value="PKR 400,000+ / month">PKR 400,000+ / month</option>
+                                    <option value="Custom">Enter Custom Range / Rate</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.salary_range(class="form-control cp-input-glow" + (" is-invalid" if form.salary_range.errors else ""), placeholder="Selected or Custom Salary Range", id="salary_range") }}
+                            </div>
+                        </div>
+                        {% if form.salary_range.errors %}
+                            <div class="invalid-feedback d-block mt-1">
+                                {% for error in form.salary_range.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Application Deadline -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-white" for="closes_at" style="font-size: 0.8rem;">
+                            Application Deadline Date &amp; Time <span class="text-danger">*</span>
+                        </label>
+                        {{ form.closes_at(class="form-control cp-input-glow" + (" is-invalid" if form.closes_at.errors else ""), type="datetime-local", id="closes_at") }}
+                        {% if form.closes_at.errors %}
+                            <div class="invalid-feedback d-block mt-1">
+                                {% for error in form.closes_at.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Description with 1500-word limit counter -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label fw-semibold text-white mb-0" for="description" style="font-size: 0.8rem;">
+                                Job Description &amp; Responsibilities <span class="text-danger">*</span>
+                            </label>
+                            <span class="cp-desc-counter" id="descCharCounter">0 / 1500 characters</span>
+                        </div>
+                        {{ form.description(class="form-control cp-input-glow" + (" is-invalid" if form.description.errors else ""), rows=6, maxlength="1500", placeholder="Provide a detailed, engaging overview of this role, core responsibilities, and team expectations (Max 1500 characters)...", id="description") }}
+                        <div class="d-flex justify-content-between mt-1">
+                            <small class="cp-post-job-hint">Detailed &amp; clear descriptions receive 3x more quality applications.</small>
+                            <small class="text-danger fw-bold d-none" id="descLimitWarning">Maximum 1500 characters limit reached!</small>
+                        </div>
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback d-block mt-1">
+                                {% for error in form.description.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Required Skills -->
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold text-white d-flex justify-content-between" for="skills" style="font-size: 0.8rem;">
+                            <span>Required Skills <span class="text-danger">*</span></span>
+                            <span class="text-muted small fw-normal" style="font-size: 0.75rem;">Comma-separated</span>
+                        </label>
+                        {{ form.skills(class="form-control cp-input-glow" + (" is-invalid" if form.skills.errors else ""), placeholder="e.g. Python, Django, PostgreSQL, REST API, Docker", id="skills") }}
+                        {% if form.skills.errors %}
+                            <div class="invalid-feedback d-block mt-1">
+                                {% for error in form.skills.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ error }}{% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-flex justify-content-end gap-3 pt-3 border-top border-secondary-subtle">
+                        <a href="{{ url_for('employer.dashboard') }}" class="btn btn-cp-ghost px-4 py-2" style="font-size: 0.875rem;">Cancel</a>
+                        <button type="button" class="btn btn-cp-outline px-4 py-2 fw-semibold" style="font-size: 0.875rem;" data-bs-toggle="modal" data-bs-target="#previewModal">
+                            <i class="bi bi-eye me-2"></i>Preview
+                        </button>
+                        <button type="submit" class="btn btn-cp-primary px-5 py-2 fw-semibold" style="font-size: 0.875rem; box-shadow: 0 4px 20px rgba(79, 172, 254, 0.4);">
+                            <i class="bi bi-rocket-takeoff-fill me-2"></i>Publish Job Listing
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content cp-card border-0">
+            <div class="modal-header border-bottom border-secondary">
+                <h5 class="modal-title fw-bold text-white"><i class="bi bi-eye me-2"></i>Job Listing Preview</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="cp-card mb-3">
+                    <h4 class="text-white fw-bold mb-2" id="previewTitle">Job Title</h4>
+                    <p class="text-pearl mb-2" id="previewCompany">Company Name</p>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="badge" style="background: rgba(79, 172, 254, 0.15); border: 1px solid rgba(79, 172, 254, 0.3); color: #4facfe;" id="previewLocation">Location</span>
+                        <span class="badge" style="background: rgba(123, 47, 247, 0.15); border: 1px solid rgba(123, 47, 247, 0.3); color: #7b2ff7;" id="previewType">Employment Type</span>
+                        <span class="badge" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: var(--cp-text-muted);" id="previewCategory">Category</span>
+                    </div>
+                    <p class="mb-0 small fw-semibold" style="color:#4facfe" id="previewSalary">Salary Range</p>
+                </div>
+                <div class="cp-card mb-3">
+                    <h6 class="fw-bold text-white mb-2">Job Description</h6>
+                    <p class="text-pearl mb-0" id="previewDescription">Job description will appear here...</p>
+                </div>
+                <div class="cp-card mb-3">
+                    <h6 class="fw-bold text-white mb-2">Required Skills</h6>
+                    <div class="d-flex flex-wrap gap-2" id="previewSkills">
+                        <span class="badge bg-secondary">Skills will appear here</span>
+                    </div>
+                </div>
+                <div class="cp-card">
+                    <h6 class="fw-bold text-white mb-2">Experience Required</h6>
+                    <p class="text-pearl mb-0" id="previewExperience">Experience level</p>
+                </div>
+            </div>
+            <div class="modal-footer border-top border-secondary">
+                <button type="button" class="btn btn-sm btn-cp-ghost" data-bs-dismiss="modal">Close Preview</button>
+                <button type="button" class="btn btn-sm btn-cp-primary" data-bs-dismiss="modal" onclick="document.getElementById('postJobForm').submit();">
+                    <i class="bi bi-rocket-takeoff-fill me-1"></i>Publish This Job
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<style>
+#postJobForm .form-control,
+#postJobForm .form-select {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+}
+#postJobForm .invalid-feedback {
+    font-size: 0.75rem;
+}
+.field-error {
+    color: #f87171;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    display: none;
+}
+.field-error.visible {
+    display: block;
+}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Strict Description character counter & hard limit (Max 1500 characters)
+    const descArea = document.getElementById('description');
+    const counter = document.getElementById('descCharCounter');
+    const warning = document.getElementById('descLimitWarning');
+
+    function updateCounter() {
+        if (!descArea || !counter) return;
+        
+        // Strict Hard Limit: truncate any characters beyond 1500 immediately
+        if (descArea.value.length > 1500) {
+            descArea.value = descArea.value.substring(0, 1500);
+        }
+        
+        const charCount = descArea.value.length;
+        counter.textContent = `${charCount} / 1500 characters`;
+        
+        if (charCount >= 1500) {
+            counter.classList.add('cp-desc-counter-full');
+            if (warning) warning.classList.remove('d-none');
+            descArea.classList.remove('is-invalid');
+        } else if (charCount >= 1400) {
+            counter.classList.add('cp-desc-counter-warn');
+            counter.classList.remove('cp-desc-counter-full');
+            if (warning) warning.classList.add('d-none');
+            descArea.classList.remove('is-invalid');
+        } else {
+            counter.classList.remove('cp-desc-counter-warn', 'cp-desc-counter-full');
+            if (warning) warning.classList.add('d-none');
+            descArea.classList.remove('is-invalid');
+        }
+    }
+
+    if (descArea) {
+        descArea.addEventListener('input', updateCounter);
+        descArea.addEventListener('paste', function() { setTimeout(updateCounter, 10); });
+        updateCounter();
+    }
+
+    // 2. Salary Range preset synchronization
+    const salarySelect = document.getElementById('salaryPresetSelect');
+    const salaryInput = document.getElementById('salary_range');
+
+    if (salarySelect && salaryInput) {
+        // If form already has a value, select corresponding option if match
+        if (salaryInput.value) {
+            for (let i = 0; i < salarySelect.options.length; i++) {
+                if (salarySelect.options[i].value === salaryInput.value) {
+                    salarySelect.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+
+        salarySelect.addEventListener('change', function() {
+            if (this.value && this.value !== 'Custom') {
+                salaryInput.value = this.value;
+            } else if (this.value === 'Custom') {
+                salaryInput.focus();
+                if (!salaryInput.value || salaryInput.value.includes('month')) {
+                    salaryInput.value = '';
+                }
+            }
+        });
+
+        salaryInput.addEventListener('input', function() {
+            let matched = false;
+            for (let i = 0; i < salarySelect.options.length; i++) {
+                if (salarySelect.options[i].value === this.value) {
+                    salarySelect.selectedIndex = i;
+                    matched = true;
+                    break;
+                }
+            }
+            if (!matched && this.value) {
+                salarySelect.value = 'Custom';
+            }
+        });
+    }
+
+    // 3. Inline validation
+    const form = document.getElementById('postJobForm');
+    const requiredFields = ['title', 'category_id', 'employment_type', 'experience_required', 'location', 'salary_range', 'closes_at', 'description', 'skills'];
+
+    function validateField(field) {
+        const errorEl = document.getElementById(field + '_error');
+        if (!errorEl) return true;
+
+        const input = document.getElementById(field);
+        if (!input) return true;
+
+        const value = input.value.trim();
+        let isValid = true;
+        let errorMessage = '';
+
+        if (!value) {
+            isValid = false;
+            errorMessage = 'This field is required';
+        } else if (field === 'title' && /\d/.test(value)) {
+            isValid = false;
+            errorMessage = 'Job title cannot contain numbers';
+        } else if (field === 'description' && value.length < 20) {
+            isValid = false;
+            errorMessage = 'Description must be at least 20 characters';
+        } else if (field === 'description' && value.trim().split(/\s+/).length > 1500) {
+            isValid = false;
+            errorMessage = 'Description cannot exceed 1500 words';
+        } else if (field === 'location' && /\d/.test(value)) {
+            isValid = false;
+            errorMessage = 'Location cannot contain numbers';
+        }
+
+        if (!isValid) {
+            errorEl.textContent = errorMessage;
+            errorEl.classList.add('visible');
+            input.classList.add('is-invalid');
+        } else {
+            errorEl.classList.remove('visible');
+            input.classList.remove('is-invalid');
+        }
+
+        return isValid;
+    }
+
+    // Add error elements and validation listeners
+    requiredFields.forEach(field => {
+        const input = document.getElementById(field);
+        if (input) {
+            // Create error element if it doesn't exist
+            let errorEl = document.getElementById(field + '_error');
+            if (!errorEl) {
+                errorEl = document.createElement('div');
+                errorEl.id = field + '_error';
+                errorEl.className = 'field-error';
+                input.parentNode.appendChild(errorEl);
+            }
+
+            // Add real-time validation
+            input.addEventListener('blur', () => validateField(field));
+            input.addEventListener('input', () => {
+                if (input.classList.contains('is-invalid')) {
+                    validateField(field);
+                }
+            });
+        }
+    });
+
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        let isFormValid = true;
+        requiredFields.forEach(field => {
+            if (!validateField(field)) {
+                isFormValid = false;
+            }
+        });
+
+        if (!isFormValid) {
+            e.preventDefault();
+            // Scroll to first error
+            const firstError = document.querySelector('.field-error.visible');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    });
+
+    // 4. Preview functionality
+    const previewModal = document.getElementById('previewModal');
+    if (previewModal) {
+        previewModal.addEventListener('show.bs.modal', function() {
+            // Update preview content
+            document.getElementById('previewTitle').textContent = document.getElementById('title').value || 'Job Title';
+            document.getElementById('previewCompany').textContent = '{{ current_user.recruiter.company.name if current_user.recruiter and current_user.recruiter.company else "Your Company" }}';
+            document.getElementById('previewLocation').textContent = document.getElementById('location').value || 'Location';
+            document.getElementById('previewType').textContent = document.getElementById('employment_type').value || 'Employment Type';
+            document.getElementById('previewCategory').textContent = document.getElementById('category_id').options[document.getElementById('category_id').selectedIndex]?.text || 'Category';
+            document.getElementById('previewSalary').textContent = document.getElementById('salary_range').value || 'Salary Range';
+            document.getElementById('previewDescription').textContent = document.getElementById('description').value || 'Job description will appear here...';
+            document.getElementById('previewExperience').textContent = document.getElementById('experience_required').value || 'Experience level';
+
+            // Skills preview
+            const skillsInput = document.getElementById('skills');
+            const skillsContainer = document.getElementById('previewSkills');
+            if (skillsInput && skillsContainer) {
+                const skills = skillsInput.value.split(',').map(s => s.trim()).filter(s => s);
+                if (skills.length > 0) {
+                    skillsContainer.innerHTML = skills.map(skill => 
+                        `<span class="badge" style="background: rgba(79, 172, 254, 0.15); border: 1px solid rgba(79, 172, 254, 0.3); color: #4facfe;">${skill}</span>`
+                    ).join('');
+                } else {
+                    skillsContainer.innerHTML = '<span class="badge bg-secondary">No skills specified</span>';
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

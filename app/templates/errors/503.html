@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Service Temporarily Unavailable — CareerPearls{% endblock %}
+
+{% block content %}
+<div class="container py-5 my-5 text-center">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="cp-card p-5">
+                <div class="display-1 text-warning fw-bold mb-3">503</div>
+                <h2 class="fw-bold mb-2">Service Temporarily Unavailable</h2>
+                <p class="text-muted mb-4">The platform is currently undergoing maintenance or experiencing temporary server load. Please try again shortly.</p>
+                <a href="javascript:location.reload()" class="btn btn-cp-primary px-4 py-2" style="border-radius: 20px;">
+                    Refresh Page
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

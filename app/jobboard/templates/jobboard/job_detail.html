@@ -1,0 +1,373 @@
+{% extends "base.html" %}
+{% block title %}{{ job.title }} — CareerPearls{% endblock %}
+
+{% block extra_head %}
+<style>
+.cp-btn-nav-home {
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: #f1f5f9 !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 12px !important;
+    font-size: 0.88rem !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.cp-btn-nav-home:hover {
+    background: rgba(255, 255, 255, 0.14) !important;
+    color: #38bdf8 !important;
+    border-color: rgba(56, 189, 248, 0.45) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.25) !important;
+}
+.cp-btn-glow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(2, 132, 199, 0.6) !important;
+    filter: brightness(1.08);
+}
+.cp-btn-ghost-glow:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-color: rgba(56, 189, 248, 0.45) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+.cp-btn-report {
+    background: rgba(239, 68, 68, 0.12) !important;
+    border: 1.5px solid rgba(239, 68, 68, 0.45) !important;
+    color: #f87171 !important;
+    border-radius: 12px !important;
+    font-size: 0.88rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.2px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.cp-btn-report i {
+    color: #ef4444 !important;
+    font-size: 0.95rem;
+    transition: transform 0.2s ease;
+}
+.cp-btn-report:hover {
+    background: #ef4444 !important;
+    border-color: #ef4444 !important;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4) !important;
+}
+.cp-btn-report:hover i {
+    color: #ffffff !important;
+    transform: scale(1.15);
+}
+
+/* Light theme variant for job detail page */
+:root[data-theme="light"] .cp-btn-report {
+    background: #fef2f2 !important;
+    border: 1.5px solid #f87171 !important;
+    color: #dc2626 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.08) !important;
+}
+:root[data-theme="light"] .cp-btn-report i {
+    color: #dc2626 !important;
+}
+:root[data-theme="light"] .cp-btn-report:hover {
+    background: #dc2626 !important;
+    border-color: #dc2626 !important;
+    color: #ffffff !important;
+    box-shadow: 0 6px 18px rgba(220, 38, 38, 0.35) !important;
+}
+:root[data-theme="light"] .cp-btn-report:hover i {
+    color: #ffffff !important;
+}
+
+/* Light theme variant for job detail page */
+:root[data-theme="light"] .cp-btn-nav-home {
+    background: rgba(255, 255, 255, 0.95) !important;
+    color: #1e293b !important;
+    border: 1px solid rgba(0, 0, 0, 0.15) !important;
+}
+:root[data-theme="light"] .cp-btn-nav-home:hover {
+    background: #f1f5f9 !important;
+    color: #0284c7 !important;
+    border-color: rgba(2, 132, 199, 0.4) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(2, 132, 199, 0.2) !important;
+}
+:root[data-theme="light"] .rounded-4[style*="background: linear-gradient(145deg, rgba(15, 23, 42, 0.95)"] {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+}
+:root[data-theme="light"] .rounded-4[style*="background: linear-gradient(145deg, rgba(15, 23, 42, 0.95)"] .text-white {
+    color: #0f172a !important;
+}
+:root[data-theme="light"] .rounded-4[style*="background: linear-gradient(145deg, rgba(15, 23, 42, 0.95)"] .text-pearl {
+    color: #334155 !important;
+}
+:root[data-theme="light"] .badge[style*="background: rgba(59, 130, 246, 0.16)"] {
+    background: rgba(59, 130, 246, 0.12) !important;
+    color: #1e40af !important;
+    border: 1px solid rgba(59, 130, 246, 0.35) !important;
+}
+:root[data-theme="light"] .badge[style*="background: rgba(59, 130, 246, 0.16)"] i,
+:root[data-theme="light"] .badge[style*="background: rgba(59, 130, 246, 0.16)"] span {
+    color: #1e40af !important;
+}
+:root[data-theme="light"] .badge[style*="background: rgba(16, 185, 129, 0.16)"] {
+    background: rgba(16, 185, 129, 0.12) !important;
+    color: #065f46 !important;
+    border: 1px solid rgba(16, 185, 129, 0.35) !important;
+}
+:root[data-theme="light"] .badge[style*="background: rgba(16, 185, 129, 0.16)"] i,
+:root[data-theme="light"] .badge[style*="background: rgba(16, 185, 129, 0.16)"] span {
+    color: #065f46 !important;
+}
+:root[data-theme="light"] .badge[style*="background: rgba(168, 85, 247, 0.16)"] {
+    background: rgba(168, 85, 247, 0.12) !important;
+    color: #6b21a8 !important;
+    border: 1px solid rgba(168, 85, 247, 0.35) !important;
+}
+:root[data-theme="light"] .badge[style*="background: rgba(168, 85, 247, 0.16)"] i,
+:root[data-theme="light"] .badge[style*="background: rgba(168, 85, 247, 0.16)"] span {
+    color: #6b21a8 !important;
+}
+:root[data-theme="light"] .badge[style*="background: rgba(6, 182, 212, 0.16)"] {
+    background: rgba(6, 182, 212, 0.12) !important;
+    color: #0e7490 !important;
+    border: 1px solid rgba(6, 182, 212, 0.35) !important;
+}
+:root[data-theme="light"] .badge[style*="background: rgba(6, 182, 212, 0.16)"] i,
+:root[data-theme="light"] .badge[style*="background: rgba(6, 182, 212, 0.16)"] span {
+    color: #0e7490 !important;
+}
+:root[data-theme="light"] .badge[style*="background: rgba(30, 41, 59, 0.9)"] {
+    background: #e2e8f0 !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+}
+:root[data-theme="light"] .sticky-top[style*="background: linear-gradient(145deg, rgba(15, 23, 42, 0.95)"] {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05) !important;
+}
+:root[data-theme="light"] .sticky-top[style*="background: linear-gradient(145deg, rgba(15, 23, 42, 0.95)"] .text-white {
+    color: #0f172a !important;
+}
+:root[data-theme="light"] .sticky-top[style*="background: linear-gradient(145deg, rgba(15, 23, 42, 0.95)"] .text-pearl {
+    color: #334155 !important;
+}
+
+/* Ensure Sign In to Apply button always has white text */
+:root[data-theme="light"] .cp-btn-glow,
+:root[data-theme="light"] .cp-btn-glow span,
+:root[data-theme="light"] .btn-cp-primary,
+:root[data-theme="light"] .btn-cp-primary span,
+:root[data-theme="light"] a.btn[style*="background: linear-gradient(135deg, #0284c7, #2563eb)"],
+:root[data-theme="light"] a.btn[style*="background: linear-gradient(135deg, #0284c7, #2563eb)"] span {
+    color: #ffffff !important;
+}
+</style>
+{% endblock %}
+
+{% block navbar %}
+{% if current_user.is_authenticated %}
+    {{ super() }}
+{% else %}
+{# ── Unauthenticated / Featured Job Public Navbar (Retains About, Privacy, Terms, Explore Jobs, Back to Home) ── #}
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top cp-navbar" id="landingNav" 
+     style="top: 0; left: 0; right: 0; width: 100%; height: 72px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); background: rgba(10, 14, 26, 0.94); border-bottom: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 25px rgba(0, 0, 0, 0.45); z-index: 1050;">
+    <div class="container-fluid px-3 px-lg-5 d-flex align-items-center justify-content-between">
+        {% set brand_href = url_for('index') %}
+        <div class="d-flex align-items-center">
+            {% include '_navbar_brand.html' %}
+        </div>
+        <div class="d-flex align-items-center gap-1 mx-auto d-none d-lg-flex">
+            <a class="nav-link px-3 text-secondary d-inline-flex align-items-center" href="{{ url_for('about') }}">About Us</a>
+            <a class="nav-link px-3 active fw-bold text-white d-inline-flex align-items-center" href="{{ url_for('explore') }}">Jobs</a>
+            <a class="nav-link px-3 text-secondary d-inline-flex align-items-center" href="{{ url_for('privacy_policy') }}">Privacy Policy</a>
+            <a class="nav-link px-3 text-secondary d-inline-flex align-items-center" href="{{ url_for('terms_of_service') }}">Terms of Use</a>
+        </div>
+        <div class="d-flex align-items-center gap-2.5 ms-auto cp-nav-user-actions">
+            <a href="{{ url_for('explore') }}" class="btn btn-sm d-inline-flex align-items-center px-3 py-2 fw-semibold text-decoration-none cp-btn-nav-home">
+                <i class="bi bi-grid me-2 text-primary" style="font-size: 1rem;"></i>
+                <span>Explore Jobs</span>
+            </a>
+            <a href="{{ url_for('index') }}" class="btn btn-sm d-inline-flex align-items-center px-3 py-2 fw-semibold text-decoration-none cp-btn-nav-home">
+                <i class="bi bi-arrow-left me-2 text-primary" style="font-size: 1rem;"></i>
+                <span>Back to Home</span>
+            </a>
+        </div>
+    </div>
+</nav>
+{% endif %}
+{% endblock navbar %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 1240px; padding-top: 1.5rem !important;">
+    <div class="row g-4">
+        
+        {# ── Left Main Column: Job Description & Details ── #}
+        <div class="col-lg-8">
+            <div class="p-4 p-md-5 rounded-4 mb-4" 
+                 style="background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(11, 16, 27, 0.98)); border: 1px solid rgba(255, 255, 255, 0.09); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);">
+                
+                {# Top Header: Title & Company #}
+                <div class="d-flex align-items-start justify-content-between gap-3 mb-3">
+                    <div>
+                        <h1 class="fw-bold text-white mb-2" style="font-size: 2.1rem; letter-spacing: -0.5px; line-height: 1.25;">
+                            {{ job.title }}
+                        </h1>
+                        <div class="d-flex align-items-center gap-2 text-pearl fs-6" style="color: #94a3b8; font-weight: 500;">
+                            <i class="bi bi-building me-1 text-primary"></i>
+                            <span class="text-white fw-semibold">{{ job.company.name if job.company else 'Analysis Workforce' }}</span>
+                            <span>&bull;</span>
+                            <span>{{ job.location or 'Karachi' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                {# Metadata Pills Row (Location, Salary, Experience, Employment Type - Generously Spaced) #}
+                <div class="d-flex flex-wrap align-items-center mb-4 pb-3 border-bottom" style="gap: 12px !important; border-color: rgba(255, 255, 255, 0.08) !important;">
+                    {# Location Pill #}
+                    <span class="badge px-3 py-2 rounded-pill d-inline-flex align-items-center" style="background: rgba(59, 130, 246, 0.16); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.45); font-size: 0.84rem; font-weight: 600; letter-spacing: 0.2px;">
+                        <i class="bi bi-geo-alt-fill me-2" style="color: #60a5fa; font-size: 0.95rem;"></i>
+                        <span>{{ job.location or 'Karachi' }}</span>
+                    </span>
+
+                    {# Salary Pill #}
+                    {% set sal = job.salary_range or ('PKR ' ~ (job.salary_min or '80k') ~ '-' ~ (job.salary_max or '150k')) %}
+                    <span class="badge px-3 py-2 rounded-pill d-inline-flex align-items-center" style="background: rgba(16, 185, 129, 0.16); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.45); font-size: 0.84rem; font-weight: 600; letter-spacing: 0.2px;">
+                        <i class="bi bi-wallet2 me-2" style="color: #34d399; font-size: 0.95rem;"></i>
+                        <span>{{ sal }}</span>
+                    </span>
+
+                    {# Experience Pill #}
+                    <span class="badge px-3 py-2 rounded-pill d-inline-flex align-items-center" style="background: rgba(168, 85, 247, 0.16); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.45); font-size: 0.84rem; font-weight: 600; letter-spacing: 0.2px;">
+                        <i class="bi bi-clock-history me-2" style="color: #c084fc; font-size: 0.95rem;"></i>
+                        <span>{{ job.experience_required or '2-4 yrs' }}</span>
+                    </span>
+
+                    {# Employment Type Pill #}
+                    {% set emp_type = (job.employment_type or 'Full-time')|replace('_', ' ')|title %}
+                    <span class="badge px-3 py-2 rounded-pill d-inline-flex align-items-center" style="background: rgba(6, 182, 212, 0.16); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.45); font-size: 0.84rem; font-weight: 600; letter-spacing: 0.2px;">
+                        <i class="bi bi-briefcase-fill me-2" style="color: #67e8f9; font-size: 0.95rem;"></i>
+                        <span>{{ emp_type }}</span>
+                    </span>
+
+                    {% if not is_open %}
+                    <span class="badge px-3 py-2 rounded-pill" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); font-size: 0.84rem; font-weight: 600;">
+                        Closed
+                    </span>
+                    {% endif %}
+                </div>
+
+                {# Job Description Content #}
+                <div class="mb-4">
+                    <h5 class="fw-bold text-white mb-3" style="font-size: 1.15rem; letter-spacing: -0.2px;">
+                        <i class="bi bi-file-text me-2 text-primary"></i>Job Description
+                    </h5>
+                    <div class="text-pearl lh-lg" style="color: #cbd5e1; font-size: 0.96rem;">
+                        {{ job.description | safe }}
+                    </div>
+                </div>
+
+                {# Skills Section #}
+                {% if job.skills and job.skills.count() %}
+                <div class="mt-4 pt-3 border-top" style="border-color: rgba(255, 255, 255, 0.08) !important;">
+                    <h5 class="fw-bold text-white mb-3" style="font-size: 1.15rem; letter-spacing: -0.2px;">
+                        <i class="bi bi-stars me-2 text-warning"></i>Required Skills &amp; Competencies
+                    </h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for skill in job.skills %}
+                        <span class="badge px-3 py-2 rounded-3" style="background: rgba(30, 41, 59, 0.9); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.12); font-size: 0.85rem; font-weight: 500;">
+                            {{ skill.skill_name }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# ── Right Sidebar Column: Apply Box & Actions ── #}
+        <div class="col-lg-4">
+            <div class="p-4 rounded-4 sticky-top" style="top: 90px; background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(11, 16, 27, 0.98)); border: 1px solid rgba(255, 255, 255, 0.09); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);">
+                
+                {# Posting Date Metadata #}
+                <div class="d-flex flex-column gap-2 mb-3">
+                    <div class="d-flex align-items-center justify-content-between text-pearl small" style="color: #94a3b8;">
+                        <span><i class="bi bi-calendar-event me-2 text-primary"></i>Posted Date</span>
+                        <span class="text-white fw-semibold">{{ job.created_at.strftime('%b %d, %Y') }}</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between text-pearl small" style="color: #94a3b8;">
+                        <span><i class="bi bi-calendar-check me-2 text-warning"></i>Application Deadline</span>
+                        <span class="text-white fw-semibold">{{ job.closes_at.strftime('%b %d, %Y') if job.closes_at else 'Open' }}</span>
+                    </div>
+                </div>
+
+                <hr style="border-color: rgba(255, 255, 255, 0.08) !important; margin: 1rem 0;">
+
+                {# Authenticated Candidate Actions #}
+                {% if current_user.is_authenticated and current_user.is_candidate() %}
+                    <div class="d-flex flex-column gap-3 mb-3">
+                        {% if already_applied %}
+                        <button class="btn btn-secondary w-100 py-2.5 fw-semibold" disabled style="border-radius: 12px;">Already Applied</button>
+                        {% elif is_open %}
+                        <a href="{{ url_for('jobboard.apply', job_id=job.id) }}" class="btn btn-cp-primary w-100 py-2.5 fw-semibold d-inline-flex align-items-center justify-content-center" style="border-radius: 12px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);">
+                            <i class="bi bi-send-fill me-2"></i>Apply Now
+                        </a>
+                        {% else %}
+                        <button class="btn btn-secondary w-100 py-2.5 fw-semibold" disabled style="border-radius: 12px;">Applications Closed</button>
+                        {% endif %}
+
+                        {% if not is_saved %}
+                        <form method="POST" action="{{ url_for('jobboard.save_job', job_id=job.id) }}" class="m-0 p-0">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-cp-outline w-100 py-2.5 fw-semibold d-inline-flex align-items-center justify-content-center" style="border-radius: 12px;">
+                                <i class="bi bi-bookmark me-2"></i>Save Job
+                            </button>
+                        </form>
+                        {% else %}
+                        <button class="btn btn-cp-outline w-100 py-2.5 fw-semibold d-inline-flex align-items-center justify-content-center" disabled style="border-radius: 12px;">
+                            <i class="bi bi-bookmark-check me-2"></i>Saved ✓
+                        </button>
+                        {% endif %}
+
+                        {# Report Safety Desk Action Button for Authenticated Candidates #}
+                        <a href="{{ url_for('register_complaint', job_id=job.id) }}" 
+                           class="btn w-100 py-2.5 d-inline-flex align-items-center justify-content-center text-decoration-none cp-btn-report"
+                           style="border-radius: 12px;">
+                            <i class="bi bi-flag-fill me-2"></i>
+                            <span>Report This Job</span>
+                        </a>
+                    </div>
+
+                {# Unauthenticated Guest Actions Box (Report This Job option removed for unauthenticated users) #}
+                {% elif not current_user.is_authenticated %}
+                    <div class="p-4 rounded-4 mb-2" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(37, 99, 235, 0.18)); border: 1px solid rgba(59, 130, 246, 0.35); border-radius: 16px;">
+                        <div class="d-flex align-items-center gap-3 mb-3 text-white fw-bold" style="font-size: 1.02rem;">
+                            <i class="bi bi-shield-lock-fill text-primary" style="font-size: 1.15rem;"></i>
+                            <span>Login Required to Apply</span>
+                        </div>
+                        <div class="text-pearl small mb-4" style="font-size: 0.88rem; color: #94a3b8; line-height: 1.55;">
+                            Sign in or register a candidate profile to submit your verified application for this position.
+                        </div>
+                        <div class="d-flex flex-column gap-3">
+                            <a href="{{ url_for('auth.login', role='candidate', next=url_for('jobboard.job_detail', job_id=job.id), prompt='apply') }}" 
+                               class="btn w-100 py-2.5 fw-bold d-inline-flex align-items-center justify-content-center text-decoration-none text-white cp-btn-glow" 
+                               style="background: linear-gradient(135deg, #0284c7, #2563eb); border: none; border-radius: 12px; font-size: 0.92rem; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.35); transition: all 0.25s;">
+                                <i class="bi bi-box-arrow-in-right me-2" style="font-size: 1.05rem;"></i>
+                                <span>Sign In to Apply</span>
+                            </a>
+                            <a href="{{ url_for('auth.register', role='candidate') }}" 
+                               class="btn w-100 py-2.5 fw-semibold d-inline-flex align-items-center justify-content-center text-decoration-none text-white cp-btn-ghost-glow" 
+                               style="background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 12px; font-size: 0.92rem; transition: all 0.25s;">
+                                <i class="bi bi-person-plus me-2 text-primary" style="font-size: 1.05rem;"></i>
+                                <span>Create Free Account</span>
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock content %}

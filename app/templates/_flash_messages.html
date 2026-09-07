@@ -1,0 +1,11 @@
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="cp-toast-stack" id="cpToastStack" aria-live="polite" aria-atomic="true">
+        {% for category, message in messages %}
+        <div class="cp-toast cp-toast-{{ category }}" role="alert" data-auto-dismiss="4000">
+            <span class="cp-toast-text">{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endwith %}

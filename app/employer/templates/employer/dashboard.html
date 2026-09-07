@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+{% block title %}Employer Dashboard — CareerPearls{% endblock %}
+{% from '_empty_states.html' import empty_state_generic %}
+
+{% block content %}
+{% include '_quotes_banner.html' %}
+
+<div class="container-fluid pt-2">
+    {% set company = company or (current_user.recruiter.company if (current_user.recruiter and current_user.recruiter.company) else None) %}
+    {% if company %}
+        {% if company.verification_status == 'Rejected' %}
+        <div class="alert alert-danger p-3 mb-4 rounded-3 d-flex align-items-center justify-content-between flex-wrap gap-2 shadow" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35);" data-verification-banner>
+            <div>
+                <h6 class="mb-1 text-danger fw-bold"><i class="bi bi-x-circle-fill me-2"></i>Organization Status: Rejected by Admin</h6>
+                <p class="mb-0 small text-white">
+                    <strong>Reason from Admin:</strong> {{ company.rejection_reason or 'Details failed verification inspection.' }}
+                </p>
+            </div>
+            <a href="{{ url_for('employer.company_profile') }}" class="btn btn-danger btn-sm px-3">Update Profile &amp; Re-verify</a>
+        </div>
+        {% elif company.verification_status == 'Pending Verification' or not company.is_verified %}
+        <div class="alert alert-warning p-3 mb-4 rounded-3 d-flex align-items-center justify-content-between flex-wrap gap-2 shadow" style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35);" data-verification-banner>
+            <div>
+                <h6 class="mb-1 text-warning fw-bold"><i class="bi bi-clock-history me-2"></i>Organization Status: Pending Verification</h6>
+                <p class="mb-0 small text-white">Your organization profile is currently under review by Super Admin. Real-time updates reflect immediately upon review.</p>
+            </div>
+            <span class="badge bg-warning text-dark px-3 py-2 fw-semibold"><i class="bi bi-hourglass-split me-1"></i>Pending Review</span>
+        </div>
+        {% else %}
+        <div class="alert alert-success p-3 mb-4 rounded-3 d-flex align-items-center justify-content-between flex-wrap gap-2 shadow" style="background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.35);" data-verification-banner>
+            <div>
+                <h6 class="mb-1 text-success fw-bold"><i class="bi bi-check-circle-fill me-2"></i>Organization Account Verified &amp; Active</h6>
+                <p class="mb-0 small text-white">Your organization has been officially verified by Super Admin. You can post and manage jobs in real-time.</p>
+            </div>
+            <a href="{{ url_for('employer.post_job') }}" class="btn btn-cp-primary btn-sm px-4"><i class="bi bi-plus-circle me-1"></i>Post a Job</a>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    <!-- Quick Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="cp-card text-center p-3" style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:14px;">
+                <div class="fs-2 fw-bold text-primary mb-1">{{ active_jobs_count or 0 }}</div>
+                <div class="small text-pearl">Active Jobs</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="cp-card text-center p-3" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);border-radius:14px;">
+                <div class="fs-2 fw-bold text-success mb-1">{{ (status_counts.get('Applied', 0) + status_counts.get('Under Review', 0)) }}</div>
+                <div class="small text-pearl">New Applications</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="cp-card text-center p-3" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:14px;">
+                <div class="fs-2 fw-bold" style="color:#f59e0b;" class="mb-1">{{ status_counts.get('Interview Scheduled', 0) }}</div>
+                <div class="small text-pearl">Interviews</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="cp-card text-center p-3" style="background:rgba(123,47,247,0.08);border:1px solid rgba(123,47,247,0.2);border-radius:14px;">
+                <div class="fs-2 fw-bold" style="color:#a78bfa;" class="mb-1">{{ status_counts.get('Selected', 0) }}</div>
+                <div class="small text-pearl">Selected</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Jobs Quick Access (Impressive Glowing Glassmorphism Card) -->
+    <div class="cp-card mb-4 position-relative overflow-hidden"
+         style="background: linear-gradient(135deg, rgba(2, 132, 199, 0.12) 0%, rgba(15, 23, 42, 0.98) 40%, rgba(37, 99, 235, 0.10) 100%); border: 1.5px solid rgba(56, 189, 248, 0.4); border-radius: 18px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55), 0 0 30px rgba(56, 189, 248, 0.10); padding: 22px 28px;">
+        <!-- subtle glow blob -->
+        <div style="position: absolute; top: -30px; left: -30px; width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, rgba(56,189,248,0.12), transparent 70%); pointer-events: none;"></div>
+        <div style="position: absolute; bottom: -20px; right: -20px; width: 150px; height: 150px; border-radius: 50%; background: radial-gradient(circle, rgba(37,99,235,0.12), transparent 70%); pointer-events: none;"></div>
+
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 position-relative" style="z-index: 2;">
+            <div class="d-flex align-items-center gap-4">
+                <div style="width: 54px; height: 54px; border-radius: 16px; background: linear-gradient(135deg, #0284c7, #2563eb); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 24px rgba(37, 99, 235, 0.65); flex-shrink: 0;">
+                    <i class="bi bi-briefcase-fill cp-briefcase-icon" style="font-size: 1.5rem; color: #ffffff !important;"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold text-white mb-2" style="font-size: 1.25rem; letter-spacing: -0.3px; line-height: 1.3;">My Job Listings</h5>
+                    <div class="d-flex align-items-center gap-2.5 flex-wrap mt-2 pt-1">
+                        <span class="badge cp-badge-total-jobs px-2.5 py-1 rounded-pill">
+                            <i class="bi bi-briefcase me-1"></i>{{ total_jobs_count or 0 }} Total
+                        </span>
+                        <span class="badge cp-badge-active-jobs px-2.5 py-1 rounded-pill">
+                            <i class="bi bi-check-circle-fill me-1"></i>{{ active_jobs_count or 0 }} Active
+                        </span>
+                        <span class="text-pearl small ms-1" style="font-size: 0.82rem;">· Real-time Job Management</span>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex gap-3 align-items-center flex-wrap">
+                <a href="{{ url_for('employer.my_jobs') }}"
+                   class="btn btn-sm px-4 py-2 fw-semibold d-inline-flex align-items-center gap-2 cp-joblisting-btn-outline"
+                   style="border: 1.5px solid rgba(56, 189, 248, 0.6); background: rgba(56, 189, 248, 0.08); color: #38bdf8; border-radius: 12px; font-size: 0.88rem; transition: all 0.22s ease;">
+                    <i class="bi bi-list-task fs-6"></i>
+                    <span>Manage Jobs</span>
+                </a>
+                {% if company and company.is_verified %}
+                <a href="{{ url_for('employer.post_job') }}"
+                   class="btn btn-sm px-4 py-2 fw-semibold d-inline-flex align-items-center gap-2 cp-joblisting-btn-primary"
+                   style="background: linear-gradient(135deg, #0284c7, #2563eb); border: 1.5px solid rgba(56, 189, 248, 0.85); color: #ffffff; border-radius: 12px; font-size: 0.88rem; box-shadow: 0 4px 18px rgba(37, 99, 235, 0.45); transition: all 0.22s ease;">
+                    <i class="bi bi-plus-circle-fill fs-6"></i>
+                    <span>Post New Job</span>
+                </a>
+                {% else %}
+                <span class="btn btn-sm px-4 py-2 fw-semibold d-inline-flex align-items-center gap-2"
+                      title="Admin approval required to post jobs"
+                      data-bs-toggle="tooltip" data-bs-placement="top"
+                      style="background: rgba(100,116,139,0.18); border: 1.5px solid rgba(100,116,139,0.35); color: #64748b; border-radius: 12px; font-size: 0.88rem; cursor: not-allowed; opacity: 0.75;">
+                    <i class="bi bi-lock-fill fs-6"></i>
+                    <span>Post New Job</span>
+                    <span class="badge ms-1 px-2 py-0.5 rounded-pill" style="background: rgba(245,158,11,0.2); color: #f59e0b; border: 1px solid rgba(245,158,11,0.4); font-size: 0.68rem;">Pending Approval</span>
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <style>
+    .cp-joblisting-btn-outline:hover {
+        background: rgba(56, 189, 248, 0.22) !important;
+        border-color: rgba(56, 189, 248, 0.9) !important;
+        color: #fff !important;
+        box-shadow: 0 4px 18px rgba(56, 189, 248, 0.3) !important;
+        transform: translateY(-1px);
+    }
+    .cp-joblisting-btn-primary:hover {
+        background: linear-gradient(135deg, #0ea5e9, #3b82f6) !important;
+        box-shadow: 0 8px 28px rgba(37, 99, 235, 0.65) !important;
+        transform: translateY(-1px);
+    }
+    </style>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="cp-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 fw-semibold">Recent Applications</h5>
+                    <a href="{{ url_for('employer.manage_applications') }}" class="btn btn-cp-primary btn-sm">View All Applications</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table cp-theme-table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Candidate</th>
+                                <th>Job</th>
+                                <th>Status</th>
+                                <th>Applied</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for app in recent_applications %}
+                        <tr>
+                            <td>{{ app.candidate.full_name if app.candidate else 'Unknown Candidate' }}</td>
+                            <td>{{ app.job.title if app.job else 'Unknown Job' }}</td>
+                            <td><span class="status-badge status-{{ app.status }}">{{ app.status }}</span></td>
+                            <td class="text-pearl">{{ app.applied_at.strftime('%b %d') if app.applied_at else 'N/A' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="4" class="text-pearl text-center py-4">No applications yet.</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <!-- Applications by Stage Card -->
+            <div class="cp-card mb-4">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="mb-0 fw-semibold fs-6"><i class="bi bi-pie-chart-fill text-primary me-2"></i>Applications by Stage</h5>
+                    <span class="badge cp-stage-total-badge px-2.5 py-1 rounded-pill small">
+                        {{ status_counts.values() | sum if status_counts else 0 }} Total
+                    </span>
+                </div>
+                
+                <div style="height: 200px; position: relative;" class="mb-3">
+                    <canvas id="pipelineChart" data-status-counts="{{ status_counts | tojson }}"></canvas>
+                </div>
+
+                <!-- Detailed Stage Breakdown List -->
+                <div class="d-flex flex-column gap-2 pt-2 border-top border-secondary border-opacity-25">
+                    {% set stages = [
+                        ('Applied', status_counts.get('Applied', 0), '#38bdf8'),
+                        ('Under Review', status_counts.get('Under Review', 0), '#fbbf24'),
+                        ('Shortlisted', status_counts.get('Shortlisted', 0), '#a855f7'),
+                        ('Interview', status_counts.get('Interview Scheduled', 0), '#3b82f6'),
+                        ('Hired', status_counts.get('Selected', 0), '#22c55e'),
+                        ('Rejected', status_counts.get('Rejected', 0), '#ef4444')
+                    ] %}
+                    {% set total_apps = status_counts.values() | sum if (status_counts and status_counts.values() | sum > 0) else 1 %}
+                    {% for name, count, color in stages %}
+                    {% set pct = ((count / total_apps) * 100) | round | int %}
+                    <div class="d-flex align-items-center justify-content-between small">
+                        <div class="d-flex align-items-center gap-2">
+                            <span style="width: 10px; height: 10px; border-radius: 50%; background: {{ color }}; display: inline-block;"></span>
+                            <span class="text-pearl">{{ name }}</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fw-bold cp-stage-count">{{ count }}</span>
+                            <span class="cp-stage-pct">({{ pct }}%)</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Organization Presence & Analytics Summary Card -->
+            <div class="cp-card">
+                <div class="d-flex align-items-center gap-2.5 mb-3">
+                    <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center;" class="flex-shrink-0">
+                        <i class="bi bi-graph-up-arrow text-info fs-5"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0 text-white" style="font-size: 0.95rem;">Organization Analytics</h6>
+                        <span class="text-pearl small" style="font-size: 0.78rem;">Live hiring velocity &amp; profile performance</span>
+                    </div>
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <div class="p-2.5 rounded-3 cp-info-box text-center">
+                            <small class="text-pearl d-block mb-1" style="font-size: 0.75rem;">Listing Velocity</small>
+                            <span class="fw-bold text-primary">{{ active_jobs_count or 0 }} / {{ total_jobs_count or 0 }} Active</span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2.5 rounded-3 cp-info-box text-center">
+                            <small class="text-pearl d-block mb-1" style="font-size: 0.75rem;">Verification</small>
+                            <span class="badge {% if company and company.is_verified %}bg-success{% else %}bg-warning text-dark{% endif %} px-2 py-1">
+                                {{ company.verification_status if company else 'Pending' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="{{ url_for('employer.company_profile') }}" class="btn btn-sm btn-cp-outline w-100 py-2 d-inline-flex align-items-center justify-content-center gap-2" style="border-radius: 10px;">
+                    <i class="bi bi-sliders"></i>
+                    <span>Manage Organization &amp; Analytics</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Real-time verification status checking
+function checkVerificationStatus() {
+    fetch('/api/employer/verification-status')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status) {
+                updateVerificationBanner(data.status, data.rejection_reason);
+            }
+        })
+        .catch(error => console.error('Error checking verification status:', error));
+}
+
+function updateVerificationBanner(status, rejectionReason) {
+    const existingBanner = document.querySelector('[data-verification-banner]');
+    if (!existingBanner) return;
+
+    const bannerContainer = existingBanner.closest('.alert');
+    if (!bannerContainer) return;
+
+    if (status === 'Approved') {
+        bannerContainer.className = 'alert alert-success p-3 mb-4 rounded-3 d-flex align-items-center justify-content-between flex-wrap gap-2 shadow';
+        bannerContainer.style.background = 'rgba(34, 197, 94, 0.12)';
+        bannerContainer.style.border = '1px solid rgba(34, 197, 94, 0.35)';
+        bannerContainer.innerHTML = `
+            <div style="flex: 1; min-width: 0;">
+                <h6 class="mb-1 text-success fw-bold"><i class="bi bi-check-circle-fill me-2"></i>Organization Approved & Verified</h6>
+                <p class="mb-0 small text-white">Your organization is fully verified by Admin. You can post and manage job listings in real-time.</p>
+            </div>
+            <a href="/employer/post-job" class="btn btn-cp-primary btn-sm px-4 flex-shrink-0"><i class="bi bi-plus-circle me-1"></i>Post a Job</a>
+        `;
+    } else if (status === 'Rejected') {
+        bannerContainer.className = 'alert alert-danger p-3 mb-4 rounded-3 d-flex align-items-center justify-content-between flex-wrap gap-2 shadow';
+        bannerContainer.style.background = 'rgba(239, 68, 68, 0.12)';
+        bannerContainer.style.border = '1px solid rgba(239, 68, 68, 0.35)';
+        bannerContainer.innerHTML = `
+            <div style="flex: 1; min-width: 0;">
+                <h6 class="mb-1 text-danger fw-bold"><i class="bi bi-x-circle-fill me-2"></i>Organization Status: Rejected by Admin</h6>
+                <p class="mb-0 small text-white">
+                    <strong>Reason from Admin:</strong> ${rejectionReason || 'Details failed verification inspection.'}
+                </p>
+            </div>
+            <a href="/employer/company" class="btn btn-danger btn-sm px-3 flex-shrink-0">Update Profile & Re-verify</a>
+        `;
+    }
+}
+
+// Check verification status every 10 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    // Initial check
+    checkVerificationStatus();
+    
+    // Periodic checks
+    setInterval(checkVerificationStatus, 10000);
+});
+
+const ctx = document.getElementById('pipelineChart');
+if (ctx) {
+    const statusCounts = JSON.parse(ctx.dataset.statusCounts || '{}');
+    const keys = Object.keys(statusCounts).length > 0 ? Object.keys(statusCounts) : ['Applied', 'Under Review', 'Shortlisted', 'Interview Scheduled', 'Selected', 'Rejected'];
+    const values = Object.values(statusCounts).length > 0 ? Object.values(statusCounts) : [0, 0, 0, 0, 0, 0];
+    const hasData = values.some(v => v > 0);
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: hasData ? keys : ['No Active Applications'],
+            datasets: [{
+                data: hasData ? values : [1],
+                backgroundColor: hasData ? ['#38bdf8','#fbbf24','#a855f7','#3b82f6','#22c55e','#ef4444'] : ['rgba(148, 163, 184, 0.2)'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '72%',
+            plugins: {
+                legend: {
+                    display: hasData,
+                    position: 'bottom',
+                    labels: {
+                        color: '#9ca3af',
+                        padding: 12,
+                        font: { size: 11 }
+                    }
+                }
+            }
+        }
+    });
+}
+</script>
+{% endblock %}

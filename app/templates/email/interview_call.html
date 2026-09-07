@@ -1,0 +1,53 @@
+{% extends "email/_base.html" %}
+{% block email_title %}Interview Invitation: {{ job_title }} — {{ company_name }}{% endblock %}
+{% block email_preheader %}You have been invited to interview for the {{ job_title }} role at {{ company_name }} on {{ interview_date }} at {{ interview_time }}.{% endblock %}
+{% block email_heading %}Interview Invitation{% endblock %}
+
+{% block email_body %}
+<p style="margin:0 0 16px;color:#e8eaf0;font-size:15px;">Dear <strong>{{ candidate_name }}</strong>,</p>
+
+<div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(59, 130, 246, 0.1)); border: 1.5px solid rgba(245, 158, 11, 0.4); border-radius: 12px; padding: 16px; margin-bottom: 22px;">
+    <p style="margin:0;color:#fbbf24;font-size:15px;font-weight:700;">
+        🎉 Interview Scheduled
+    </p>
+    <p style="margin:6px 0 0;color:#e2e8f0;font-size:14px;line-height:1.5;">
+        <strong>{{ company_name }}</strong> has reviewed your application and is pleased to invite you for an interview for the <strong>{{ job_title }}</strong> position.
+    </p>
+</div>
+
+<h4 style="margin:0 0 12px;color:#38bdf8;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">
+    Schedule &amp; Venue
+</h4>
+
+<table width="100%" cellpadding="12" cellspacing="0" style="background:#0f172a;border:1px solid rgba(56, 189, 248, 0.25);border-radius:12px;margin-bottom:22px;font-size:14px;color:#e8eaf0;">
+    <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <td width="32%" style="color:#38bdf8;font-weight:600;">Position:</td>
+        <td style="color:#ffffff;font-weight:600;">{{ job_title }}</td>
+    </tr>
+    <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <td style="color:#38bdf8;font-weight:600;">Date &amp; Day:</td>
+        <td style="color:#ffffff;">{{ interview_date }}</td>
+    </tr>
+    <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <td style="color:#38bdf8;font-weight:600;">Time:</td>
+        <td style="color:#4ade80;font-weight:700;font-size:15px;">{{ interview_time }}</td>
+    </tr>
+    <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <td style="color:#38bdf8;font-weight:600;">Mode:</td>
+        <td style="color:#ffffff;"><span style="display:inline-block;background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.4);border-radius:6px;padding:2px 8px;font-size:12px;font-weight:700;">On-Site In-Person Interview</span></td>
+    </tr>
+    <tr>
+        <td style="color:#38bdf8;font-weight:600;">Venue / Address:</td>
+        <td style="color:#cbd5e1;line-height:1.5;">{{ interview_location }}</td>
+    </tr>
+</table>
+
+<div style="background: rgba(56, 189, 248, 0.06); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 10px; padding: 12px; margin-bottom: 20px;">
+    <p style="margin:0;color:#cbd5e1;font-size:13px;line-height:1.4;">
+        ℹ️ <strong>Next Steps:</strong> Please confirm your attendance by replying to this email or through your CareerPearls candidate dashboard. For any questions or directions, you may contact the <strong>{{ company_name }}</strong> recruitment desk directly.
+    </p>
+</div>
+
+<p style="margin:0 0 4px;color:#94a3b8;font-size:13px;">Best regards,</p>
+<p style="margin:0;color:#ffffff;font-size:15px;font-weight:700;">{{ company_name }} Hiring Team</p>
+{% endblock %}

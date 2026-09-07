@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Privacy Policy — CareerPearls{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Light theme variant for legal pages */
+    :root[data-theme="light"] .legal-page-card {
+        background: rgba(255,255,255,0.95) !important;
+        border: 1px solid rgba(0,0,0,0.08) !important;
+    }
+    :root[data-theme="light"] .legal-page-title {
+        color: #111827 !important;
+    }
+    :root[data-theme="light"] .legal-page-subtitle {
+        color: #6b7280 !important;
+    }
+    :root[data-theme="light"] .legal-page-body {
+        color: #374151 !important;
+    }
+    :root[data-theme="light"] .legal-page-heading {
+        color: #111827 !important;
+    }
+    :root[data-theme="light"] .legal-page-link {
+        color: #1e3a8a !important;
+    }
+    :root[data-theme="light"] .legal-page-border {
+        border-color: rgba(0,0,0,0.08) !important;
+    }
+    /* Light theme back button hover */
+    :root[data-theme="light"] .btn[style*="background: rgba(255, 255, 255, 0.06)"]:hover {
+        background: rgba(79, 172, 254, 0.1) !important;
+        border-color: rgba(79, 172, 254, 0.3) !important;
+        transform: translateY(-1px);
+    }
+    :root[data-theme="light"] .btn-cp-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 860px;">
+    <div class="cp-card legal-page-card p-4 p-md-5" style="background: rgba(15,23,42,0.9); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;">
+        <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom legal-page-border" style="border-color: rgba(255,255,255,0.08)!important;">
+            <div style="width:48px;height:48px;border-radius:12px;background:rgba(59,130,246,0.15);display:flex;align-items:center;justify-content:center;">
+                <i class="bi bi-shield-lock text-primary fs-4"></i>
+            </div>
+            <div>
+                <h3 class="fw-bold legal-page-title text-white mb-0">Privacy Policy</h3>
+                <p class="legal-page-subtitle text-pearl small mb-0">Last updated: August 2026</p>
+            </div>
+        </div>
+
+        <div class="legal-page-body text-pearl" style="line-height: 1.7; font-size: 0.95rem;">
+            <h5 class="legal-page-heading text-white fw-semibold mt-4 mb-2">1. Information We Collect</h5>
+            <p>We collect information you provide directly during registration, profile creation, and job applications — including your full name, email address, phone number, resume documents, educational credentials, and employment history.</p>
+
+            <h5 class="legal-page-heading text-white fw-semibold mt-4 mb-2">2. How We Use Your Information</h5>
+            <p>We use your data to match you with relevant job opportunities, allow verified employers to review your applications (only when you actively submit an application), facilitate interview coordination, and improve our platform security and capabilities.</p>
+
+            <h5 class="legal-page-heading text-white fw-semibold mt-4 mb-2">3. Data Sharing &amp; Visibility</h5>
+            <p>Your candidate profile and uploaded resumes are only made accessible to employers for job postings you explicitly apply to. We never sell, rent, or trade your personal data with third-party advertisers.</p>
+
+            <h5 class="legal-page-heading text-white fw-semibold mt-4 mb-2">4. Cookies &amp; Storage</h5>
+            <p>We use secure session cookies for user authentication and local storage for theme and UI preferences. We do not use third-party behavioral trackers.</p>
+
+            <h5 class="legal-page-heading text-white fw-semibold mt-4 mb-2">5. Your Data Rights</h5>
+            <p>You have full control over your data. You may update your profile details, delete uploaded resumes, or request account deactivation and complete data erasure at any time directly from your account settings.</p>
+
+            <h5 class="legal-page-heading text-white fw-semibold mt-4 mb-2">6. Security Measures</h5>
+            <p>All passwords are encrypted using strong cryptographic hashing algorithms. All data in transit is protected using TLS/HTTPS. We enforce CSRF tokens, strict role-based access control, and comprehensive audit logging.</p>
+
+            <h5 class="legal-page-heading text-white fw-semibold mt-4 mb-2">7. Contact Support</h5>
+            <p>For privacy inquiries or data protection requests, contact our support team at <a href="mailto:career.pulse.web@gmail.com" class="legal-page-link text-cp-accent text-decoration-none">career.pulse.web@gmail.com</a>.</p>
+        </div>
+
+        <div class="mt-4 pt-3 border-top legal-page-border d-flex justify-content-between align-items-center flex-wrap gap-2" style="border-color: rgba(255,255,255,0.08)!important;">
+            <a href="{{ url_for('terms_of_service') }}" class="legal-page-link text-pearl small text-decoration-none"><i class="bi bi-file-text me-1"></i>View Terms of Service</a>
+            <a href="{{ url_for('index') }}" class="btn btn-cp-primary btn-sm px-4">Back to Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

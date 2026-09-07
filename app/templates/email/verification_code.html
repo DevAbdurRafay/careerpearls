@@ -1,0 +1,22 @@
+{% extends "email/_base.html" %}
+{% block email_title %}Verify your email — CareerPearls{% endblock %}
+{% block email_heading %}Verify your email{% endblock %}
+{% block email_body %}
+<p style="margin:0 0 16px;color:#e8eaf0;">Hi {{ name }},</p>
+<p style="margin:0 0 24px;">Use this code to complete your registration. It expires in <strong style="color:#4facfe;">{{ expiry_minutes }} minutes</strong>.</p>
+
+<table role="presentation" cellspacing="0" cellpadding="0" align="center" style="margin:0 auto 28px;">
+    <tr>
+        {% for digit in digits %}
+        <td style="padding:0 5px;">
+            <div style="width:44px;height:52px;line-height:52px;text-align:center;font-size:26px;font-weight:700;font-family:'Courier New',monospace;color:#fff;background:linear-gradient(135deg,rgba(79,172,254,0.25),rgba(123,47,247,0.25));border:1px solid rgba(79,172,254,0.45);border-radius:10px;box-shadow:0 4px 16px rgba(79,172,254,0.15);">
+                {{ digit }}
+            </div>
+        </td>
+        {% endfor %}
+    </tr>
+</table>
+
+<p style="margin:0 0 8px;font-size:13px;color:#9ca3af;text-align:center;">Enter all 6 digits on the verification page.</p>
+<p style="margin:0;font-size:13px;color:#6b7280;text-align:center;">If you didn't request this, you can safely ignore this email.</p>
+{% endblock %}

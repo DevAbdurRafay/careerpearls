@@ -1,0 +1,25 @@
+{% from '_form_labels.html' import required_label %}
+
+<form method="POST" class="cp-wizard-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <label class="form-label d-block mb-3">{{ required_label('What best describes you?') }}</label>
+    <div class="status-cards">
+        {% for value, label in career_options %}
+        <label class="status-card {% if current_status == value %}selected{% endif %}">
+            <input type="radio" name="career_status" value="{{ value }}" {% if current_status == value %}checked{% endif %} required>
+            <div class="status-card-title">{{ label.split(' — ')[0] }}</div>
+            <div class="status-card-desc">{{ label.split(' — ')[1] if ' — ' in label else '' }}</div>
+        </label>
+        {% endfor %}
+    </div>
+
+    <div class="cp-wizard-actions">
+        {% if edit_mode %}
+        <a href="{{ url_for('candidate.profile') }}" class="btn btn-cp-outline">Cancel</a>
+        {% else %}
+        <a href="{{ url_for('candidate.onboarding', step=1) }}" class="btn btn-cp-outline">Back</a>
+        {% endif %}
+        <button type="submit" class="btn btn-cp-primary px-4">Continue</button>
+    </div>
+</form>

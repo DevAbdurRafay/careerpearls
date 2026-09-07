@@ -1,0 +1,61 @@
+﻿{% extends "email/_base.html" %}
+{% block email_title %}Complaint Registered: {{ ticket_id }} — CareerPearls{% endblock %}
+{% block email_preheader %}Your complaint (Ticket {{ ticket_id }}) has been received and is currently under review by our Trust & Safety team.{% endblock %}
+{% block email_heading %}Complaint Registered{% endblock %}
+
+{% block email_body %}
+<p style="margin:0 0 16px;color:#e8eaf0;font-size:15px;">Dear <strong>{{ complainant_name or 'User' }}</strong>,</p>
+
+<div style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(245, 158, 11, 0.08)); border: 1.5px solid rgba(239, 68, 68, 0.35); border-radius: 12px; padding: 16px; margin-bottom: 22px;">
+    <p style="margin:0;color:#f87171;font-size:15px;font-weight:700;">
+        🛡️ Report Received &amp; Queued for Review
+    </p>
+    <p style="margin:6px 0 0;color:#e2e8f0;font-size:14px;line-height:1.5;">
+        Thank you for reporting this issue. CareerPearls is committed to maintaining a safe, authentic, and transparent ecosystem. Our <strong>Trust &amp; Safety Team</strong> is reviewing your complaint.
+    </p>
+</div>
+
+<h4 style="margin:0 0 12px;color:#38bdf8;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">
+    Complaint Ticket Details
+</h4>
+
+<table width="100%" cellpadding="12" cellspacing="0" style="background:#0f172a;border:1px solid rgba(56, 189, 248, 0.25);border-radius:12px;margin-bottom:20px;font-size:14px;color:#e8eaf0;">
+    <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <td width="32%" style="color:#38bdf8;font-weight:600;">Ticket ID:</td>
+        <td style="color:#ffffff;font-weight:700;font-size:15px;">{{ ticket_id }}</td>
+    </tr>
+    <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <td style="color:#38bdf8;font-weight:600;">Category:</td>
+        <td style="color:#ffffff;"><span style="display:inline-block;background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:2px 8px;font-size:12px;font-weight:700;">{{ category }}</span></td>
+    </tr>
+    {% if subject_text %}
+    <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+        <td style="color:#38bdf8;font-weight:600;">Subject:</td>
+        <td style="color:#ffffff;font-weight:600;">{{ subject_text }}</td>
+    </tr>
+    {% endif %}
+    <tr>
+        <td style="color:#38bdf8;font-weight:600;">Current Status:</td>
+        <td style="color:#fbbf24;font-weight:700;">
+            <span style="display:inline-block;background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);border-radius:6px;padding:2px 8px;font-size:12px;font-weight:700;">Pending Admin Review</span>
+        </td>
+    </tr>
+</table>
+
+<!-- Complaint Description Section -->
+<h4 style="margin:0 0 10px;color:#38bdf8;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">
+    Submitted Complaint Description
+</h4>
+<div style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.1); border-left: 4px solid #38bdf8; border-radius: 8px; padding: 14px 16px; margin-bottom: 22px;">
+    <p style="margin:0;color:#f1f5f9;font-size:14px;line-height:1.6;white-space:pre-wrap;">{{ description if description else (subject_text or 'No description provided.') }}</p>
+</div>
+
+<div style="background: rgba(56, 189, 248, 0.06); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 10px; padding: 12px; margin-bottom: 20px;">
+    <p style="margin:0;color:#cbd5e1;font-size:13px;line-height:1.4;">
+        ℹ️ <strong>Next Steps:</strong> Our team will review the details and any attached evidence. You will receive an automated email notification as soon as the status of your ticket changes or resolution notes are posted.
+    </p>
+</div>
+
+<p style="margin:0 0 4px;color:#94a3b8;font-size:13px;">Best regards,</p>
+<p style="margin:0;color:#ffffff;font-size:15px;font-weight:700;">CareerPearls Trust &amp; Safety Team</p>
+{% endblock %}

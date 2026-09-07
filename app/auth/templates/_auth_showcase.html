@@ -1,0 +1,75 @@
+<div class="auth-panel auth-panel-left">
+    <div class="auth-panel-bg">
+        <div class="auth-aurora"></div>
+        <div class="auth-orbs">
+            <div class="auth-orb auth-orb-1"></div>
+            <div class="auth-orb auth-orb-2"></div>
+            <div class="auth-orb auth-orb-3"></div>
+        </div>
+        <div class="auth-grid-overlay"></div>
+    </div>
+
+    <div class="auth-left-content">
+        <div class="auth-welcome-block auth-reveal">
+            <p class="auth-welcome-prefix">
+                {% if page == 'register' %}Join
+                {% elif page == 'verify_registration' %}Email Verification
+                {% elif page == 'forgot_password' %}Account Recovery
+                {% elif page == 'verify_reset' %}Security Verification
+                {% elif page == 'reset_password' %}Password Reset
+                {% else %}Welcome to{% endif %}
+            </p>
+            <h1 class="auth-welcome-brand">
+                <span class="brand-career">Career</span><span class="brand-pearls">Pearls</span>
+            </h1>
+            <p class="auth-hero-accent"><span id="heroAccent"></span><span class="typewriter-cursor typewriter-cursor-sm">|</span></p>
+        </div>
+
+        <div class="auth-content-group auth-reveal auth-reveal-delay-2">
+            <div class="auth-typewriter-block">
+                <span class="auth-typewriter-label">
+                    {% if page in ['verify_registration', 'forgot_password', 'verify_reset', 'reset_password'] %}Security
+                    {% elif role == 'employer' %}Hire smarter
+                    {% else %}Your future{% endif %}
+                </span>
+                <div class="typewriter-line">
+                    <span class="typewriter-text" id="typewriterPrimary"></span>
+                    <span class="typewriter-cursor">|</span>
+                </div>
+            </div>
+            <div class="auth-typewriter-block auth-typewriter-alt">
+                <span class="auth-typewriter-label">
+                    {% if page in ['verify_registration', 'forgot_password', 'verify_reset', 'reset_password'] %}Protection
+                    {% elif role == 'employer' %}We power
+                    {% else %}We deliver{% endif %}
+                </span>
+                <div class="typewriter-line">
+                    <span class="typewriter-text" id="typewriterSecondary"></span>
+                    <span class="typewriter-cursor typewriter-cursor-alt">|</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="auth-float-tags auth-reveal auth-reveal-delay-3" id="authFloatTags"></div>
+
+        <ul class="auth-feature-list auth-reveal auth-reveal-delay-4">
+            {% if page == 'verify_registration' %}
+            <li class="auth-feature-item"><span class="auth-feature-dot"></span><span class="auth-feature-text" data-texts='["Instant 6-digit OTP verification","Fast and frictionless setup","Direct inbox delivery"]'>Instant 6-digit OTP verification</span></li>
+            <li class="auth-feature-item"><span class="auth-feature-dot"></span><span class="auth-feature-text" data-texts='["Protects your identity & credentials","Spam-free community","Verified profiles only"]'>Protects your identity & credentials</span></li>
+            <li class="auth-feature-item"><span class="auth-feature-dot"></span><span class="auth-feature-text" data-texts='["Unlock top verified opportunities","Connect directly with companies","Start your career journey"]'>Unlock top verified opportunities</span></li>
+            {% elif page in ['forgot_password', 'verify_reset', 'reset_password'] %}
+            <li class="auth-feature-item"><span class="auth-feature-dot"></span><span class="auth-feature-text" data-texts='["Encrypted one-time reset code","Secure password restoration","Single-use verification token"]'>Encrypted one-time reset code</span></li>
+            <li class="auth-feature-item"><span class="auth-feature-dot"></span><span class="auth-feature-text" data-texts='["Time-sensitive code expiry","Auto-expiring security tokens","Defense against unauthorized access"]'>Time-sensitive code expiry</span></li>
+            <li class="auth-feature-item"><span class="auth-feature-dot"></span><span class="auth-feature-text" data-texts='["End-to-end account protection","Zero data leakage","Safe and instant access recovery"]'>End-to-end account protection</span></li>
+            {% elif role == 'employer' %}
+            <li class="auth-feature-item"><span class="auth-feature-dot"></span><span class="auth-feature-text" data-texts='["Smart candidate matching","Skills-based filtering","Interest-based discovery"]'>Smart candidate matching</span></li>
+            <li class="auth-feature-item"><span class="auth-feature-dot"></span><span class="auth-feature-text" data-texts='["End-to-end hiring pipeline","Interview scheduling","Offer management"]'>End-to-end hiring pipeline</span></li>
+            <li class="auth-feature-item"><span class="auth-feature-dot"></span><span class="auth-feature-text" data-texts='["Post jobs in minutes","Reach qualified candidates","Real-time analytics"]'>Post jobs in minutes</span></li>
+            {% else %}
+            <li class="auth-feature-item"><span class="auth-feature-dot"></span><span class="auth-feature-text" data-texts='["One-click job applications","Smart job matching","Personalized recommendations"]'>One-click job applications</span></li>
+            <li class="auth-feature-item"><span class="auth-feature-dot"></span><span class="auth-feature-text" data-texts='["Get discovered by employers","Skills showcase","Career interest matching"]'>Get discovered by employers</span></li>
+            <li class="auth-feature-item"><span class="auth-feature-dot"></span><span class="auth-feature-text" data-texts='["Track every application","Real-time status updates","Interview reminders"]'>Track every application</span></li>
+            {% endif %}
+        </ul>
+    </div>
+</div>

@@ -1,0 +1,30 @@
+<div class="modal fade" id="photoCropModal" tabindex="-1" aria-labelledby="photoCropModalLabel" aria-hidden="true" style="z-index: 1000000;">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 580px;">
+        <div class="modal-content cp-crop-modal" style="background: #111827; border: 1px solid rgba(79, 172, 254, 0.35); border-radius: 20px; overflow: hidden; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);">
+            <div class="modal-header border-0 pb-3" style="background: linear-gradient(135deg, rgba(79, 172, 254, 0.15), rgba(123, 47, 247, 0.15)); padding: 1.25rem 1.75rem;">
+                <div class="d-flex align-items-center justify-content-between w-100">
+                    <div>
+                        <h5 class="modal-title mb-0 fw-bold" id="photoCropModalLabel" style="font-family: 'Poppins', sans-serif; font-size: 1.2rem; color: #f0f4ff;">
+                            <i class="bi bi-crop me-2 text-accent"></i>Crop &amp; Position Image
+                        </h5>
+                        <p class="text-pearl small mb-0 mt-1" style="font-size: 0.82rem; color: #9ca3af;">Adjust the crop frame to perfectly frame your photo/logo</p>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+            </div>
+            <div class="modal-body p-4" style="background: #0a0e1a;">
+                <div class="cp-crop-stage d-flex align-items-center justify-content-center" style="background: #050811; border-radius: 12px; overflow: hidden; max-height: 380px; min-height: 280px; border: 1px dashed rgba(79, 172, 254, 0.25);">
+                    <img id="photoCropImage" src="" alt="Crop preview" style="max-width: 100%; max-height: 360px; display: block;">
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-2 pb-4 px-4" style="background: #111827;">
+                <div class="d-flex gap-3 justify-content-end w-100">
+                    <button type="button" class="btn btn-cp-outline px-4 py-2" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-cp-primary px-4 py-2 fw-semibold" id="photoCropConfirm" style="background: linear-gradient(135deg, #4facfe 0%, #7b2ff7 100%); border: none;">
+                        <i class="bi bi-check2-circle me-1"></i>Apply Crop
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

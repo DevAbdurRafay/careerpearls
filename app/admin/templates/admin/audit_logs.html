@@ -1,0 +1,50 @@
+{% extends "admin/admin_base.html" %}
+{% block admin_content %}
+<div class="admin-filter-bar">
+    <form method="GET" class="d-flex flex-wrap gap-2 align-items-center">
+        <input type="date" name="date_from" class="form-control form-control-sm" value="{{ date_from }}">
+        <input type="date" name="date_to" class="form-control form-control-sm" value="{{ date_to }}">
+        <input type="text" name="action" class="form-control form-control-sm" value="{{ action_filter }}">
+        <button type="submit" class="btn btn-sm btn-primary admin-btn-sm">Filter</button>
+        <a href="{{ url_for('admin.export_audit_logs', date_from=date_from, date_to=date_to, action=action_filter) }}" class="btn btn-sm btn-outline-success admin-btn-sm">
+            <i class="bi bi-download"></i> Export CSV
+        </a>
+    </form>
+</div>
+
+<div class="admin-card">
+    <div class="table-responsive">
+        <table class="table admin-table table-dark table-hover">
+            <thead>
+                <tr><th>Timestamp</th><th>User</th><th>Action</th><th>Entity Type</th><th>Entity ID</th></tr>
+            </thead>
+            <tbody>
+            {% for log in logs.items %}
+            <tr style="background: {% if loop.index is odd %}rgba(15,23,42,0.6){% else %}rgba(11,16,27,0.4){% endif %}; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td class="py-3 px-3">
+                    <span class="cp-local-time font-monospace text-pearl" data-utc="{{ log.created_at.isoformat() }}Z" style="font-size: 0.84rem; color: #94a3b8;">
+                        {{ log.created_at.strftime('%b %d, %Y %I:%M %p') }}
+                    </span>
+                </td>
+                <td class="py-3 px-3 fw-semibold text-white">{{ log.user.name if log.user else '—' }}</td>
+                <td class="py-3 px-3"><span class="badge px-2.5 py-1 rounded-pill" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 0.8rem;">{{ log.action }}</span></td>
+                <td class="py-3 px-3 text-muted">{{ log.entity_type or '—' }}</td>
+                <td class="py-3 px-3 text-muted font-monospace">{{ log.entity_id or '—' }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-muted">No audit logs found.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if logs.pages > 1 %}
+    <nav><ul class="pagination pagination-sm mb-0">
+        {% for p in logs.iter_pages() %}{% if p %}
+        <li class="page-item {% if p == logs.page %}active{% endif %}">
+            <a class="page-link bg-dark border-secondary" href="{{ url_for('admin.audit_logs', page=p, date_from=date_from, date_to=date_to, action=action_filter) }}">{{ p }}</a>
+        </li>
+        {% endif %}{% endfor %}
+    </ul></nav>
+    {% endif %}
+</div>
+{% endblock %}

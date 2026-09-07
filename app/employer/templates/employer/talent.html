@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}Find Talent — CareerPearls{% endblock %}
+{% from '_loading_states.html' import loading_spinner %}
+{% from '_empty_states.html' import empty_state_generic %}
+
+{% block content %}
+<div class="py-4">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+        <div>
+            <h2 class="mb-1">Find Talent</h2>
+            <p class="text-pearl mb-0">Browse candidates whose interests and skills match your hiring fields.</p>
+        </div>
+    </div>
+
+    <div class="cp-card mb-4">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small text-pearl">Filter by field</label>
+                <select name="field" class="form-select">
+                    <option value="">All candidates</option>
+                    {% for f in field_options %}
+                    <option value="{{ f }}" {% if field_filter == f %}selected{% endif %}>{{ f }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small text-pearl">Search</label>
+                <input type="text" name="q" class="form-control" value="{{ search }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-cp-primary w-100">Search</button>
+            </div>
+        </form>
+        {% if company_fields %}
+        <div class="mt-3">
+            <span class="text-pearl small me-2">Your hiring fields:</span>
+            {% for f in company_fields %}
+            <a href="{{ url_for('employer.find_talent', field=f) }}" class="badge bg-secondary text-decoration-none me-1">{{ f }}</a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    {% if field_filter %}
+    <p class="text-pearl mb-3">
+        Showing candidates interested in or skilled in <strong>{{ field_filter }}</strong>.
+    </p>
+    {% endif %}
+
+    {% if candidates %}
+    <div class="row g-3">
+        {% for c in candidates %}
+        <div class="col-md-6 col-lg-4">
+            <div class="cp-card h-100">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    {% if c.profile_image %}
+                    <img src="{{ url_for('uploaded_file', filename=c.profile_image) }}" alt="" class="rounded-circle" width="48" height="48" style="object-fit:cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width:48px;height:48px;font-weight:600;display:none;">
+                        {{ c.full_name[0] if c.full_name else 'C' }}
+                    </div>
+                    {% else %}
+                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" style="width:48px;height:48px;font-weight:600">
+                        {{ c.full_name[0] if c.full_name else 'C' }}
+                    </div>
+                    {% endif %}
+                    <div>
+                        <h5 class="mb-0">{{ c.full_name }}</h5>
+                        {% if c.headline %}<p class="text-pearl small mb-0">{{ c.headline }}</p>{% endif %}
+                    </div>
+                </div>
+                {% if c.location %}<p class="text-pearl small mb-2"><i class="bi bi-geo-alt"></i> {{ c.location }}</p>{% endif %}
+                {% if c.career_status %}
+                <span class="badge bg-dark mb-2">{{ c.career_status|replace('_', ' ')|title }}</span>
+                {% endif %}
+                {% set interests = c.interests.all() %}
+                {% if interests %}
+                <div class="mb-2">
+                    {% for i in interests[:4] %}
+                    <span class="badge bg-primary me-1 mb-1">{{ i.interest_name }}</span>
+                    {% endfor %}
+                    {% if interests|length > 4 %}<span class="text-pearl small">+{{ interests|length - 4 }} more</span>{% endif %}
+                </div>
+                {% endif %}
+                {% set skills = c.skills.limit(3).all() %}
+                {% if skills %}
+                <p class="text-pearl small mb-3">
+                    Skills: {{ skills|map(attribute='skill_name')|join(', ') }}
+                </p>
+                {% endif %}
+                <button class="btn btn-cp-primary btn-sm w-100 mt-auto" onclick="openCandidateModal({{ c.id }})">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    View Full Profile
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    {{ empty_state_generic('No matching candidates found. Try a different field or check back later.') }}
+    {% endif %}
+</div>
+
+<!-- Modal for Employer to View Full Candidate Profile -->
+<div class="modal fade" id="employerCandidateModal" tabindex="-1" aria-labelledby="empModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content cp-card border-0" style="background: var(--cp-bg-card);">
+            <div class="modal-header border-bottom" style="border-color:var(--cp-border)!important">
+                <h5 class="modal-title fw-bold text-white" id="empModalTitle">Candidate Profile</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="employerCandidateModalBody">
+                {{ loading_spinner(text='Loading candidate profile...') }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function openCandidateModal(candId) {
+    try {
+        const modalEl = document.getElementById('employerCandidateModal');
+        const bodyEl = document.getElementById('employerCandidateModalBody');
+        
+        if (!modalEl || !bodyEl) {
+            console.error('Modal elements not found');
+            if (typeof showTemporaryToast === 'function') {
+                showTemporaryToast('Modal not available. Please refresh the page.', 'danger');
+            }
+            return;
+        }
+        
+        bodyEl.innerHTML = '<div class="cp-loading-spinner"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div><div class="cp-loading-spinner-text">Loading candidate profile...</div></div>';
+        const bsModal = new bootstrap.Modal(modalEl);
+        bsModal.show();
+
+        safeFetch('/employer/candidate/' + candId)
+            .then(response => response.text())
+            .then(html => {
+                bodyEl.innerHTML = html;
+            })
+            .catch(err => {
+                console.error('Failed to load candidate profile:', err);
+                bodyEl.innerHTML = '<p class="text-danger">Failed to load candidate profile.</p>';
+                if (typeof showTemporaryToast === 'function') {
+                    showTemporaryToast('Failed to load candidate profile. Please try again.', 'danger');
+                }
+            });
+    } catch (error) {
+        console.error('Error opening candidate modal:', error);
+        if (typeof showTemporaryToast === 'function') {
+            showTemporaryToast('Failed to open modal. Please refresh the page.', 'danger');
+        }
+    }
+}
+</script>
+{% endblock %}

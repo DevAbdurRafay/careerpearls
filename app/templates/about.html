@@ -1,0 +1,469 @@
+{% extends "base.html" %}
+{% block title %}About Us — CareerPearls{% endblock %}
+
+{% block extra_head %}
+<style>
+    @keyframes badgePulse {
+        0%, 100% {
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.25), 0 4px 12px rgba(0, 0, 0, 0.25);
+            border-color: rgba(56, 189, 248, 0.45);
+        }
+        50% {
+            box-shadow: 0 0 24px rgba(56, 189, 248, 0.55), 0 6px 16px rgba(56, 189, 248, 0.2);
+            border-color: rgba(96, 165, 250, 0.85);
+        }
+    }
+    .verified-glow-badge {
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.16), rgba(59, 130, 246, 0.24));
+        border: 1px solid rgba(56, 189, 248, 0.5);
+        border-radius: 9999px;
+        padding: 7px 24px;
+        animation: badgePulse 3s infinite ease-in-out;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all 0.25s ease;
+    }
+    .verified-glow-badge:hover {
+        transform: scale(1.03);
+        border-color: rgba(56, 189, 248, 0.9);
+    }
+    .cp-btn-nav-home:hover {
+        background: rgba(255, 255, 255, 0.12) !important;
+        border-color: rgba(56, 189, 248, 0.5) !important;
+        color: #ffffff !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(56, 189, 248, 0.25);
+    }
+    .cp-btn-glow:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(2, 132, 199, 0.6) !important;
+        filter: brightness(1.08);
+    }
+    .cp-btn-ghost-glow:hover {
+        background: rgba(255, 255, 255, 0.12) !important;
+        border-color: rgba(56, 189, 248, 0.45) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Light theme variant for about page */
+    :root[data-theme="light"] .about-gradient-text {
+        background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    :root[data-theme="light"] .display-5 {
+        color: #111827;
+    }
+    :root[data-theme="light"] .text-pearl {
+        color: #6b7280;
+    }
+    :root[data-theme="light"] .verified-glow-badge {
+        background: rgba(59, 130, 246, 0.12) !important;
+        border: 1px solid rgba(59, 130, 246, 0.4) !important;
+        box-shadow: 0 2px 10px rgba(59, 130, 246, 0.12) !important;
+    }
+    :root[data-theme="light"] .verified-glow-badge i {
+        color: #1e40af !important;
+    }
+    :root[data-theme="light"] .verified-badge-text {
+        color: #1e40af !important;
+        font-weight: 700 !important;
+    }
+    /* Light theme about page content styling */
+    :root[data-theme="light"] h1.text-white,
+    :root[data-theme="light"] h2.text-white,
+    :root[data-theme="light"] h3.text-white,
+    :root[data-theme="light"] h4.text-white,
+    :root[data-theme="light"] h5.text-white,
+    :root[data-theme="light"] h6.text-white,
+    :root[data-theme="light"] p.text-white,
+    :root[data-theme="light"] strong.text-white,
+    :root[data-theme="light"] div.text-white:not(.btn):not(.badge) {
+        color: #111827 !important;
+    }
+    :root[data-theme="light"] .display-5.fw-bold {
+        color: #111827 !important;
+    }
+
+    /* Force solid action buttons to stay crisp pure white */
+    .btn-cp-primary,
+    .btn-cp-primary *,
+    .cp-btn-glow,
+    .cp-btn-glow *,
+    .cp-btn-success-glow,
+    .cp-btn-success-glow *,
+    :root[data-theme="light"] .btn-cp-primary,
+    :root[data-theme="light"] .btn-cp-primary *,
+    :root[data-theme="light"] .cp-btn-glow,
+    :root[data-theme="light"] .cp-btn-glow *,
+    :root[data-theme="light"] .cp-btn-success-glow,
+    :root[data-theme="light"] .cp-btn-success-glow * {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* Green Button (Hire Talent Today) + Rich Green Glow Hover */
+    .cp-btn-success-glow {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        border: none !important;
+        border-radius: 10px !important;
+        font-size: 0.88rem !important;
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                    box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                    background 0.25s ease !important;
+    }
+    .cp-btn-success-glow:hover,
+    :root[data-theme="light"] .cp-btn-success-glow:hover {
+        transform: translateY(-2px) !important;
+        background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+        box-shadow: 0 6px 22px rgba(16, 185, 129, 0.55) !important;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    /* Ghost Button (Post a Job as Employer) — Dark text on Light Theme */
+    .cp-btn-ghost-glow {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 12px;
+        font-size: 0.92rem;
+        color: #ffffff;
+        -webkit-text-fill-color: #ffffff;
+        backdrop-filter: blur(12px);
+        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                    box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                    background 0.25s ease,
+                    border-color 0.25s ease;
+    }
+    .cp-btn-ghost-glow:hover {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 255, 255, 0.35);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(56, 189, 248, 0.25);
+        color: #ffffff;
+        -webkit-text-fill-color: #ffffff;
+    }
+    :root[data-theme="light"] .cp-btn-ghost-glow {
+        background: #ffffff !important;
+        border: 1.5px solid #cbd5e1 !important;
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06) !important;
+    }
+    :root[data-theme="light"] .cp-btn-ghost-glow span {
+        color: #0f172a !important;
+        -webkit-text-fill-color: #0f172a !important;
+        font-weight: 600 !important;
+    }
+    :root[data-theme="light"] .cp-btn-ghost-glow i {
+        color: #0284c7 !important;
+    }
+    :root[data-theme="light"] .cp-btn-ghost-glow:hover {
+        background: #f8fafc !important;
+        border-color: #0284c7 !important;
+        color: #0284c7 !important;
+        -webkit-text-fill-color: #0284c7 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.2) !important;
+    }
+    :root[data-theme="light"] .cp-btn-ghost-glow:hover span {
+        color: #0284c7 !important;
+        -webkit-text-fill-color: #0284c7 !important;
+    }
+    /* Light theme stat boxes */
+    :root[data-theme="light"] .rounded-4[style*="background: linear-gradient(145deg, rgba(15, 23, 42, 0.95)"] {
+        background: #ffffff !important;
+        border: 1px solid #e0e0e0 !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+    }
+    :root[data-theme="light"] .rounded-4[style*="background: linear-gradient(145deg, rgba(15, 23, 42, 0.95)"] h2,
+    :root[data-theme="light"] .rounded-4[style*="background: linear-gradient(145deg, rgba(15, 23, 42, 0.95)"] h3,
+    :root[data-theme="light"] .rounded-4[style*="background: linear-gradient(145deg, rgba(15, 23, 42, 0.95)"] h4 {
+        color: #111827 !important;
+    }
+    /* Light theme pillar cards */
+    :root[data-theme="light"] .rounded-4[style*="background: rgba(15, 23, 42, 0.85)"] {
+        background: #ffffff !important;
+        border: 1px solid #e0e0e0 !important;
+    }
+    :root[data-theme="light"] .rounded-4[style*="background: rgba(15, 23, 42, 0.85)"] h4,
+    :root[data-theme="light"] .rounded-4[style*="background: rgba(15, 23, 42, 0.85)"] h5 {
+        color: #111827 !important;
+    }
+    /* Light theme support card */
+    :root[data-theme="light"] .rounded-4[style*="background: linear-gradient(135deg, rgba(30, 58, 138, 0.4)"] {
+        background: #ffffff !important;
+        border: 1px solid #e0e0e0 !important;
+    }
+    :root[data-theme="light"] .rounded-4[style*="background: linear-gradient(135deg, rgba(30, 58, 138, 0.4)"] h4 {
+        color: #111827 !important;
+    }
+    /* Light theme how it works card */
+    :root[data-theme="light"] .cp-card[style*="background: rgba(15, 23, 42, 0.9)"] {
+        background: #ffffff !important;
+        border: 1px solid #e0e0e0 !important;
+    }
+    :root[data-theme="light"] .cp-card[style*="background: rgba(15, 23, 42, 0.9)"] h4,
+    :root[data-theme="light"] .cp-card[style*="background: rgba(15, 23, 42, 0.9)"] h5 {
+        color: #111827 !important;
+    }
+</style>
+{% endblock %}
+
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top cp-navbar" id="landingNav" 
+     style="top: 0; left: 0; right: 0; width: 100%; height: 72px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); background: rgba(10, 14, 26, 0.94); border-bottom: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 25px rgba(0, 0, 0, 0.45); z-index: 1050;">
+    <div class="container-fluid px-3 px-lg-5 d-flex justify-content-between align-items-center">
+        {% set brand_href = url_for('index') %}
+        <div class="d-flex align-items-center">
+            {% include '_navbar_brand.html' %}
+        </div>
+        
+        <div class="d-flex align-items-center gap-1 mx-auto d-none d-lg-flex">
+            <a class="nav-link px-3 text-secondary d-inline-flex align-items-center" href="{{ url_for('index') }}">Home</a>
+            <a class="nav-link px-3 text-secondary d-inline-flex align-items-center" href="{{ url_for('index') }}#features">Features</a>
+            <a class="nav-link px-3 text-secondary d-inline-flex align-items-center" href="{{ url_for('index') }}#how-it-works">How It Works</a>
+            <a class="nav-link px-3 text-secondary d-inline-flex align-items-center" href="{{ url_for('index') }}#featured-jobs">Jobs</a>
+            <a class="nav-link px-3 active fw-bold text-white d-inline-flex align-items-center" href="{{ url_for('about') }}">About</a>
+            <a class="nav-link px-3 text-secondary d-inline-flex align-items-center" href="{{ url_for('index') }}#contact">Contact</a>
+        </div>
+        
+        <div class="d-flex align-items-center gap-2 cp-nav-user-actions">
+            {% if current_user.is_authenticated and current_user.is_candidate() %}
+                <a href="{{ url_for('candidate.dashboard') }}" class="btn btn-cp-primary btn-sm px-4 fw-semibold">
+                    <i class="bi bi-speedometer2 me-1"></i>Candidate Dashboard
+                </a>
+            {% elif current_user.is_authenticated and current_user.is_employer() %}
+                <a href="{{ url_for('employer.dashboard') }}" class="btn btn-cp-primary btn-sm px-4 fw-semibold">
+                    <i class="bi bi-speedometer2 me-1"></i>Employer Dashboard
+                </a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-cp-primary btn-sm px-4 py-2 fw-semibold d-inline-flex align-items-center gap-1.5 text-decoration-none" style="border-radius: 12px; font-size: 0.9rem; box-shadow: 0 4px 18px rgba(2, 132, 199, 0.4);">
+                    <span>Get Started</span>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+{% endblock navbar %}
+
+{% block content %}
+<div class="container pt-2 pb-5" style="max-width: 1260px;">
+    
+    <!-- Hero Banner -->
+    <div class="text-center mb-4 pt-1">
+        {# Roomy, centered badge with pulsing animated glow #}
+        <div class="verified-glow-badge mb-3">
+            <i class="bi bi-shield-check" style="font-size: 1rem; color: #38bdf8;"></i>
+            <span class="verified-badge-text" style="color: #93c5fd; font-size: 0.86rem; font-weight: 600; letter-spacing: 0.3px;">Verified Hiring Ecosystem</span>
+        </div>
+        
+        <h1 class="display-5 fw-bold text-white mb-3" style="letter-spacing: -0.02em; line-height: 1.22; font-size: 2.45rem;">
+            Empowering Careers Through <span class="about-gradient-text" style="background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Verified Transparency</span>
+        </h1>
+        
+        <p class="text-pearl mx-auto mb-3" style="max-width: 820px; font-size: 1rem; line-height: 1.65; color: #94a3b8;">
+            CareerPearls is Pakistan's premier transparent career and talent discovery network, engineered to eliminate recruitment scams, ghost listings, and opaque hiring processes.
+        </p>
+        
+        <div class="d-flex justify-content-center flex-wrap gap-3">
+            <a href="{{ url_for('explore') }}" class="btn px-4 py-2.5 d-inline-flex align-items-center gap-2 fw-bold text-white text-decoration-none cp-btn-glow" 
+               style="background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%); border: none; border-radius: 12px; font-size: 0.92rem; box-shadow: 0 4px 18px rgba(2, 132, 199, 0.45); transition: all 0.25s ease;">
+                <i class="bi bi-search" style="font-size: 0.95rem;"></i>
+                <span>Explore Verified Positions</span>
+            </a>
+            <a href="{{ url_for('auth.register', role='employer') }}" class="btn px-4 py-2.5 d-inline-flex align-items-center gap-2 fw-semibold text-decoration-none cp-btn-ghost-glow">
+                <i class="bi bi-briefcase text-primary" style="font-size: 1rem;"></i>
+                <span>Post a Job as Employer</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Impact Stats Grid (Wide spread & beautifully spaced across screen) -->
+    <div class="row g-3 g-md-4">
+        <div class="col-6 col-md-3">
+            <div class="p-4 text-center rounded-4 h-100" style="background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(11, 16, 27, 0.98)); border: 1px solid rgba(255, 255, 255, 0.09); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);">
+                <div class="fw-bold text-white fs-2 mb-1" style="letter-spacing: -0.5px;">100%</div>
+                <div class="text-pearl small" style="color: #94a3b8; font-weight: 500;">NTN &amp; Domain Verified Employers</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="p-4 text-center rounded-4 h-100" style="background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(11, 16, 27, 0.98)); border: 1px solid rgba(255, 255, 255, 0.09); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);">
+                <div class="fw-bold text-white fs-2 mb-1" style="letter-spacing: -0.5px;">99.8%</div>
+                <div class="text-pearl small" style="color: #94a3b8; font-weight: 500;">Scam-Free Safety Guarantee</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="p-4 text-center rounded-4 h-100" style="background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(11, 16, 27, 0.98)); border: 1px solid rgba(255, 255, 255, 0.09); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);">
+                <div class="fw-bold text-white fs-2 mb-1" style="letter-spacing: -0.5px;">0 PKR</div>
+                <div class="text-pearl small" style="color: #94a3b8; font-weight: 500;">Completely Free for Candidates</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="p-4 text-center rounded-4 h-100" style="background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(11, 16, 27, 0.98)); border: 1px solid rgba(255, 255, 255, 0.09); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);">
+                <div class="fw-bold text-white fs-2 mb-1" style="letter-spacing: -0.5px;">24h</div>
+                <div class="text-pearl small" style="color: #94a3b8; font-weight: 500;">Support Response Time</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Pillars / Why CareerPearls -->
+    <div class="my-5 pt-3" id="pillars">
+        <div class="text-center mb-4">
+            <h3 class="fw-bold text-white mb-2">Our Core Pillars of Trust</h3>
+            <p class="text-pearl small">How we protect talent and elevate genuine organizations across Pakistan</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="p-4 rounded-4 h-100" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(59, 130, 246, 0.2); transition: transform 0.2s;">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-patch-check-fill text-primary fs-4"></i>
+                        </div>
+                        <h5 class="fw-bold text-white mb-0">Rigorous Employer Verification</h5>
+                    </div>
+                    <p class="text-pearl small mb-0" style="line-height: 1.65;">
+                        Every employer on CareerPearls undergoes a strict verification checklist including National Tax Number (NTN) validation, corporate email domain matching, and physical operating presence review before publishing jobs.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="p-4 rounded-4 h-100" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(16, 185, 129, 0.2); transition: transform 0.2s;">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-clock-history text-success fs-4"></i>
+                        </div>
+                        <h5 class="fw-bold text-white mb-0">Anti-Ghosting Accountability</h5>
+                    </div>
+                    <p class="text-pearl small mb-0" style="line-height: 1.65;">
+                        We believe candidates deserve transparency. Employers must take affirmative action on applications (Review, Shortlist, Schedule Interview, or Provide Status Update) within strict operational timelines.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="col-12 p-4 rounded-4 h-100" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(239, 68, 68, 0.2); transition: transform 0.2s;">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(239, 68, 68, 0.15); display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-shield-slash-fill text-danger fs-4"></i>
+                        </div>
+                        <h5 class="fw-bold text-white mb-0">Zero Tolerance for Scams &amp; Fees</h5>
+                    </div>
+                    <p class="text-pearl small mb-0" style="line-height: 1.65;">
+                        Any organization found asking job seekers for registration charges, processing fees, or offering misleading compensation is permanently blocked, blacklisted, and audited by our Trust &amp; Safety team.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="p-4 rounded-4 h-100" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(168, 85, 247, 0.2); transition: transform 0.2s;">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(168, 85, 247, 0.15); display: flex; align-items: center; justify-content: center;">
+                            <i class="bi bi-chat-dots-fill text-info fs-4"></i>
+                        </div>
+                        <h5 class="fw-bold text-white mb-0">Direct Secure Communication</h5>
+                    </div>
+                    <p class="text-pearl small mb-0" style="line-height: 1.65;">
+                        Built-in secure candidate-to-recruiter messaging and integrated interview scheduling eliminate third-party agency middlemen and empower direct talent discovery.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works Section -->
+    <div class="cp-card p-4 p-md-5 mb-5" style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px;">
+        <h3 class="fw-bold text-white mb-4 text-center">How CareerPearls Works</h3>
+
+        <div class="row g-4">
+            <!-- Candidate Path -->
+            <div class="col-md-6 border-md-end" style="border-color: rgba(255,255,255,0.08)!important;">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="badge rounded-pill bg-primary px-3 py-1">For Job Seekers</span>
+                </div>
+                <ul class="list-unstyled d-flex flex-column gap-3 text-pearl small mb-4">
+                    <li class="d-flex gap-2">
+                        <i class="bi bi-check-circle-fill text-primary mt-1"></i>
+                        <div><strong class="text-white">Build Authentic Profile:</strong> Showcase education, portfolio links, GitHub/LinkedIn credentials, and target job interests.</div>
+                    </li>
+                    <li class="d-flex gap-2">
+                        <i class="bi bi-check-circle-fill text-primary mt-1"></i>
+                        <div><strong class="text-white">Discover Real Salaries:</strong> Every listing displays verified PKR compensation ranges with zero hidden clauses.</div>
+                    </li>
+                    <li class="d-flex gap-2">
+                        <i class="bi bi-check-circle-fill text-primary mt-1"></i>
+                        <div><strong class="text-white">1-Click Fast Apply:</strong> Submit applications directly to verified hiring managers with live status tracking.</div>
+                    </li>
+                </ul>
+                <a href="{{ url_for('auth.register', role='candidate') }}" class="btn btn-sm btn-cp-primary px-4 py-2 fw-semibold text-white d-inline-flex align-items-center gap-2 text-decoration-none" style="border-radius: 10px; font-size: 0.88rem; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35); transition: all 0.2s ease;">
+                    <span>Register as Candidate &rarr;</span>
+                </a>
+            </div>
+
+            <!-- Employer Path -->
+            <div class="col-md-6 ps-md-4">
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="badge rounded-pill bg-success px-3 py-1">For Employers</span>
+                </div>
+                <ul class="list-unstyled d-flex flex-column gap-3 text-pearl small mb-4">
+                    <li class="d-flex gap-2">
+                        <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                        <div><strong class="text-white">Quick Business Verification:</strong> Submit corporate details, official email, and NTN to unlock the hiring suite.</div>
+                    </li>
+                    <li class="d-flex gap-2">
+                        <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                        <div><strong class="text-white">Post Verified Positions:</strong> Publish jobs across Engineering, Design, Finance, AI, DevOps, and more.</div>
+                    </li>
+                    <li class="d-flex gap-2">
+                        <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                        <div><strong class="text-white">Streamlined Pipeline:</strong> Shortlist candidates, schedule live interviews, and issue offers in one centralized portal.</div>
+                    </li>
+                </ul>
+                <a href="{{ url_for('auth.register', role='employer') }}" class="btn btn-sm px-4 py-2 fw-semibold text-white d-inline-flex align-items-center gap-2 text-decoration-none cp-btn-success-glow">
+                    <span>Hire Talent Today &rarr;</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Support & Quick Links Card -->
+    <div class="p-4 p-md-5 rounded-4 mb-4" style="background: linear-gradient(135deg, rgba(30, 58, 138, 0.4) 0%, rgba(15, 23, 42, 0.9) 100%); border: 1px solid rgba(59, 130, 246, 0.3);">
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                <h4 class="fw-bold text-white mb-2">Have a question or need support?</h4>
+                <p class="text-pearl small mb-0" style="line-height: 1.6;">
+                    Our support team is dedicated to helping candidates and verified employers. Reach out via our contact desk for any assistance.
+                </p>
+            </div>
+            <div class="col-lg-4 d-flex flex-column flex-sm-row flex-lg-column gap-2">
+                <a href="{{ url_for('index') }}#contact" class="btn btn-outline-light btn-sm py-2 d-flex align-items-center justify-content-center gap-2 rounded-3">
+                    <i class="bi bi-envelope"></i>
+                    <span>Contact Support Team</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Navigation Links -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 pt-3 border-top" style="border-color: rgba(255,255,255,0.08)!important;">
+        <div class="d-flex gap-3 text-pearl small">
+            <a href="{{ url_for('privacy_policy') }}" class="text-pearl text-decoration-none hover-white">Privacy Policy</a>
+            <span>&bull;</span>
+            <a href="{{ url_for('terms_of_service') }}" class="text-pearl text-decoration-none hover-white">Terms of Service</a>
+        </div>
+        <div>
+            <a href="{{ url_for('index') }}" class="btn btn-cp-primary btn-sm px-4">Back to Home</a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

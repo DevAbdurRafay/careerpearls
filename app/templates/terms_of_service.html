@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Terms of Service — CareerPearls{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Light theme variant for legal pages */
+    :root[data-theme="light"] .legal-page-card {
+        background: rgba(255,255,255,0.95) !important;
+        border: 1px solid rgba(0,0,0,0.08) !important;
+    }
+    :root[data-theme="light"] .legal-page-title {
+        color: #111827 !important;
+    }
+    :root[data-theme="light"] .legal-page-subtitle {
+        color: #6b7280 !important;
+    }
+    :root[data-theme="light"] .legal-page-body {
+        color: #374151 !important;
+    }
+    :root[data-theme="light"] .legal-page-heading {
+        color: #111827 !important;
+    }
+    :root[data-theme="light"] .legal-page-link {
+        color: #1e3a8a !important;
+    }
+    :root[data-theme="light"] .legal-page-border {
+        border-color: rgba(0,0,0,0.08) !important;
+    }
+    /* Light theme back button hover */
+    :root[data-theme="light"] .btn[style*="background: rgba(255, 255, 255, 0.06)"]:hover {
+        background: rgba(79, 172, 254, 0.1) !important;
+        border-color: rgba(79, 172, 254, 0.3) !important;
+        transform: translateY(-1px);
+    }
+    :root[data-theme="light"] .btn-cp-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 860px;">
+    <div class="cp-card legal-page-card p-4 p-md-5" style="background: rgba(15,23,42,0.9); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;">
+        <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom legal-page-border" style="border-color: rgba(255,255,255,0.08)!important;">
+            <div style="width:48px;height:48px;border-radius:12px;background:rgba(34,197,94,0.15);display:flex;align-items:center;justify-content:center;">
+                <i class="bi bi-file-earmark-text text-success fs-4"></i>
+            </div>
+            <div>
+                <h3 class="fw-bold legal-page-title text-white mb-0">Terms of Service</h3>
+                <p class="legal-page-subtitle text-pearl small mb-0">Last updated: August 2026</p>
+            </div>
+        </div>
+
+        <div class="legal-page-body text-pearl" style="line-height: 1.7; font-size: 0.95rem;">
+            <h5 class="legal-page-heading text-white fw-semibold mt-4 mb-2">1. Acceptance of Terms</h5>
+            <p>By accessing or creating an account on CareerPearls, you agree to these Terms of Service and our Privacy Policy. If you do not agree, please discontinue using the platform.</p>
+
+            <h5 class="legal-page-heading text-white fw-semibold mt-4 mb-2">2. Eligibility &amp; User Accounts</h5>
+            <p>You must be at least 16 years of age to register as a candidate or employer. You agree to provide accurate, up-to-date information and safeguard your account credentials.</p>
+
+            <h5 class="legal-page-heading text-white fw-semibold mt-4 mb-2">3. Employer Responsibilities &amp; Verification</h5>
+            <p>Employers must provide valid business entity details, official domain email addresses, and Tax/NTN numbers. Fraudulent postings, misleading compensation details, and discrimination are strictly prohibited.</p>
+
+            <h5 class="legal-page-heading text-white fw-semibold mt-4 mb-2">4. Candidate Conduct</h5>
+            <p>Candidates must submit authentic qualification and experience details. Misrepresentation of identity or credentials may result in application cancellation and account suspension.</p>
+
+            <h5 class="legal-page-heading text-white fw-semibold mt-4 mb-2">5. Trust, Safety &amp; Complaints</h5>
+            <p>CareerPearls maintains an active Trust &amp; Safety enforcement engine. Users can report fraudulent jobs, suspicious employers, or policy violations via the Complaint System. Admin decisions on dispute resolution and account moderation are final.</p>
+
+            <h5 class="legal-page-heading text-white fw-semibold mt-4 mb-2">6. Intellectual Property</h5>
+            <p>CareerPearls software, branding, trademarks, and UI design are the intellectual property of CareerPearls. Users retain ownership of their uploaded resumes and organizational brand assets.</p>
+
+            <h5 class="legal-page-heading text-white fw-semibold mt-4 mb-2">7. Limitation of Liability</h5>
+            <p>CareerPearls connects talent and hiring companies. We do not guarantee employment offers or candidate performance. Hiring decisions rest solely between candidates and employers.</p>
+        </div>
+
+        <div class="mt-4 pt-3 border-top legal-page-border d-flex justify-content-between align-items-center flex-wrap gap-2" style="border-color: rgba(255,255,255,0.08)!important;">
+            <a href="{{ url_for('privacy_policy') }}" class="legal-page-link text-pearl small text-decoration-none"><i class="bi bi-shield-lock me-1"></i>View Privacy Policy</a>
+            <a href="{{ url_for('index') }}" class="btn btn-cp-primary btn-sm px-4">Back to Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

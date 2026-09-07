@@ -1,0 +1,1213 @@
+{% extends "base_simple.html" %}
+{% block title %}My Profile — CareerPearls{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/onboarding-wizard.css') }}">
+<style>
+    /* Responsive theme-aware palette for Candidate Profile */
+    .profile-header-card {
+        background: linear-gradient(135deg, var(--cp-bg-card) 0%, var(--cp-bg-elevated) 100%) !important;
+        border: 1px solid var(--cp-border) !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+    }
+    .profile-section {
+        background: var(--cp-bg-card) !important;
+        border: 1px solid var(--cp-border) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+    }
+    .profile-section-title {
+        color: var(--cp-text) !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.01em;
+    }
+    .cp-dropzone {
+        border: 2px dashed var(--accent) !important;
+        background: var(--cp-bg-elevated) !important;
+        border-radius: 16px !important;
+        transition: all 0.25s ease !important;
+        cursor: pointer;
+    }
+    .cp-dropzone:hover, .cp-dropzone.dragover {
+        border-color: var(--accent-hover) !important;
+        background: var(--cp-bg-card) !important;
+        transform: translateY(-1px);
+    }
+    .skill-badge-item {
+        transition: all 0.2s ease;
+        background: var(--cp-bg-elevated) !important;
+        border: 1px solid var(--accent) !important;
+    }
+    .skill-badge-item:hover {
+        border-color: var(--accent-hover) !important;
+        box-shadow: 0 0 12px var(--accent-glow);
+    }
+    .doc-preview-card {
+        background: var(--cp-bg-elevated);
+        border: 1px solid var(--cp-border);
+        border-radius: 14px;
+        transition: all 0.2s ease;
+    }
+    .doc-preview-card:hover {
+        border-color: var(--accent);
+        box-shadow: 0 4px 16px var(--accent-glow);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% from '_form_labels.html' import required_label, optional_label %}
+<div class="cp-quote-animation">
+    <div class="container">
+        <h1 class="cp-quote-text" id="quoteText"></h1>
+    </div>
+</div>
+
+<div class="container-fluid pt-0">
+    <!-- Header Card -->
+    <div class="profile-header-card mb-1">
+
+        <div class="profile-avatar-wrap">
+            <div class="profile-avatar-preview" id="profilePhotoPreview">
+                {% if candidate.profile_image %}
+                <img src="{{ url_for('uploaded_file', filename=candidate.profile_image) }}" alt="{{ candidate.full_name }}" class="profile-avatar" data-profile-lightbox title="Click to view full photo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="profile-avatar-placeholder" style="display:none;">{{ candidate.full_name[0]|upper if candidate.full_name else 'C' }}</div>
+                {% else %}
+                <div class="profile-avatar-placeholder">{{ candidate.full_name[0]|upper if candidate.full_name else 'C' }}</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="flex-grow-1">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h2 class="mb-1 fw-bold">{{ candidate.full_name }}</h2>
+                    {% if candidate.headline %}<p class="cp-profile-headline">{{ candidate.headline }}</p>{% endif %}
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        {% if candidate.career_status %}
+                        <span class="badge profile-meta-badge">{{ candidate.career_status|replace('_',' ')|title }}</span>
+                        {% endif %}
+                        {% if candidate.work_mode %}
+                        <span class="badge profile-meta-badge">{{ work_mode_labels.get(candidate.work_mode, candidate.work_mode|replace('_',' ')|title) }}</span>
+                        {% endif %}
+                        {% if candidate.has_internship %}
+                        <span class="badge profile-meta-badge profile-meta-badge-accent">Internship Experience</span>
+                        {% endif %}
+                        {% if candidate.location %}<span class="text-pearl small ms-1"><i class="bi bi-geo-alt"></i> {{ candidate.location }}</span>{% endif %}
+                    </div>
+                    {% if candidate.linkedin_url or candidate.github_url or candidate.portfolio_url or candidate.kaggle_url %}
+                    <div class="d-flex flex-wrap gap-2 align-items-center mt-2">
+                        {% if candidate.linkedin_url %}
+                        <a href="{{ candidate.linkedin_url }}" target="_blank" rel="noopener noreferrer" class="cp-social-badge cp-social-linkedin" title="LinkedIn Profile">
+                            <i class="bi bi-linkedin"></i> LinkedIn
+                        </a>
+                        {% endif %}
+                        {% if candidate.github_url %}
+                        <a href="{{ candidate.github_url }}" target="_blank" rel="noopener noreferrer" class="cp-social-badge cp-social-github" title="GitHub Profile">
+                            <i class="bi bi-github"></i> GitHub
+                        </a>
+                        {% endif %}
+                        {% if candidate.portfolio_url %}
+                        <a href="{{ candidate.portfolio_url }}" target="_blank" rel="noopener noreferrer" class="cp-social-badge cp-social-portfolio" title="Portfolio Website">
+                            <i class="bi bi-globe"></i> Portfolio
+                        </a>
+                        {% endif %}
+                        {% if candidate.kaggle_url %}
+                        <a href="{{ candidate.kaggle_url }}" target="_blank" rel="noopener noreferrer" class="cp-social-badge cp-social-kaggle" title="Kaggle Profile">
+                            <i class="bi bi-diagram-3-fill"></i> Kaggle
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                <!-- Professional Change Photo Button -->
+                <form method="POST" enctype="multipart/form-data" data-photo-crop-form id="profilePhotoForm" style="align-self: flex-start; margin-top: 0;">
+                    {{ photo_form.hidden_tag() }}
+                    <input type="hidden" name="form_type" value="photo">
+                    <input type="file" id="profilePhotoInput" accept="image/png,image/jpeg,image/jpg,image/webp" class="d-none" data-photo-crop-input>
+                    {{ photo_form.cropped_image(id='profileCroppedField') }}
+                    <button type="button" class="btn btn-cp-outline btn-sm" data-photo-crop-trigger="profilePhotoInput">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                        Change Photo
+                    </button>
+                    <button type="submit" class="btn btn-cp-success btn-sm" id="profilePhotoSave" style="display:none">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><polyline points="20 6 9 17 4 12"/></svg>
+                        Save Photo
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Completion Status Banner -->
+    <div class="cp-card mb-2 p-3 border-0" style="background: linear-gradient(135deg, rgba(79, 172, 254, 0.12), rgba(123, 47, 247, 0.12)); border-radius: 16px; border: 1px solid rgba(79, 172, 254, 0.25)!important;">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-bold text-white fs-6"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4facfe" stroke-width="2.5" class="me-1" style="vertical-align:-2px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Profile Completion Status</span>
+            {% if completion_pct == 100 %}
+            <span class="badge bg-success fs-6 px-3 py-1.5"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1"><polyline points="20 6 9 17 4 12"/></svg> 100% Complete</span>
+            {% else %}
+            <span class="badge bg-primary fs-6 px-3 py-1.5" style="background: linear-gradient(135deg, #4facfe, #00f2fe)!important;">{{ completion_pct }}% Completed</span>
+            {% endif %}
+        </div>
+        <div class="progress" style="height: 10px; background: rgba(255,255,255,0.08); border-radius: 20px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated {% if completion_pct == 100 %}bg-success{% else %}bg-info{% endif %}" role="progressbar" style="width: {{ completion_pct }}%;" aria-valuenow="{{ completion_pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        {% if completion_pct < 100 %}
+        <small class="text-pearl mt-2 d-block">* Completion is dynamically recalculated whenever you save your profile information.</small>
+        {% endif %}
+    </div>
+
+    <div class="mx-auto" style="max-width: 950px; display: flex; flex-direction: column; gap: 24px;">
+        <!-- Unified Profile Details Form -->
+        <form method="POST" id="profileDetailsForm">
+            {{ form.hidden_tag() }}
+            <input type="hidden" name="full_name_submit" value="1">
+            
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="text-white fw-bold mb-0">My Details</h4>
+                <button type="button" id="profileEditToggleBtn" class="btn btn-cp-outline btn-sm d-flex align-items-center gap-1" onclick="enableProfileEdit()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Edit Profile
+                </button>
+            </div>
+
+            <fieldset id="profileFieldset" disabled class="border-0 p-0 m-0" style="display: flex; flex-direction: column; gap: 24px;">
+                <!-- Section 1: Personal Information -->
+                <div class="cp-profile-section-card">
+                    <div class="cp-profile-section-header">
+                        <i class="bi bi-person-circle"></i>
+                        <span>Personal Information</span>
+                    </div>
+                    <div class="cp-profile-grid">
+                        <div>
+                            <label class="form-label" for="full_name">{{ required_label('Full Name') }}</label>
+                            {{ form.full_name(class="form-control cp-input-glow" ~ (" is-invalid" if form.full_name.errors else ""), id="full_name") }}
+                            {% for error in form.full_name.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div>
+                            <label class="form-label" for="phone">{{ required_label('Phone Number') }}</label>
+                            <div class="input-group">
+                                {{ form.country_code(class="form-select cp-input-glow", style="max-width:130px; font-size:0.85rem;") }}
+                                {{ form.phone(class="form-control cp-input-glow" ~ (" is-invalid" if form.phone.errors else ""), id="phone", placeholder="3001234567", maxlength="10", inputmode="numeric") }}
+                            </div>
+                            <small class="cp-field-hint text-pearl-muted">Select country and enter 10 local digits</small>
+                            {% for error in form.phone.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                            {% for error in form.country_code.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div>
+                            <label class="form-label" for="location">{{ required_label('Location') }}</label>
+                            {{ form.location(class="form-control cp-input-glow" ~ (" is-invalid" if form.location.errors else ""), id="location", placeholder="e.g. Karachi, Pakistan") }}
+                            {% for error in form.location.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div>
+                            <label class="form-label" for="availability">{{ required_label('Availability') }}</label>
+                            {{ form.availability(class="form-select cp-input-glow" ~ (" is-invalid" if form.availability.errors else ""), id="availability") }}
+                            {% for error in form.availability.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div>
+                            <label class="form-label" for="work_mode">{{ required_label('Work Preference') }}</label>
+                            {{ form.work_mode(class="form-select cp-input-glow" ~ (" is-invalid" if form.work_mode.errors else ""), id="work_mode") }}
+                            {% for error in form.work_mode.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div>
+                            <label class="form-label" for="has_internship">{{ required_label('Internship Experience') }}</label>
+                            {{ form.has_internship(class="form-select cp-input-glow" ~ (" is-invalid" if form.has_internship.errors else ""), id="has_internship") }}
+                            {% for error in form.has_internship.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Professional Details -->
+                <div class="cp-profile-section-card">
+                    <div class="cp-profile-section-header">
+                        <i class="bi bi-briefcase-fill"></i>
+                        <span>Professional Details</span>
+                    </div>
+                    <div class="cp-profile-grid">
+                        <div class="cp-profile-grid-full">
+                            <label class="form-label" for="headline">{{ required_label('Professional Headline') }}</label>
+                            {{ form.headline(class="form-control cp-input-glow" ~ (" is-invalid" if form.headline.errors else ""), id="headline", placeholder="e.g. Full Stack Engineer | Python & React Specialist") }}
+                            {% for error in form.headline.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="cp-profile-grid-full" id="internshipDetailsWrap">
+                            <label class="form-label" for="internship_details">{{ optional_label('Internship Details') }} <small class="text-pearl">(Max 500 characters)</small></label>
+                            {{ form.internship_details(class="form-control cp-input-glow" ~ (" is-invalid" if form.internship_details.errors else ""), id="internship_details", rows=3, maxlength="500") }}
+                            <p class="cp-field-hint text-pearl-muted">Company, role, duration — e.g. "3-month internship at ABC Corp as Software Intern"</p>
+                            {% for error in form.internship_details.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="cp-profile-grid-full">
+                            <label class="form-label" for="bio">{{ optional_label('About Me') }} <small class="text-pearl">(Max 500 characters)</small></label>
+                            {{ form.bio(class="form-control cp-input-glow" ~ (" is-invalid" if form.bio.errors else ""), id="bio", rows=4, maxlength="500", placeholder="Write a summary about your experience, achievements, and career goals...") }}
+                            {% for error in form.bio.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Social & Professional Links -->
+                <div class="cp-profile-section-card">
+                    <div class="cp-profile-section-header">
+                        <i class="bi bi-share-fill text-info"></i>
+                        <span>Social &amp; Professional Links (Optional)</span>
+                    </div>
+                    <div class="cp-profile-grid">
+                        <div>
+                            <label class="form-label" for="linkedin_url">
+                                <i class="bi bi-linkedin text-primary me-1"></i>{{ optional_label('LinkedIn Profile') }}
+                            </label>
+                            {{ form.linkedin_url(class="form-control cp-input-glow" ~ (" is-invalid" if form.linkedin_url.errors else ""), id="linkedin_url", placeholder="https://linkedin.com/in/username", oninput="validateSocialUrl(this, 'linkedin')") }}
+                            {% for error in form.linkedin_url.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div>
+                            <label class="form-label" for="github_url">
+                                <i class="bi bi-github me-1"></i>{{ optional_label('GitHub Profile') }}
+                            </label>
+                            {{ form.github_url(class="form-control cp-input-glow" ~ (" is-invalid" if form.github_url.errors else ""), id="github_url", placeholder="https://github.com/username", oninput="validateSocialUrl(this, 'github')") }}
+                            {% for error in form.github_url.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div>
+                            <label class="form-label" for="portfolio_url">
+                                <i class="bi bi-globe text-info me-1"></i>{{ optional_label('Portfolio Website') }}
+                            </label>
+                            {{ form.portfolio_url(class="form-control cp-input-glow" ~ (" is-invalid" if form.portfolio_url.errors else ""), id="portfolio_url", placeholder="https://myportfolio.com", oninput="validateSocialUrl(this, 'portfolio')") }}
+                            {% for error in form.portfolio_url.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div>
+                            <label class="form-label" for="kaggle_url">
+                                <i class="bi bi-diagram-3-fill text-warning me-1"></i>{{ optional_label('Kaggle Profile') }}
+                            </label>
+                            {{ form.kaggle_url(class="form-control cp-input-glow" ~ (" is-invalid" if form.kaggle_url.errors else ""), id="kaggle_url", placeholder="https://kaggle.com/username", oninput="validateSocialUrl(this, 'kaggle')") }}
+                            {% for error in form.kaggle_url.errors %}
+                            <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <div id="profileEditActions" class="mt-2 mb-4 d-flex justify-content-end gap-2" style="display:none!important">
+                <button type="button" class="btn btn-cp-outline px-4 py-2" onclick="cancelProfileEdit()">Cancel</button>
+                <button type="submit" class="btn btn-cp-primary px-4 py-2 shadow" id="profileSaveBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Save Changes
+                </button>
+            </div>
+        </form>
+
+        <!-- Section 3: Education -->
+        <div class="cp-profile-section-card">
+            <div class="cp-profile-section-header">
+                <i class="bi bi-mortarboard-fill"></i>
+                <span>Education History</span>
+            </div>
+            {% for edu in education %}
+                {% include 'candidate/_education_card.html' %}
+            {% else %}
+                <p class="text-pearl small mb-3">No education added yet.</p>
+            {% endfor %}
+            
+            <form method="POST" class="mt-3 pt-3 border-top" style="border-color: var(--cp-border) !important;">
+                {{ education_form.hidden_tag() }}
+                <h6 class="text-white fw-bold mb-3">Add Education</h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small">{{ required_label('Institution') }}</label>
+                        {{ education_form.institution(class="form-control form-control-sm cp-input-glow") }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small">{{ required_label('Degree / Program') }}</label>
+                        {{ education_form.degree(class="form-control form-control-sm cp-input-glow") }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small">{{ optional_label('Field of Study') }}</label>
+                        {{ education_form.field_of_study(class="form-control form-control-sm cp-input-glow") }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small">{{ required_label('Start Year') }}</label>
+                        {{ education_form.start_year(class="form-control form-control-sm cp-input-glow", placeholder="e.g. 2021") }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small"><span class="cp-label-text">End Year</span></label>
+                        {{ education_form.end_year(class="form-control form-control-sm cp-input-glow", placeholder="e.g. 2025") }}
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            {{ education_form.is_current(class="form-check-input", id="edu_is_current") }}
+                            <label class="form-check-label small" for="edu_is_current">I am currently studying here</label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        {{ education_form.submit(class="btn btn-cp-outline btn-sm") }}
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Section 4: Skills & Expertise -->
+        <div class="cp-profile-section-card" id="skillsSection">
+            <div class="cp-profile-section-header">
+                <i class="bi bi-gear-wide-connected"></i>
+                <span>Skills &amp; Expertise</span>
+            </div>
+            <p class="text-pearl-muted small mb-3">Add your technical and domain skills with proficiency levels.</p>
+            <div class="d-flex flex-wrap gap-2 mb-4" id="skillsBadgeContainer">
+                {% for skill in skills %}
+                <span class="d-inline-flex align-items-center gap-2 badge skill-badge-item text-white p-2 rounded-3" id="skillBadge_{{ skill.id }}">
+                    <span class="fw-semibold">{{ skill.skill_name }}</span> <small class="text-cp-accent opacity-75">· {{ skill.proficiency_level }}</small>
+                    <button type="button" class="btn-close btn-close-white ms-1" style="font-size:0.55rem" title="Remove skill" onclick="deleteSkillAjax({{ skill.id }})"></button>
+                </span>
+                {% else %}
+                <span class="text-pearl small" id="noSkillsPrompt">No skills added yet.</span>
+                {% endfor %}
+            </div>
+            
+            <form id="skillAddForm" method="POST" action="{{ url_for('candidate.profile') }}" class="row g-2 pt-3 border-top" style="border-color: var(--cp-border) !important;">
+                {{ skill_form.hidden_tag() }}
+                <div class="col-md-5">
+                    <label class="form-label small">{{ required_label('Skill Name') }}</label>
+                    {{ skill_form.skill_name(class="form-control form-control-sm cp-input-glow", id="skillInput", list="skillsDatalist", placeholder="Search or type a skill...", required=True) }}
+                    <datalist id="skillsDatalist">
+                        {% for sk in predefined_skills %}
+                        <option value="{{ sk }}">
+                        {% endfor %}
+                    </datalist>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small">{{ required_label('Level') }}</label>
+                    {{ skill_form.proficiency_level(class="form-select form-select-sm cp-input-glow", id="skillLevelSelect") }}
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" id="skillAddBtn" class="btn btn-cp-outline btn-sm w-100 d-flex align-items-center justify-content-center gap-1">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        <span>Add Skill</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Section 5: Resume / CV -->
+        <div class="cp-profile-section-card" id="resumeSection">
+            <div class="cp-profile-section-header">
+                <i class="bi bi-file-earmark-text-fill"></i>
+                <span>Resume / CV</span>
+            </div>
+            <p class="text-pearl-muted small mb-3">Upload your latest resume (PDF, PNG, JPG). It is shared with recruiters when you apply.</p>
+            
+            {% for resume in resumes %}
+            <div class="doc-preview-card p-3 mb-3 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="p-2.5 rounded-3 d-flex align-items-center justify-content-center" style="background: rgba(79, 172, 254, 0.15); color: #4facfe; border: 1px solid rgba(79, 172, 254, 0.3);">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    </div>
+                    <div>
+                        <strong class="text-white d-block text-truncate fw-semibold" style="max-width: 220px;" title="{{ resume.display_name or (resume.file_path|display_filename) }}">
+                            {{ resume.display_name or (resume.file_path|display_filename) }}
+                        </strong>
+                        <div class="d-flex align-items-center gap-2 mt-1">
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.7rem;">
+                                {{ resume.file_extension|upper if resume.file_extension else 'PDF' }}
+                            </span>
+                            <a href="{{ url_for('uploaded_file', filename=resume.file_path) }}" target="_blank" class="small text-cp-accent text-decoration-none fw-medium d-inline-flex align-items-center gap-1">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                View File
+                            </a>
+                            {% if resume.is_primary %}<span class="badge bg-success text-white" style="font-size: 0.68rem; color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; font-weight: 700; padding: 3px 8px; border-radius: 6px; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);">Active</span>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-pearl small mb-3">No resume uploaded yet.</p>
+            {% endfor %}
+
+            <form method="POST" enctype="multipart/form-data" id="resumeUploadForm" class="mt-2 pt-3 border-top" style="border-color: var(--cp-border) !important;">
+                {{ resume_form.hidden_tag() }}
+                <div class="cp-dropzone p-4 text-center mb-2 position-relative" id="resumeDropzone" onclick="document.getElementById('resumeFileInput').click();" style="cursor: pointer;">
+                    <div class="cp-dropzone-icon mb-2">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    </div>
+                    <h6 class="fw-semibold text-white mb-2">Drag &amp; drop your resume file here, or</h6>
+                    <div class="mb-2">
+                        <span class="btn btn-sm btn-cp-primary px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm" style="border-radius: 8px; font-size: 0.82rem; pointer-events: none;">
+                            <i class="bi bi-folder2-open"></i> Browse Resume
+                        </span>
+                    </div>
+                    <span class="text-muted small d-block" style="font-size: 0.75rem; color: #94a3b8 !important;">Supported: PDF, JPEG, PNG (Max 15MB)</span>
+                    <div id="resumeSelectedPreviewCard" class="mt-3 p-3 rounded-3 text-start d-none position-relative" style="background: var(--cp-bg-elevated); border: 1.5px solid rgba(56, 189, 248, 0.45); box-shadow: 0 4px 18px rgba(0,0,0,0.25);">
+                        <!-- HD Image Preview Wrap -->
+                        <div id="resumeImagePreviewWrap" class="mb-2 text-center d-none" style="background: rgba(0, 0, 0, 0.4); border-radius: 8px; padding: 8px; border: 1px solid rgba(255, 255, 255, 0.1); max-height: 160px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                            <img id="resumeImagePreviewImg" src="" alt="Resume Preview" style="max-height: 145px; max-width: 100%; object-fit: contain; border-radius: 4px;">
+                        </div>
+
+                        <!-- PDF Preview Wrap -->
+                        <div id="resumePdfPreviewWrap" class="mb-2 text-center py-2 d-none" style="background: rgba(239, 68, 68, 0.08); border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.25);">
+                            <div class="d-inline-flex align-items-center justify-content-center mb-1" style="width: 40px; height: 40px; border-radius: 10px; background: rgba(239, 68, 68, 0.18); color: #f87171;">
+                                <i class="bi bi-file-earmark-pdf-fill fs-4"></i>
+                            </div>
+                            <p class="mb-0 text-white small fw-bold" style="font-size: 0.8rem;">PDF Resume Document Ready</p>
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between pt-2 border-top gap-2" style="border-color: rgba(255,255,255,0.08) !important;">
+                            <div class="d-flex align-items-center gap-2 min-w-0 flex-grow-1">
+                                <i class="bi bi-file-earmark-check-fill text-info fs-5 flex-shrink-0"></i>
+                                <div class="min-w-0 flex-grow-1">
+                                    <span class="small text-white fw-bold text-truncate d-block" id="resumeSelectedFileName" style="max-width: 100%;"></span>
+                                    <div class="d-flex align-items-center gap-1.5 mt-0.5 flex-wrap">
+                                        <span class="badge bg-primary text-white" id="resumeSelectedFileSize" style="font-size: 0.68rem;"></span>
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.68rem;"><i class="bi bi-check2 me-0.5"></i>Ready</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-1.5 flex-shrink-0">
+                                <button type="button" class="btn btn-sm cp-preview-action-btn cp-preview-change-btn" onclick="document.getElementById('resumeFileInput').click();" title="Change resume file" aria-label="Change resume file">
+                                    <i class="bi bi-arrow-repeat fs-6"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm cp-preview-action-btn cp-preview-remove-btn" onclick="clearResumeSelection(event)" title="Remove selected file" aria-label="Remove selected file">
+                                    <i class="bi bi-trash3-fill fs-6"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input type="file" name="resume" id="resumeFileInput" accept=".pdf,.jpg,.jpeg,.png" class="d-none" onchange="handleResumeSelect(this)">
+                <button type="submit" class="btn btn-cp-primary btn-sm w-100 mt-2 py-2 fw-semibold" id="resumeUploadSubmitBtn">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Upload Resume
+                </button>
+            </form>
+        </div>
+
+        <!-- Section 6: Certifications & Licenses -->
+        <div class="cp-profile-section-card" id="certificationsSection">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom" style="border-color: var(--cp-border) !important;">
+                <div class="cp-profile-section-header border-0 pb-0 mb-0">
+                    <i class="bi bi-award-fill text-warning"></i>
+                    <span>Certifications &amp; Licenses</span>
+                </div>
+                <button class="btn btn-cp-outline btn-sm d-inline-flex align-items-center gap-1.5" data-bs-toggle="modal" data-bs-target="#addCertModal">
+                    <i class="bi bi-plus-lg"></i>
+                    <span>Add Certificate</span>
+                </button>
+            </div>
+            {% for cert in certifications %}
+            <div class="p-3 mb-3 rounded-3 position-relative" style="background: var(--cp-bg-elevated); border: 1.5px solid rgba(245, 158, 11, 0.3); box-shadow: 0 4px 18px rgba(0, 0, 0, 0.2);">
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div class="d-flex align-items-start gap-3 flex-grow-1">
+                        <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.25)); border: 1px solid rgba(245, 158, 11, 0.45);">
+                            <i class="bi bi-patch-check-fill text-warning fs-5"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+                                <h6 class="fw-bold text-white mb-0" style="font-size: 0.92rem;">{{ cert.title }}</h6>
+                                <span class="badge px-2 py-0.5 rounded-pill" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35); font-size: 0.7rem; font-weight: 600;">
+                                    Verified
+                                </span>
+                            </div>
+                            <p class="text-cp-accent small mb-1.5" style="color: #38bdf8; font-size: 0.82rem;">
+                                <strong>{{ cert.issuing_organization }}</strong> {% if cert.issue_year %}· Issued {{ cert.issue_year }}{% endif %}
+                            </p>
+                            {% if cert.description %}
+                            <p class="text-pearl small mb-2" style="color: #cbd5e1; font-size: 0.82rem; line-height: 1.45; background: rgba(0,0,0,0.25); padding: 6px 10px; border-radius: 6px; border-left: 2.5px solid #f59e0b;">
+                                {{ cert.description }}
+                            </p>
+                            {% endif %}
+                            {% if cert.file_path %}
+                            <div class="d-flex align-items-center gap-2 mt-2">
+                                <a href="{{ url_for('uploaded_file', filename=cert.file_path) }}" target="_blank" class="btn btn-sm px-2.5 py-1 text-decoration-none d-inline-flex align-items-center gap-1.5 fw-semibold" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 8px; font-size: 0.76rem;">
+                                    <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
+                                    <span class="text-truncate" style="max-width: 200px;">{{ cert.display_name or (cert.file_path|display_filename) }}</span>
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <form method="POST" action="{{ url_for('candidate.delete_certification', cert_id=cert.id) }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn-close btn-close-white" style="font-size:0.6rem" title="Remove certification"></button>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-pearl small mb-0">No certifications added yet. This section is optional.</p>
+            {% endfor %}
+        </div>
+
+        <!-- Section 7: Field of Interest & Career Preferences -->
+        <div class="cp-profile-section-card" id="careerPreferencesSection">
+            <div class="cp-profile-section-header">
+                <i class="bi bi-heart-fill"></i>
+                <span>Field of Interest &amp; Career Preferences</span>
+            </div>
+            <p class="text-pearl-muted small mb-3">Update your career status and fields of interest anytime.</p>
+            <form method="POST" action="{{ url_for('candidate.profile') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="form_type" value="career_preferences">
+
+                <div class="mb-4">
+                    <label class="form-label cp-label fw-bold text-white mb-2">Career Status</label>
+                    <div class="row g-2">
+                        {% for value, label in career_options %}
+                        {% set parts = label.split(' — ') %}
+                        <div class="col-md-6">
+                            <label class="status-card-label w-100">
+                                <input type="radio" name="career_status" value="{{ value }}" class="d-none" {% if candidate.career_status == value %}checked{% endif %}>
+                                <div class="status-card p-2 rounded small {% if candidate.career_status == value %}selected{% endif %}">
+                                    <span class="fw-semibold text-white">{{ parts[0] }}</span>
+                                </div>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label cp-label fw-bold text-white mb-2">Fields of Interest <small class="text-pearl-muted">(min 3)</small></label>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% set selected_names = interests|map(attribute='interest_name')|list if interests else [] %}
+                        {% for opt in interest_options %}
+                        <label class="interest-chip-label">
+                            <input type="checkbox" name="interests" value="{{ opt }}" class="d-none" {% if opt in selected_names %}checked{% endif %}>
+                            <span class="interest-chip {% if opt in selected_names %}selected{% endif %}">{{ opt }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-cp-primary btn-sm px-4 py-2">Save Preferences</button>
+            </form>
+        </div>
+
+        <!-- Section 8: Account Actions -->
+        <div class="cp-profile-section-card">
+            <div class="cp-profile-section-header">
+                <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+                <span class="text-danger">Account Actions (Danger Zone)</span>
+            </div>
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <button type="button" class="btn btn-danger btn-sm px-3 py-2 fw-semibold" data-bs-toggle="modal" data-bs-target="#deactivateProfileModal">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M9 11v6"/><path d="M9 7a5 5 0 1 1 10 0"/><path d="M17 3a2 2 0 0 1 2 2"/><path d="M20 3a2 2 0 0 1 2-2"/></svg>
+                    Deactivate Profile
+                </button>
+                <span class="text-pearl-muted small ms-2">Warning: Deactivating your profile will permanently delete all your data. This action cannot be undone.</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Adding Certification -->
+<div class="modal fade" id="addCertModal" tabindex="-1" aria-labelledby="addCertModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content cp-card border-0" style="background: var(--cp-bg-card);">
+            <div class="modal-header border-bottom" style="border-color:var(--cp-border)!important">
+                <h5 class="modal-title fw-bold text-white" id="addCertModalLabel">Add Certification</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" enctype="multipart/form-data">
+                {{ cert_form.hidden_tag() }}
+                <input type="hidden" name="cert_form" value="1">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small">{{ required_label('Certification Title') }}</label>
+                        {{ cert_form.title(class="form-control cp-input-glow", placeholder="e.g. AWS Certified Cloud Practitioner") }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small">{{ required_label('Issuing Organization') }}</label>
+                        {{ cert_form.issuing_organization(class="form-control cp-input-glow", placeholder="e.g. Amazon Web Services") }}
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small">{{ optional_label('Issue Year') }}</label>
+                            {{ cert_form.issue_year(class="form-control cp-input-glow", placeholder="e.g. 2024") }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">{{ optional_label('Credential ID') }}</label>
+                            {{ cert_form.credential_id(class="form-control cp-input-glow", placeholder="Optional") }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small">{{ optional_label('Short Description') }}</label>
+                        {{ cert_form.description(class="form-control cp-input-glow", rows=2, placeholder="Brief details about what this certification covers...") }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small">{{ required_label('Upload Certificate File') }}</label>
+                        
+                        <!-- Upload Prompt / Dropzone -->
+                        <div id="certUploadPrompt" class="p-3 text-center rounded-3 border border-dashed position-relative" style="background: var(--cp-bg-elevated); border-color: rgba(56, 189, 248, 0.4) !important; cursor: pointer; transition: all 0.2s ease;" onclick="document.getElementById('certFileInput').click();" onmouseover="this.style.borderColor='#38bdf8'; this.style.background='rgba(56, 189, 248, 0.08)';" onmouseout="this.style.borderColor='rgba(56, 189, 248, 0.4)'; this.style.background='var(--cp-bg-elevated)';">
+                            <div class="d-flex flex-column align-items-center justify-content-center py-2">
+                                <div class="d-flex align-items-center justify-content-center mb-2" style="width: 48px; height: 48px; border-radius: 14px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35);">
+                                    <i class="bi bi-cloud-arrow-up-fill fs-4"></i>
+                                </div>
+                                <p class="mb-2 text-white fw-semibold small">Drag &amp; drop your certificate here, or</p>
+                                <div class="mb-2">
+                                    <span class="btn btn-sm btn-cp-primary px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-1.5 shadow-sm" style="border-radius: 8px; font-size: 0.82rem; pointer-events: none;">
+                                        <i class="bi bi-folder2-open"></i> Browse Files
+                                    </span>
+                                </div>
+                                <span class="text-muted" style="font-size: 0.75rem; color: #94a3b8 !important;">Supported: PDF, JPEG, PNG (Max 25MB)</span>
+                            </div>
+                        </div>
+
+                        <!-- Hidden native input -->
+                        {{ cert_form.certificate_file(class="d-none", id="certFileInput", accept=".pdf,.jpg,.jpeg,.png", required=True, onchange="handleCertSelect(this)") }}
+
+                        <!-- HD Live Preview Card (Shown after selection) -->
+                        <div id="certPreviewCard" class="mt-2 p-3 rounded-3 d-none position-relative" style="background: var(--cp-bg-elevated); border: 1.5px solid rgba(56, 189, 248, 0.45); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);">
+                            <!-- HD Image Preview Box -->
+                            <div id="certImagePreviewWrap" class="mb-2.5 text-center d-none" style="background: rgba(0, 0, 0, 0.4); border-radius: 10px; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.1); max-height: 190px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                <img id="certImagePreviewImg" src="" alt="Certificate HD Preview" style="max-height: 170px; max-width: 100%; object-fit: contain; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+                            </div>
+
+                            <!-- PDF Preview Box -->
+                            <div id="certPdfPreviewWrap" class="mb-2.5 text-center py-3 d-none" style="background: rgba(239, 68, 68, 0.08); border-radius: 10px; border: 1px solid rgba(239, 68, 68, 0.3);">
+                                <div class="d-inline-flex align-items-center justify-content-center mb-1" style="width: 48px; height: 48px; border-radius: 12px; background: rgba(239, 68, 68, 0.18); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35);">
+                                    <i class="bi bi-file-earmark-pdf-fill fs-3"></i>
+                                </div>
+                                <p class="mb-0 text-white small fw-bold">PDF Certificate Attached</p>
+                            </div>
+
+                            <!-- File Details & Action Controls -->
+                            <div class="d-flex align-items-center justify-content-between pt-2 border-top gap-2" style="border-color: rgba(255,255,255,0.08) !important;">
+                                <div class="d-flex align-items-center gap-2 min-w-0 flex-grow-1">
+                                    <i class="bi bi-patch-check-fill text-warning fs-5 flex-shrink-0"></i>
+                                    <div class="min-w-0 flex-grow-1">
+                                        <div class="small text-white fw-bold text-truncate" id="certPreviewFileName" style="max-width: 100%;"></div>
+                                        <div class="d-flex align-items-center gap-1.5 mt-0.5 flex-wrap">
+                                            <span class="badge bg-primary text-white" id="certPreviewFileSize" style="font-size: 0.68rem;"></span>
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.68rem;"><i class="bi bi-check2 me-0.5"></i>Ready to save</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-1.5 flex-shrink-0">
+                                    <button type="button" class="btn btn-sm cp-preview-action-btn cp-preview-change-btn" onclick="document.getElementById('certFileInput').click();" title="Change certificate file" aria-label="Change certificate file">
+                                        <i class="bi bi-arrow-repeat fs-6"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm cp-preview-action-btn cp-preview-remove-btn" onclick="clearCertSelection()" title="Remove selected file" aria-label="Remove selected file">
+                                        <i class="bi bi-trash3-fill fs-6"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top" style="border-color:var(--cp-border)!important">
+                    <button type="button" class="btn btn-cp-outline btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    {{ cert_form.submit(class="btn btn-cp-primary btn-sm px-3") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Deactivating Profile -->
+<div class="modal fade" id="deactivateProfileModal" tabindex="-1" aria-labelledby="deactivateProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content cp-card border-0" style="background: var(--cp-bg-card);">
+            <div class="modal-header border-bottom" style="border-color:var(--cp-border)!important">
+                <h5 class="modal-title fw-bold text-white" id="deactivateProfileModalLabel">Deactivate Profile</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{{ url_for('candidate.deactivate_profile') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-danger">Reason for Deactivation</label>
+                        <select name="reason" class="form-select cp-input-glow" required>
+                            <option value="">Select a reason...</option>
+                            <option value="found_job">I found a job and no longer need CareerPearls</option>
+                            <option value="career_change">I'm changing my career path</option>
+                            <option value="taking_break">I'm taking a career break</option>
+                            <option value="not_suitable">CareerPearls doesn't suit my needs</option>
+                            <option value="duplicate_account">I have a duplicate account</option>
+                            <option value="privacy_concerns">I have privacy concerns</option>
+                            <option value="personal_reasons">Personal reasons</option>
+                            <option value="other">Other reason</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small">Additional Details (Optional)</label>
+                        <textarea name="details" class="form-control cp-input-glow" rows="2" placeholder="Any additional information..."></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Confirm Password <span class="text-danger">*</span></label>
+                        <input type="password" name="password" class="form-control cp-input-glow" required>
+                        {% if not current_user.password_hash %}
+                        <small class="cp-field-hint text-warning">Since you use Google Auth, enter your email address to confirm.</small>
+                        {% endif %}
+                        <small class="cp-field-hint">This action cannot be undone. Your data will be permanently deleted.</small>
+                    </div>
+                </div>
+                <div class="modal-footer border-top" style="border-color:var(--cp-border)!important">
+                    <button type="button" class="btn btn-cp-outline btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger btn-sm px-3">Deactivate Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% include 'candidate/_photo_crop_modal.html' %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
+<script src="{{ url_for('static', filename='js/photo-crop.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var saveBtn = document.getElementById('profilePhotoSave');
+    var hidden = document.getElementById('profileCroppedField');
+    if (hidden && saveBtn) {
+        document.getElementById('photoCropConfirm')?.addEventListener('click', function () {
+            window.setTimeout(function () {
+                if (hidden.value) {
+                    saveBtn.style.display = 'inline-flex';
+                }
+            }, 150);
+        });
+    }
+
+    document.querySelectorAll('#careerPreferencesSection .interest-chip-label input').forEach(function (cb) {
+        cb.addEventListener('change', function () {
+            cb.closest('label').querySelector('.interest-chip').classList.toggle('selected', cb.checked);
+        });
+    });
+    document.querySelectorAll('#careerPreferencesSection .status-card-label input').forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            document.querySelectorAll('#careerPreferencesSection .status-card').forEach(function (card) {
+                card.classList.remove('selected');
+            });
+            if (radio.checked) {
+                radio.closest('label').querySelector('.status-card').classList.add('selected');
+            }
+        });
+    });
+
+    var internshipSelect = document.getElementById('has_internship');
+    var internshipWrap = document.getElementById('internshipDetailsWrap');
+    function toggleInternshipDetails() {
+        if (!internshipSelect || !internshipWrap) return;
+        internshipWrap.style.display = internshipSelect.value === 'yes' ? 'block' : 'none';
+    }
+    if (internshipSelect) {
+        internshipSelect.addEventListener('change', toggleInternshipDetails);
+        toggleInternshipDetails();
+    }
+
+    // AJAX Skill Addition without scroll jump
+    var skillForm = document.getElementById('skillAddForm');
+    if (skillForm) {
+        skillForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var skillInput = document.getElementById('skillInput');
+            var levelSelect = document.getElementById('skillLevelSelect');
+            if (!skillInput || !skillInput.value.trim()) return;
+
+            var formData = new FormData(skillForm);
+            var submitBtn = document.getElementById('skillAddBtn');
+            if (submitBtn) submitBtn.disabled = true;
+
+            fetch(skillForm.action || window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (submitBtn) submitBtn.disabled = false;
+                if (data && data.success && data.skill) {
+                    var container = document.getElementById('skillsBadgeContainer');
+                    var noPrompt = document.getElementById('noSkillsPrompt');
+                    if (noPrompt) noPrompt.remove();
+
+                    var span = document.createElement('span');
+                    span.className = 'd-inline-flex align-items-center gap-2 badge skill-badge-item text-white p-2 rounded-3';
+                    span.id = 'skillBadge_' + data.skill.id;
+                    span.innerHTML = '<span class="fw-semibold">' + escapeHtml(data.skill.skill_name) + '</span> <small class="text-cp-accent opacity-75">· ' + escapeHtml(data.skill.proficiency_level) + '</small>' +
+                        '<button type="button" class="btn-close btn-close-white ms-1" style="font-size:0.55rem" title="Remove skill" onclick="deleteSkillAjax(' + data.skill.id + ')"></button>';
+                    if (container) container.appendChild(span);
+                    skillInput.value = '';
+                    skillInput.focus();
+                } else {
+                    // Fallback to normal submit if JSON response format mismatch
+                    skillForm.submit();
+                }
+            })
+            .catch(function() {
+                if (submitBtn) submitBtn.disabled = false;
+                skillForm.submit();
+            });
+        });
+    }
+
+    // Drag and Drop for Resume
+    var dropzone = document.getElementById('resumeDropzone');
+    if (dropzone) {
+        ['dragenter', 'dragover'].forEach(function(evt) {
+            dropzone.addEventListener(evt, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.classList.add('dragover');
+            });
+        });
+        ['dragleave', 'drop'].forEach(function(evt) {
+            dropzone.addEventListener(evt, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.classList.remove('dragover');
+            });
+        });
+        dropzone.addEventListener('drop', function(e) {
+            var dt = e.dataTransfer;
+            var files = dt.files;
+            if (files && files.length) {
+                var fileInput = document.getElementById('resumeFileInput');
+                if (fileInput) {
+                    fileInput.files = files;
+                    handleResumeSelect(fileInput);
+                }
+            }
+        });
+    }
+});
+
+function escapeHtml(text) {
+    if (!text) return '';
+    return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function deleteSkillAjax(skillId) {
+    var csrf = document.querySelector('input[name="csrf_token"]')?.value;
+    var badge = document.getElementById('skillBadge_' + skillId);
+    var formData = new FormData();
+    if (csrf) formData.append('csrf_token', csrf);
+
+    fetch('/candidate/profile/skill/' + skillId + '/delete', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+        if (data && data.success) {
+            if (badge) {
+                badge.style.transition = 'opacity 0.2s, transform 0.2s';
+                badge.style.opacity = '0';
+                badge.style.transform = 'scale(0.8)';
+                setTimeout(function() { badge.remove(); }, 200);
+            }
+        }
+    })
+    .catch(function(err) {
+        console.error('Failed to delete skill:', err);
+    });
+}
+
+function handleResumeSelect(input) {
+    var file = input.files[0];
+    var previewCard = document.getElementById('resumeSelectedPreviewCard');
+    var nameEl = document.getElementById('resumeSelectedFileName');
+    var sizeEl = document.getElementById('resumeSelectedFileSize');
+    var imgWrap = document.getElementById('resumeImagePreviewWrap');
+    var imgEl = document.getElementById('resumeImagePreviewImg');
+    var pdfWrap = document.getElementById('resumePdfPreviewWrap');
+
+    if (!file) {
+        clearResumeSelection();
+        return;
+    }
+
+    var ext = file.name.split('.').pop().toLowerCase();
+    if (!['pdf', 'jpg', 'jpeg', 'png'].includes(ext)) {
+        alert('Invalid file format! Only PDF, JPEG, and PNG files are accepted.');
+        clearResumeSelection();
+        return;
+    }
+    if (file.size > 15 * 1024 * 1024) {
+        alert('File size exceeds 15MB limit. Please select a smaller file.');
+        clearResumeSelection();
+        return;
+    }
+
+    if (nameEl) nameEl.textContent = file.name;
+    if (sizeEl) {
+        var sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+        sizeEl.textContent = sizeMb + ' MB · ' + ext.toUpperCase();
+    }
+
+    if (ext === 'pdf') {
+        if (imgWrap) imgWrap.classList.add('d-none');
+        if (imgEl) imgEl.src = '';
+        if (pdfWrap) pdfWrap.classList.remove('d-none');
+    } else {
+        if (pdfWrap) pdfWrap.classList.add('d-none');
+        if (imgWrap && imgEl) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                imgEl.src = e.target.result;
+                imgWrap.classList.remove('d-none');
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    if (previewCard) previewCard.classList.remove('d-none');
+}
+
+function clearResumeSelection(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    var input = document.getElementById('resumeFileInput');
+    var previewCard = document.getElementById('resumeSelectedPreviewCard');
+    var imgWrap = document.getElementById('resumeImagePreviewWrap');
+    var imgEl = document.getElementById('resumeImagePreviewImg');
+    var pdfWrap = document.getElementById('resumePdfPreviewWrap');
+
+    if (input) input.value = '';
+    if (imgEl) imgEl.src = '';
+    if (imgWrap) imgWrap.classList.add('d-none');
+    if (pdfWrap) pdfWrap.classList.add('d-none');
+    if (previewCard) previewCard.classList.add('d-none');
+}
+
+function handleCertSelect(input) {
+    var file = input.files[0];
+    var promptEl = document.getElementById('certUploadPrompt');
+    var cardEl = document.getElementById('certPreviewCard');
+    var nameEl = document.getElementById('certPreviewFileName');
+    var sizeEl = document.getElementById('certPreviewFileSize');
+    var imgWrap = document.getElementById('certImagePreviewWrap');
+    var imgEl = document.getElementById('certImagePreviewImg');
+    var pdfWrap = document.getElementById('certPdfPreviewWrap');
+
+    if (!file) {
+        clearCertSelection();
+        return;
+    }
+
+    var ext = file.name.split('.').pop().toLowerCase();
+    if (!['pdf', 'jpg', 'jpeg', 'png'].includes(ext)) {
+        alert('Invalid file format! Only PDF, JPEG, and PNG files are accepted.');
+        clearCertSelection();
+        return;
+    }
+    if (file.size > 25 * 1024 * 1024) {
+        alert('File size exceeds 25MB limit. Please select a smaller file.');
+        clearCertSelection();
+        return;
+    }
+
+    if (nameEl) nameEl.textContent = file.name;
+    if (sizeEl) {
+        var sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+        sizeEl.textContent = sizeMb + ' MB · ' + ext.toUpperCase();
+    }
+
+    if (ext === 'pdf') {
+        if (imgWrap) imgWrap.classList.add('d-none');
+        if (imgEl) imgEl.src = '';
+        if (pdfWrap) pdfWrap.classList.remove('d-none');
+    } else {
+        if (pdfWrap) pdfWrap.classList.add('d-none');
+        if (imgWrap && imgEl) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                imgEl.src = e.target.result;
+                imgWrap.classList.remove('d-none');
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    if (promptEl) promptEl.classList.add('d-none');
+    if (cardEl) cardEl.classList.remove('d-none');
+}
+
+function clearCertSelection() {
+    var input = document.getElementById('certFileInput');
+    var promptEl = document.getElementById('certUploadPrompt');
+    var cardEl = document.getElementById('certPreviewCard');
+    var imgWrap = document.getElementById('certImagePreviewWrap');
+    var imgEl = document.getElementById('certImagePreviewImg');
+    var pdfWrap = document.getElementById('certPdfPreviewWrap');
+
+    if (input) input.value = '';
+    if (imgEl) imgEl.src = '';
+    if (imgWrap) imgWrap.classList.add('d-none');
+    if (pdfWrap) pdfWrap.classList.add('d-none');
+    if (cardEl) cardEl.classList.add('d-none');
+    if (promptEl) promptEl.classList.remove('d-none');
+}
+
+function enableProfileEdit() {
+    try {
+        var fieldset = document.getElementById('profileFieldset');
+        var actions  = document.getElementById('profileEditActions');
+        var toggleBtn = document.getElementById('profileEditToggleBtn');
+        if (fieldset) fieldset.disabled = false;
+        if (actions)  { actions.style.removeProperty('display'); actions.style.display = 'flex'; }
+        if (toggleBtn) toggleBtn.style.display = 'none';
+        // Highlight fields briefly so user knows editing is on
+        document.querySelectorAll('#profileDetailsForm .form-control, #profileDetailsForm .form-select').forEach(function(el) {
+            el.style.transition = 'box-shadow 0.35s ease, border-color 0.35s ease';
+            el.style.borderColor = 'rgba(79,172,254,0.7)';
+            el.style.boxShadow  = '0 0 0 3px rgba(79,172,254,0.18)';
+        });
+    } catch (error) {
+        console.error('Error enabling profile edit:', error);
+        if (typeof showTemporaryToast === 'function') {
+            showTemporaryToast('Failed to enable profile editing. Please refresh the page.', 'danger');
+        }
+    }
+}
+
+function cancelProfileEdit() {
+    try {
+        var fieldset  = document.getElementById('profileFieldset');
+        var actions   = document.getElementById('profileEditActions');
+        var toggleBtn = document.getElementById('profileEditToggleBtn');
+        if (fieldset) fieldset.disabled = true;
+        if (actions)  actions.style.display = 'none';
+        if (toggleBtn) toggleBtn.style.removeProperty('display');
+        document.querySelectorAll('#profileDetailsForm .form-control, #profileDetailsForm .form-select').forEach(function(el) {
+            el.style.borderColor = '';
+            el.style.boxShadow  = '';
+        });
+    } catch (error) {
+        console.error('Error canceling profile edit:', error);
+        if (typeof showTemporaryToast === 'function') {
+            showTemporaryToast('Failed to cancel profile editing. Please refresh the page.', 'danger');
+        }
+    }
+}
+
+function validateSocialUrl(input, type) {
+    if (!input) return true;
+    var rawVal = input.value.trim();
+    
+    var container = input.parentNode;
+    var errEl = container.querySelector('.js-social-err');
+    if (!errEl) {
+        errEl = document.createElement('div');
+        errEl.className = 'invalid-feedback d-block js-social-err mt-1';
+        container.appendChild(errEl);
+    }
+    errEl.textContent = '';
+    
+    if (!rawVal) {
+        input.classList.remove('is-invalid');
+        input.setCustomValidity('');
+        return true;
+    }
+    
+    var urlToTest = rawVal;
+    if (!/^https?:\/\//i.test(urlToTest)) {
+        urlToTest = 'https://' + urlToTest;
+    }
+    
+    try {
+        var parsed = new URL(urlToTest);
+        var host = parsed.hostname.toLowerCase();
+        var isValid = false;
+        var msg = '';
+        
+        if (type === 'linkedin') {
+            if (host === 'linkedin.com' || host.endsWith('.linkedin.com')) {
+                isValid = true;
+            } else {
+                msg = 'LinkedIn URL must be from linkedin.com (e.g., https://linkedin.com/in/username)';
+            }
+        } else if (type === 'github') {
+            if (host === 'github.com' || host.endsWith('.github.com') || host.endsWith('.github.io')) {
+                isValid = true;
+            } else {
+                msg = 'GitHub URL must be from github.com (e.g., https://github.com/username)';
+            }
+        } else if (type === 'kaggle') {
+            if (host === 'kaggle.com' || host.endsWith('.kaggle.com')) {
+                isValid = true;
+            } else {
+                msg = 'Kaggle URL must be from kaggle.com (e.g., https://kaggle.com/username)';
+            }
+        } else if (type === 'portfolio') {
+            if (host.includes('.') && host.length >= 4) {
+                isValid = true;
+            } else {
+                msg = 'Please enter a valid website URL (e.g., https://myportfolio.com)';
+            }
+        }
+        
+        if (!isValid) {
+            input.classList.add('is-invalid');
+            errEl.textContent = msg;
+            input.setCustomValidity(msg);
+            return false;
+        } else {
+            input.classList.remove('is-invalid');
+            input.setCustomValidity('');
+            return true;
+        }
+    } catch (e) {
+        input.classList.add('is-invalid');
+        var errText = 'Invalid URL format. Please enter a valid link (e.g., https://example.com)';
+        errEl.textContent = errText;
+        input.setCustomValidity(errText);
+        return false;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var profileForm = document.getElementById('profileDetailsForm');
+    if (profileForm) {
+        profileForm.addEventListener('submit', function(e) {
+            var linkedin = document.getElementById('linkedin_url');
+            var github = document.getElementById('github_url');
+            var portfolio = document.getElementById('portfolio_url');
+            var kaggle = document.getElementById('kaggle_url');
+            
+            var v1 = linkedin ? validateSocialUrl(linkedin, 'linkedin') : true;
+            var v2 = github ? validateSocialUrl(github, 'github') : true;
+            var v3 = portfolio ? validateSocialUrl(portfolio, 'portfolio') : true;
+            var v4 = kaggle ? validateSocialUrl(kaggle, 'kaggle') : true;
+            
+            if (!v1 || !v2 || !v3 || !v4) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (typeof showTemporaryToast === 'function') {
+                    showTemporaryToast('Please fix the invalid social links before saving.', 'danger');
+                } else {
+                    alert('Please fix the invalid social links before saving.');
+                }
+                return false;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

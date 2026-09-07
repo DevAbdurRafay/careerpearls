@@ -1,0 +1,465 @@
+{% extends "base.html" %}
+{% block title %}Manage My Jobs — CareerPearls{% endblock %}
+
+{% block content %}
+<style>
+/* Modern Interactive Button & Card Styling */
+.cp-btn-post-job {
+    background: linear-gradient(135deg, #0284c7, #2563eb);
+    border: 1.5px solid rgba(56, 189, 248, 0.85) !important;
+    color: #ffffff !important;
+    border-radius: 12px;
+    padding: 8px 20px;
+    font-weight: 600;
+    font-size: 0.88rem;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.45);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+}
+.cp-btn-post-job:hover {
+    background: linear-gradient(135deg, #0369a1, #1d4ed8);
+    border-color: #38bdf8 !important;
+    box-shadow: 0 6px 24px rgba(37, 99, 235, 0.7), 0 0 16px rgba(56, 189, 248, 0.5);
+    transform: translateY(-2px);
+    color: #ffffff !important;
+}
+
+/* Header Icon Badge & Company Heading Alignment */
+.cp-header-icon-badge {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(2, 132, 199, 0.12);
+    border: 1.5px solid rgba(2, 132, 199, 0.35);
+    color: #0284c7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.12);
+}
+:root[data-theme="dark"] .cp-header-icon-badge {
+    background: rgba(56, 189, 248, 0.12);
+    border-color: rgba(56, 189, 248, 0.35);
+    color: #38bdf8;
+    box-shadow: 0 4px 12px rgba(56, 189, 248, 0.15);
+}
+
+/* Company Heading Highlight & Light Theme High Contrast Filters */
+.cp-company-name-dark {
+    color: #0284c7 !important;
+    font-weight: 700 !important;
+}
+:root[data-theme="dark"] .cp-company-name-dark {
+    color: #38bdf8 !important;
+}
+.cp-subtext-muted {
+    color: #64748b;
+}
+:root[data-theme="dark"] .cp-subtext-muted {
+    color: #94a3b8;
+}
+
+:root[data-theme="light"] .cp-filter-tab:not(.active).cp-tab-all {
+    background: #e0f2fe !important;
+    color: #0284c7 !important;
+    border-color: #0284c7 !important;
+}
+:root[data-theme="light"] .cp-filter-tab:not(.active).cp-tab-all .cp-filter-count {
+    background: #bae6fd !important;
+    color: #0284c7 !important;
+}
+
+:root[data-theme="light"] .cp-filter-tab:not(.active).cp-tab-active {
+    background: #dcfce7 !important;
+    color: #15803d !important;
+    border-color: #16a34a !important;
+}
+:root[data-theme="light"] .cp-filter-tab:not(.active).cp-tab-active .cp-filter-count {
+    background: #bbf7d0 !important;
+    color: #15803d !important;
+}
+
+:root[data-theme="light"] .cp-filter-tab:not(.active).cp-tab-paused {
+    background: #fef3c7 !important;
+    color: #b45309 !important;
+    border-color: #d97706 !important;
+}
+:root[data-theme="light"] .cp-filter-tab:not(.active).cp-tab-paused .cp-filter-count {
+    background: #fde68a !important;
+    color: #b45309 !important;
+}
+
+:root[data-theme="light"] .cp-filter-tab:not(.active).cp-tab-unpublished {
+    background: #fee2e2 !important;
+    color: #b91c1c !important;
+    border-color: #dc2626 !important;
+}
+:root[data-theme="light"] .cp-filter-tab:not(.active).cp-tab-unpublished .cp-filter-count {
+    background: #fecaca !important;
+    color: #b91c1c !important;
+}
+
+:root[data-theme="light"] .cp-filter-tab:not(.active).cp-tab-hired {
+    background: #f3e8ff !important;
+    color: #7e22ce !important;
+    border-color: #7c3aed !important;
+}
+:root[data-theme="light"] .cp-filter-tab:not(.active).cp-tab-hired .cp-filter-count {
+    background: #e9d5ff !important;
+    color: #7e22ce !important;
+}
+
+/* Filter Tab Pills */
+.cp-filter-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 16px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.22s ease;
+    border: 1.5px solid transparent;
+}
+.cp-filter-tab:hover {
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+.cp-filter-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+/* Job Cards */
+.cp-job-card {
+    background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(20, 30, 48, 0.9));
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 1.4rem;
+    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.5);
+    transition: all 0.25s ease;
+}
+.cp-job-card:hover {
+    border-color: rgba(56, 189, 248, 0.45);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.7), 0 0 20px rgba(56, 189, 248, 0.15);
+    transform: translateY(-3px);
+}
+
+/* Pill Badges with Clean Gaps */
+.cp-pill-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 500;
+}
+
+/* Action Buttons inside Job Cards */
+.cp-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 7px 14px;
+    border-radius: 10px;
+    font-size: 0.83rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.22s ease;
+}
+.cp-action-btn:hover {
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+</style>
+
+<div class="container-fluid py-3">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div class="cp-header-icon-badge flex-shrink-0">
+                <i class="bi bi-briefcase-fill fs-5"></i>
+            </div>
+            <div>
+                <h3 class="fw-bold mb-1 p-0 lh-sm">Manage My Jobs</h3>
+                <p class="small mb-0 cp-subtext-muted">View, edit, and control all job listings posted by <strong class="cp-company-name-dark">{{ company.name }}</strong></p>
+            </div>
+        </div>
+        <a href="{{ url_for('employer.post_job') }}" class="cp-btn-post-job">
+            <i class="bi bi-plus-circle-fill fs-6"></i>
+            <span>Post New Job</span>
+        </a>
+    </div>
+
+    <!-- Status Filter Tabs (High Contrast Darker Shades in Light Theme) -->
+    <div class="d-flex gap-3 flex-wrap mb-4">
+        {# Tab: All #}
+        <a href="{{ url_for('employer.my_jobs', q=q) }}" 
+           class="cp-filter-tab cp-tab-all {% if not status_filter %}active{% endif %}" 
+           style="border-color: {% if not status_filter %}#2563eb{% else %}rgba(37, 99, 235, 0.45){% endif %}; background: {% if not status_filter %}#2563eb{% else %}rgba(37, 99, 235, 0.12){% endif %}; color: {% if not status_filter %}#ffffff{% else %}#1d4ed8{% endif %};">
+            <i class="bi bi-grid-fill"></i>
+            <span>All</span>
+            <span class="cp-filter-count" style="background: {% if not status_filter %}rgba(255,255,255,0.25){% else %}rgba(37, 99, 235, 0.22){% endif %}; color: {% if not status_filter %}#ffffff{% else %}#1d4ed8{% endif %};">{{ status_counts.all }}</span>
+        </a>
+
+        {# Tab: Active #}
+        <a href="{{ url_for('employer.my_jobs', status='active', q=q) }}" 
+           class="cp-filter-tab cp-tab-active {% if status_filter == 'active' %}active{% endif %}" 
+           style="border-color: {% if status_filter == 'active' %}#16a34a{% else %}rgba(22, 163, 74, 0.45){% endif %}; background: {% if status_filter == 'active' %}#16a34a{% else %}rgba(22, 163, 74, 0.12){% endif %}; color: {% if status_filter == 'active' %}#ffffff{% else %}#15803d{% endif %};">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Active</span>
+            <span class="cp-filter-count" style="background: {% if status_filter == 'active' %}rgba(255,255,255,0.25){% else %}rgba(22, 163, 74, 0.22){% endif %}; color: {% if status_filter == 'active' %}#ffffff{% else %}#15803d{% endif %};">{{ status_counts.active }}</span>
+        </a>
+
+        {# Tab: Paused #}
+        <a href="{{ url_for('employer.my_jobs', status='paused', q=q) }}" 
+           class="cp-filter-tab cp-tab-paused {% if status_filter == 'paused' %}active{% endif %}" 
+           style="border-color: {% if status_filter == 'paused' %}#d97706{% else %}rgba(217, 119, 6, 0.45){% endif %}; background: {% if status_filter == 'paused' %}#d97706{% else %}rgba(217, 119, 6, 0.12){% endif %}; color: {% if status_filter == 'paused' %}#ffffff{% else %}#b45309{% endif %};">
+            <i class="bi bi-pause-circle-fill"></i>
+            <span>Paused</span>
+            <span class="cp-filter-count" style="background: {% if status_filter == 'paused' %}rgba(255,255,255,0.25){% else %}rgba(217, 119, 6, 0.22){% endif %}; color: {% if status_filter == 'paused' %}#ffffff{% else %}#b45309{% endif %};">{{ status_counts.paused }}</span>
+        </a>
+
+        {# Tab: Unpublished by Admin #}
+        <a href="{{ url_for('employer.my_jobs', status='unpublished', q=q) }}" 
+           class="cp-filter-tab cp-tab-unpublished {% if status_filter == 'unpublished' %}active{% endif %}" 
+           style="border-color: {% if status_filter == 'unpublished' %}#dc2626{% else %}rgba(220, 38, 38, 0.45){% endif %}; background: {% if status_filter == 'unpublished' %}#dc2626{% else %}rgba(220, 38, 38, 0.12){% endif %}; color: {% if status_filter == 'unpublished' %}#ffffff{% else %}#b91c1c{% endif %};">
+            <i class="bi bi-eye-slash-fill"></i>
+            <span>Unpublished</span>
+            <span class="cp-filter-count" style="background: {% if status_filter == 'unpublished' %}rgba(255,255,255,0.25){% else %}rgba(220, 38, 38, 0.22){% endif %}; color: {% if status_filter == 'unpublished' %}#ffffff{% else %}#b91c1c{% endif %};">{{ status_counts.unpublished or 0 }}</span>
+        </a>
+
+        {# Tab: Hired #}
+        <a href="{{ url_for('employer.my_jobs', status='hired', q=q) }}" 
+           class="cp-filter-tab cp-tab-hired {% if status_filter == 'hired' %}active{% endif %}" 
+           style="border-color: {% if status_filter == 'hired' %}#7c3aed{% else %}rgba(126, 34, 206, 0.45){% endif %}; background: {% if status_filter == 'hired' %}#7c3aed{% else %}rgba(126, 34, 206, 0.12){% endif %}; color: {% if status_filter == 'hired' %}#ffffff{% else %}#7e22ce{% endif %};">
+            <i class="bi bi-award-fill"></i>
+            <span>Hired</span>
+            <span class="cp-filter-count" style="background: {% if status_filter == 'hired' %}rgba(255,255,255,0.25){% else %}rgba(126, 34, 206, 0.22){% endif %}; color: {% if status_filter == 'hired' %}#ffffff{% else %}#7e22ce{% endif %};">{{ status_counts.hired or 0 }}</span>
+        </a>
+    </div>
+
+    <!-- Search Form -->
+    <form method="GET" class="mb-4 d-flex gap-3" style="max-width: 540px;">
+        {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+        <input type="text" name="q" value="{{ q }}" placeholder="Search by job title or keyword..." class="form-control form-control-sm" style="background: #0f172a; color: #fff; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 8px 14px;">
+        <button type="submit" class="cp-action-btn" style="border: 1.5px solid rgba(56, 189, 248, 0.7); background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+            <i class="bi bi-search"></i>
+            <span>Search</span>
+        </button>
+        {% if q %}
+        <a href="{{ url_for('employer.my_jobs', status=status_filter) }}" class="cp-action-btn" style="border: 1.5px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.06); color: #cbd5e1;">
+            <span>Clear</span>
+        </a>
+        {% endif %}
+    </form>
+
+    <!-- Job Cards Grid -->
+    <div class="row g-4">
+        {% for job in jobs.items %}
+        <div class="col-lg-4 col-md-6">
+            <div class="cp-job-card h-100 d-flex flex-column">
+                
+                <!-- Status Badge + Job Type -->
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    {% if job.is_hired %}
+                        <span class="badge d-inline-flex align-items-center gap-1.5 px-2.5 py-1" style="background: rgba(168,85,247,0.22); color: #d8b4fe; border: 1.5px solid rgba(168,85,247,0.6); font-size: 0.76rem; border-radius: 8px; font-weight: 700; box-shadow: 0 0 12px rgba(168,85,247,0.35);">
+                            <i class="bi bi-award-fill" style="color: #c084fc;"></i>
+                            <span>Hired / Position Filled</span>
+                        </span>
+                    {% elif job.status == 'unpublished' or job.approval_status == 'unpublished' or job.unpublish_reason %}
+                        <span class="badge d-inline-flex align-items-center gap-2 px-2.5 py-1" style="background: rgba(239,68,68,0.18); color: #f87171; border: 1px solid rgba(239,68,68,0.45); font-size: 0.76rem; border-radius: 8px; font-weight: 700;">
+                            <i class="bi bi-slash-circle-fill"></i>
+                            <span>Unpublished by Admin</span>
+                        </span>
+                    {% elif job.status == 'active' %}
+                        <span class="badge d-inline-flex align-items-center gap-2 px-2.5 py-1" style="background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.35); font-size: 0.76rem; border-radius: 8px; font-weight: 600;">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>Active</span>
+                        </span>
+                    {% elif job.status == 'paused' %}
+                        <span class="badge d-inline-flex align-items-center gap-2 px-2.5 py-1" style="background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.35); font-size: 0.76rem; border-radius: 8px; font-weight: 600;">
+                            <i class="bi bi-pause-circle-fill"></i>
+                            <span>Paused</span>
+                        </span>
+                    {% elif job.status == 'deleted' %}
+                        <span class="badge d-inline-flex align-items-center gap-2 px-2.5 py-1" style="background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.35); font-size: 0.76rem; border-radius: 8px; font-weight: 600;">
+                            <i class="bi bi-trash-fill"></i>
+                            <span>Deleted</span>
+                        </span>
+                    {% else %}
+                        <span class="badge bg-secondary px-2.5 py-1" style="font-size: 0.76rem; border-radius: 8px;">{{ job.status|title }}</span>
+                    {% endif %}
+                    <span class="badge d-inline-flex align-items-center gap-1 px-2.5 py-1" style="background: rgba(59,130,246,0.14); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); font-size: 0.72rem; border-radius: 8px; font-weight: 600;">
+                        <i class="bi bi-clock"></i>
+                        <span>{{ (job.employment_type or 'Full Time')|replace('_',' ')|title }}</span>
+                    </span>
+                </div>
+
+                <!-- Title & Location/Salary with Proper Spacing -->
+                <div class="mb-3">
+                    <h5 class="text-white fw-bold mb-3" style="font-size: 1.12rem; line-height: 1.35;">{{ job.title }}</h5>
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        {# Location Badge with Clear Gap #}
+                        <span class="cp-pill-badge" style="background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.35);">
+                            <i class="bi bi-geo-alt-fill text-primary fs-7"></i>
+                            <span>{{ job.location or 'Remote' }}</span>
+                        </span>
+
+                        {# Salary Badge with Clear Gap #}
+                        {% if job.salary_range %}
+                        <span class="cp-pill-badge" style="background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35); font-weight: 600;">
+                            <i class="bi bi-wallet2 text-success fs-7"></i>
+                            <span>{{ job.salary_range }}</span>
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {# Unpublish Reason Callout Card for Employer #}
+                {% if job.unpublish_reason %}
+                <div class="p-3 rounded-3 mb-3" style="background: rgba(239, 68, 68, 0.08); border: 1.5px solid rgba(239, 68, 68, 0.3); border-radius: 12px; display: flex; align-items: flex-start; gap: 12px;">
+                    <i class="bi bi-exclamation-octagon-fill text-danger fs-5 flex-shrink-0" style="margin-top: 1px;"></i>
+                    <div>
+                        <div class="fw-bold text-danger mb-1" style="font-size: 0.86rem;">⚠️ Job Unpublished by Platform Administrator</div>
+                        <p class="text-pearl small mb-1" style="color: #fca5a5; font-size: 0.82rem; line-height: 1.45;">
+                            <strong>Reason:</strong> {{ job.unpublish_reason }}
+                        </p>
+                        <div class="small text-pearl" style="color: #cbd5e1; font-size: 0.78rem;">
+                            Please click <strong>Edit</strong> below to resolve this issue. Once updated, platform administrators will review and re-publish your job.
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Skills -->
+                {% if job.skills.count() %}
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    {% for skill in job.skills.limit(4) %}
+                    <span class="badge" style="background: rgba(99,102,241,0.12); color: #a78bfa; border: 1px solid rgba(99,102,241,0.25); font-size: 0.74rem; border-radius: 6px; padding: 4px 9px;">{{ skill.skill_name }}</span>
+                    {% endfor %}
+                    {% if job.skills.count() > 4 %}
+                    <span class="badge bg-secondary" style="font-size: 0.72rem; border-radius: 6px; padding: 4px 8px;">+{{ job.skills.count() - 4 }}</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Stats: Applications count & dates with Clear Gaps -->
+                <div class="d-flex align-items-center flex-wrap gap-3 mb-3 small" style="color: #94a3b8; font-size: 0.82rem;">
+                    <span class="d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-people-fill text-primary"></i>
+                        <span><strong class="text-white">{{ job.applications.count() }}</strong> Application{% if job.applications.count() != 1 %}s{% endif %}</span>
+                    </span>
+                    <span class="text-muted">·</span>
+                    <span class="d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-calendar3 text-muted"></i>
+                        <span>{{ job.created_at.strftime('%b %d, %Y') if job.created_at else 'N/A' }}</span>
+                    </span>
+                    {% if job.closes_at %}
+                    <span class="text-muted">·</span>
+                    <span class="d-inline-flex align-items-center gap-2">
+                        <i class="bi bi-clock-history" style="color:{% if job.closes_at < now %}#ef4444{% else %}#f59e0b{% endif %};"></i>
+                        <span>{{ job.closes_at.strftime('%b %d, %Y') }}</span>
+                    </span>
+                    {% endif %}
+                </div>
+
+                <!-- Action Buttons (Proper Crisp Borders, Clear Gaps, and High-Contrast Styles) -->
+                <div class="mt-auto pt-3 border-top d-flex gap-2 flex-wrap" style="border-color: rgba(255,255,255,0.08) !important;">
+                    {# Edit Job Button #}
+                    <a href="{{ url_for('employer.edit_job', job_id=job.id) }}" class="cp-action-btn flex-grow-1" 
+                       style="border: 1.5px solid rgba(56, 189, 248, 0.55); background: rgba(56, 189, 248, 0.08); color: #38bdf8;">
+                        <i class="bi bi-pencil-square"></i>
+                        <span>Edit</span>
+                    </a>
+
+                    {# View Applicants Button #}
+                    <a href="{{ url_for('employer.manage_applications') }}?job_id={{ job.id }}" class="cp-action-btn" 
+                       style="border: 1.5px solid rgba(129, 140, 248, 0.6); background: rgba(129, 140, 248, 0.08); color: #818cf8;" title="View applications for this job">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Apps ({{ job.applications.count() }})</span>
+                    </a>
+
+                    {# Mark as Hired / Reopen Toggle Button #}
+                    <form method="POST" action="{{ url_for('employer.toggle_job_hired', job_id=job.id) }}" class="d-inline m-0 p-0">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        {% if job.is_hired %}
+                        <button type="submit" class="cp-action-btn px-2.5" 
+                                style="border: 1.5px solid rgba(34, 197, 94, 0.85); background: rgba(34, 197, 94, 0.18); color: #4ade80; box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);" 
+                                title="Position is Filled — Click to REOPEN this job for candidates">
+                            <i class="bi bi-arrow-repeat fs-6"></i>
+                            <span class="d-none d-sm-inline ms-1 fw-bold">Reopen Job</span>
+                        </button>
+                        {% else %}
+                        <button type="submit" class="cp-action-btn px-2.5" 
+                                style="border: 1.5px solid rgba(168, 85, 247, 0.55); background: rgba(168, 85, 247, 0.08); color: #c084fc;" 
+                                title="Mark as Hired / Position Filled (Hides from public candidate search)">
+                            <i class="bi bi-award-fill fs-6"></i>
+                            <span class="d-none d-sm-inline ms-1">Hire Done</span>
+                        </button>
+                        {% endif %}
+                    </form>
+
+                    {# Pause / Reactivate Button #}
+                    <form method="POST" action="{{ url_for('employer.pause_job', job_id=job.id) }}" class="d-inline m-0 p-0">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="cp-action-btn px-2.5" 
+                                style="border: 1.5px solid {% if job.status == 'active' %}rgba(245, 158, 11, 0.6){% else %}rgba(34, 197, 94, 0.6){% endif %}; background: {% if job.status == 'active' %}rgba(245, 158, 11, 0.08){% else %}rgba(34, 197, 94, 0.08){% endif %}; color: {% if job.status == 'active' %}#fbbf24{% else %}#4ade80{% endif %};" 
+                                title="{% if job.status == 'active' %}Pause Job Listing{% else %}Reactivate Job Listing{% endif %}">
+                            {% if job.status == 'active' %}<i class="bi bi-pause-fill fs-6"></i>{% else %}<i class="bi bi-play-fill fs-6"></i>{% endif %}
+                        </button>
+                    </form>
+
+                    {# Delete Job Button #}
+                    <form method="POST" action="{{ url_for('employer.delete_job', job_id=job.id) }}" class="d-inline m-0 p-0" onsubmit="return confirm('Are you sure you want to remove this job from public view?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="cp-action-btn px-2.5" 
+                                style="border: 1.5px solid rgba(239, 68, 68, 0.6); background: rgba(239, 68, 68, 0.08); color: #f87171;" 
+                                title="Delete Job Listing">
+                            <i class="bi bi-trash3-fill fs-6"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="col-12 text-center py-5">
+            <i class="bi bi-briefcase" style="font-size: 3rem; opacity: 0.25; display: block; margin-bottom: 1rem;"></i>
+            <h5 class="text-pearl">No jobs found</h5>
+            <p class="text-pearl small mb-3">{% if q %}No jobs matching "{{ q }}"{% elif status_filter %}No {{ status_filter }} jobs{% else %}You haven't posted any jobs yet{% endif %}</p>
+            <a href="{{ url_for('employer.post_job') }}" class="cp-btn-post-job"><i class="bi bi-plus-circle-fill"></i> Post Your First Job</a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if jobs.pages > 1 %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% for p in jobs.iter_pages() %}
+            {% if p %}
+            <li class="page-item {% if p == jobs.page %}active{% endif %}">
+                <a class="page-link" href="{{ url_for('employer.my_jobs', page=p, status=status_filter, q=q) }}">{{ p }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

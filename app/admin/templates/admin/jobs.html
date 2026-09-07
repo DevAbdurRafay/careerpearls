@@ -1,0 +1,479 @@
+{% extends "admin/admin_base.html" %}
+{% block admin_content %}
+<style>
+/* Filter Tabs */
+.cp-admin-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    border-radius: 12px;
+    font-size: 0.86rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.22s ease;
+    border: 1.5px solid transparent;
+}
+.cp-admin-tab:hover {
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+}
+.cp-tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+/* Modal Icon Wrap */
+.cp-modal-icon-wrap {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-right: 14px;
+}
+.cp-modal-btn-submit {
+    border-radius: 10px;
+    padding: 8px 22px;
+    font-weight: 600;
+    font-size: 0.88rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.22s ease;
+    border: 1.5px solid transparent;
+}
+.cp-modal-btn-submit:hover {
+    transform: translateY(-1.5px);
+}
+</style>
+
+<div class="container-fluid py-3">
+
+    {# ── Header Bar ──────────────────────────────────────────────────────── #}
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 p-4 rounded-4" 
+         style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.85)); border: 1.5px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);">
+        <div class="d-flex align-items-center">
+            <div class="cp-modal-icon-wrap" style="width: 52px; height: 52px; background: linear-gradient(135deg, #0284c7, #2563eb); box-shadow: 0 0 20px rgba(37, 99, 235, 0.5);">
+                <i class="bi bi-briefcase-fill fs-4 text-white"></i>
+            </div>
+            <div>
+                <h3 class="fw-bold mb-1 text-white" style="letter-spacing: -0.4px;">Job Moderation &amp; Directory</h3>
+                <p class="text-pearl small mb-0" style="color: #94a3b8;">Review all job postings across organizations, unpublish non-compliant listings with reason, or re-publish corrected jobs.</p>
+            </div>
+        </div>
+        <div>
+            <span class="badge px-3 py-2 rounded-pill d-inline-flex align-items-center gap-2" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1.5px solid rgba(56, 189, 248, 0.35); font-size: 0.85rem; font-weight: 600;">
+                <i class="bi bi-collection-fill"></i>
+                <span>{{ status_counts.all }} Total Platform Listings</span>
+            </span>
+        </div>
+    </div>
+
+    {# ── Status Filter Tabs ────────────────────────────────────────────────── #}
+    <div class="d-flex align-items-center flex-wrap gap-3 mb-4">
+        {# All Jobs #}
+        <a href="{{ url_for('admin.manage_jobs', q=search) }}" 
+           class="cp-admin-tab" 
+           style="background: {% if not status_filter %}linear-gradient(135deg, #0284c7, #2563eb){% else %}rgba(15, 23, 42, 0.85){% endif %}; color: #fff; border-color: {% if not status_filter %}#38bdf8{% else %}rgba(255,255,255,0.12){% endif %};">
+            <span>All Listings</span>
+            <span class="cp-tab-count" style="background: rgba(255,255,255,0.2); color: #fff;">{{ status_counts.all }}</span>
+        </a>
+
+        {# Active Jobs #}
+        <a href="{{ url_for('admin.manage_jobs', status='active', q=search) }}" 
+           class="cp-admin-tab" 
+           style="background: {% if status_filter == 'active' %}rgba(34, 197, 94, 0.25){% else %}rgba(15, 23, 42, 0.85){% endif %}; color: #4ade80; border-color: {% if status_filter == 'active' %}#4ade80{% else %}rgba(34, 197, 94, 0.3){% endif %};">
+            <i class="bi bi-check-circle-fill"></i>
+            <span>Active / Published</span>
+            <span class="cp-tab-count" style="background: rgba(34, 197, 94, 0.2); color: #4ade80;">{{ status_counts.active }}</span>
+        </a>
+
+        {# Unpublished by Admin #}
+        <a href="{{ url_for('admin.manage_jobs', status='unpublished', q=search) }}" 
+           class="cp-admin-tab" 
+           style="background: {% if status_filter == 'unpublished' %}rgba(239, 68, 68, 0.25){% else %}rgba(15, 23, 42, 0.85){% endif %}; color: #f87171; border-color: {% if status_filter == 'unpublished' %}#f87171{% else %}rgba(239, 68, 68, 0.3){% endif %};">
+            <i class="bi bi-eye-slash-fill"></i>
+            <span>Unpublished by Admin</span>
+            <span class="cp-tab-count" style="background: rgba(239, 68, 68, 0.2); color: #f87171;">{{ status_counts.unpublished }}</span>
+        </a>
+
+        {# Paused #}
+        <a href="{{ url_for('admin.manage_jobs', status='paused', q=search) }}" 
+           class="cp-admin-tab" 
+           style="background: {% if status_filter == 'paused' %}rgba(245, 158, 11, 0.25){% else %}rgba(15, 23, 42, 0.85){% endif %}; color: #fbbf24; border-color: {% if status_filter == 'paused' %}#fbbf24{% else %}rgba(245, 158, 11, 0.3){% endif %};">
+            <i class="bi bi-pause-circle-fill"></i>
+            <span>Paused</span>
+            <span class="cp-tab-count" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">{{ status_counts.paused }}</span>
+        </a>
+
+        {# Closed #}
+        <a href="{{ url_for('admin.manage_jobs', status='closed', q=search) }}" 
+           class="cp-admin-tab" 
+           style="background: {% if status_filter == 'closed' %}rgba(148, 163, 184, 0.25){% else %}rgba(15, 23, 42, 0.85){% endif %}; color: #cbd5e1; border-color: {% if status_filter == 'closed' %}#cbd5e1{% else %}rgba(148, 163, 184, 0.3){% endif %};">
+            <i class="bi bi-x-circle-fill"></i>
+            <span>Closed</span>
+            <span class="cp-tab-count" style="background: rgba(148, 163, 184, 0.2); color: #cbd5e1;">{{ status_counts.closed }}</span>
+        </a>
+    </div>
+
+    {# ── Search Form ──────────────────────────────────────────────────────── #}
+    <div class="rounded-4 mb-4 p-3" style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid rgba(255, 255, 255, 0.1);">
+        <form method="GET" class="row g-2 align-items-center">
+            {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+            <div class="col-md-9">
+                <div class="input-group">
+                    <span class="input-group-text border-0 ps-3 pe-2" style="background: rgba(11, 16, 27, 0.9); color: #94a3b8;">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" name="q" class="form-control border-0 py-2.5" value="{{ search }}" style="background: rgba(11, 16, 27, 0.9); color: #fff; font-size: 0.9rem;" placeholder="Search by job title, company name, location, or keyword...">
+                </div>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-sm w-100 py-2.5 fw-semibold d-inline-flex align-items-center justify-content-center gap-2" style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; border: 1.5px solid rgba(56, 189, 248, 0.8); border-radius: 10px;">
+                    <i class="bi bi-filter"></i>
+                    <span>Filter Jobs</span>
+                </button>
+                {% if search %}
+                <a href="{{ url_for('admin.manage_jobs', status=status_filter) }}" class="btn btn-sm py-2.5 px-3" style="background: rgba(255,255,255,0.08); color: #cbd5e1; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 10px;">Clear</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    {# ── Jobs Table ──────────────────────────────────────────────────────── #}
+    <div class="rounded-4 overflow-hidden mb-4" style="background: rgba(15, 23, 42, 0.9); border: 1.5px solid rgba(255, 255, 255, 0.1); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="border-collapse: separate; border-spacing: 0;">
+                <thead style="background: rgba(11, 16, 27, 0.98);">
+                    <tr>
+                        <th class="text-white fw-bold py-3 px-4" style="font-size: 0.88rem;">Title &amp; Company</th>
+                        <th class="text-white fw-bold py-3" style="font-size: 0.88rem;">Category &amp; Location</th>
+                        <th class="text-white fw-bold py-3" style="font-size: 0.88rem;">Moderation Status</th>
+                        <th class="text-white fw-bold py-3" style="font-size: 0.88rem;">Posted / Expiry</th>
+                        <th class="text-white fw-bold py-3 px-4 text-end" style="font-size: 0.88rem;">Admin Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for job in jobs.items %}
+                {% set is_unpub = (job.status == 'unpublished' or job.approval_status == 'unpublished' or job.unpublish_reason) %}
+                <tr style="background: {% if loop.index is odd %}rgba(15,23,42,0.6){% else %}rgba(11,16,27,0.4){% endif %}; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                    
+                    {# 1. Title & Company #}
+                    <td class="px-4 py-3">
+                        <div class="fw-bold text-white fs-6 mb-1">{{ job.title }}</div>
+                        <div class="d-flex align-items-center gap-2 small" style="color: #94a3b8; font-size: 0.82rem;">
+                            <span><i class="bi bi-building me-1 text-primary"></i><strong>{{ job.company.name if job.company else 'Analysis Workforce' }}</strong></span>
+                            <span class="text-muted">·</span>
+                            <span><i class="bi bi-briefcase me-1 text-info"></i>{{ (job.employment_type or 'Full Time')|replace('_',' ')|title }}</span>
+                        </div>
+                    </td>
+
+                    {# 2. Category & Location #}
+                    <td class="py-3">
+                        <div class="mb-1">
+                            <span class="badge px-2.5 py-1 rounded-pill" style="background: rgba(59, 130, 246, 0.14); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.35); font-size: 0.76rem;">
+                                {{ job.category.name if job.category else 'Engineering' }}
+                            </span>
+                        </div>
+                        <div class="small" style="color: #94a3b8; font-size: 0.8rem;">
+                            <i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ job.location or 'Remote' }}
+                        </div>
+                    </td>
+
+                    {# 3. Moderation Status #}
+                    <td class="py-3">
+                        {% if is_unpub %}
+                            <span class="badge px-3 py-1.5 rounded-pill d-inline-flex align-items-center gap-2" style="background: rgba(239, 68, 68, 0.16); color: #f87171; border: 1.5px solid rgba(239, 68, 68, 0.45); font-size: 0.78rem; font-weight: 700;">
+                                <i class="bi bi-eye-slash-fill"></i>
+                                <span>Unpublished by Admin</span>
+                            </span>
+                            {% if job.unpublish_reason %}
+                            <div class="mt-2 small p-2 rounded-2" style="background: rgba(239, 68, 68, 0.08); border: 1px dashed rgba(239, 68, 68, 0.3); color: #fca5a5; font-size: 0.78rem; max-width: 280px; line-height: 1.4;">
+                                <i class="bi bi-info-circle-fill text-danger me-1"></i><strong>Reason:</strong> {{ job.unpublish_reason }}
+                            </div>
+                            {% endif %}
+                        {% elif job.status == 'active' %}
+                            <span class="badge px-3 py-1.5 rounded-pill d-inline-flex align-items-center gap-2" style="background: rgba(16, 185, 129, 0.16); color: #34d399; border: 1.5px solid rgba(16, 185, 129, 0.4); font-size: 0.78rem; font-weight: 600;">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <span>Active &amp; Published</span>
+                            </span>
+                        {% elif job.status == 'paused' %}
+                            <span class="badge px-3 py-1.5 rounded-pill d-inline-flex align-items-center gap-2" style="background: rgba(245, 158, 11, 0.16); color: #fbbf24; border: 1.5px solid rgba(245, 158, 11, 0.4); font-size: 0.78rem; font-weight: 600;">
+                                <i class="bi bi-pause-circle-fill"></i>
+                                <span>Paused by Employer</span>
+                            </span>
+                        {% else %}
+                            <span class="badge px-3 py-1.5 rounded-pill" style="background: rgba(148, 163, 184, 0.16); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.35); font-size: 0.78rem;">
+                                {{ job.status|title }}
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    {# 4. Dates #}
+                    <td class="py-3 text-pearl small" style="color: #94a3b8; font-size: 0.82rem;">
+                        <div><i class="bi bi-calendar3 me-1 text-muted"></i>{{ job.created_at.strftime('%b %d, %Y') }}</div>
+                        <div class="mt-1"><i class="bi bi-clock-history me-1 text-muted"></i>{{ job.closes_at.strftime('%b %d, %Y') if job.closes_at else 'No expiry' }}</div>
+                    </td>
+
+                    {# 5. Actions #}
+                    <td class="text-end px-4 py-3">
+                        <div class="d-flex justify-content-end gap-2 flex-wrap align-items-center">
+                            {# View Details Modal Button #}
+                            <button type="button" class="btn btn-sm px-2.5 py-1.5 fw-semibold d-inline-flex align-items-center gap-2" style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1.5px solid rgba(56, 189, 248, 0.35); border-radius: 9px; font-size: 0.82rem;" data-bs-toggle="modal" data-bs-target="#jobModal{{ job.id }}">
+                                <i class="bi bi-eye-fill"></i>
+                                <span>View</span>
+                            </button>
+
+                            {# Unpublish / Re-Publish Buttons #}
+                            {% if is_unpub %}
+                            <button type="button" class="btn btn-sm px-3 py-1.5 fw-bold d-inline-flex align-items-center gap-2" style="background: linear-gradient(135deg, #059669, #10b981); color: #fff; border: 1.5px solid rgba(52, 211, 153, 0.85); border-radius: 9px; font-size: 0.82rem; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);" data-bs-toggle="modal" data-bs-target="#publishModal{{ job.id }}">
+                                <i class="bi bi-check2-circle fs-6"></i>
+                                <span>Re-Publish</span>
+                            </button>
+                            {% else %}
+                            <button type="button" class="btn btn-sm px-3 py-1.5 fw-semibold d-inline-flex align-items-center gap-2" style="background: rgba(239, 68, 68, 0.14); color: #f87171; border: 1.5px solid rgba(239, 68, 68, 0.45); border-radius: 9px; font-size: 0.82rem;" data-bs-toggle="modal" data-bs-target="#unpublishModal{{ job.id }}" title="Unpublish job listing with mandatory reason">
+                                <i class="bi bi-eye-slash-fill"></i>
+                                <span>Unpublish</span>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+
+                {# ── Modal 1: Job View Details Modal ── #}
+                <div class="modal fade" id="jobModal{{ job.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                        <div class="modal-content border-0" style="background: #0b1120; border: 1.5px solid rgba(56, 189, 248, 0.35) !important; box-shadow: 0 25px 70px rgba(0,0,0,0.95); border-radius: 18px; overflow: hidden;">
+                            <div class="modal-header border-bottom border-secondary border-opacity-25 px-4 py-3" style="background: rgba(15, 23, 42, 0.95);">
+                                <div class="d-flex align-items-center">
+                                    <div class="cp-modal-icon-wrap" style="background: linear-gradient(135deg, #0284c7, #2563eb); box-shadow: 0 0 16px rgba(37, 99, 235, 0.55);">
+                                        <i class="bi bi-briefcase-fill text-white fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="modal-title fw-bold text-white mb-1" style="font-size: 1.15rem;">{{ job.title }}</h5>
+                                        <div class="text-pearl small" style="color: #94a3b8; font-size: 0.82rem;">Organization: <strong class="cp-org-name-aesthetic">{{ job.company.name if job.company else 'Analysis Workforce' }}</strong></div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body p-4 text-pearl">
+                                <div class="row g-3 mb-3 p-3 rounded-3" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.08);">
+                                    <div class="col-md-4">
+                                        <span class="text-muted small d-block mb-1">Category</span>
+                                        <strong class="text-white">{{ job.category.name if job.category else 'General' }}</strong>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <span class="text-muted small d-block mb-1">Location</span>
+                                        <strong class="text-white">{{ job.location or 'Remote' }}</strong>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <span class="text-muted small d-block mb-1">Employment Type</span>
+                                        <strong class="text-white">{{ (job.employment_type or 'Full Time')|replace('_',' ')|title }}</strong>
+                                    </div>
+                                    {% if job.salary_range %}
+                                    <div class="col-md-4">
+                                        <span class="text-muted small d-block mb-1">Salary Range</span>
+                                        <strong class="text-success">{{ job.salary_range }}</strong>
+                                    </div>
+                                    {% endif %}
+                                    <div class="col-md-4">
+                                        <span class="text-muted small d-block mb-1">Posted On</span>
+                                        <strong class="text-white">{{ job.created_at.strftime('%b %d, %Y') }}</strong>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <span class="text-muted small d-block mb-1">Closes On</span>
+                                        <strong class="text-white">{{ job.closes_at.strftime('%b %d, %Y') if job.closes_at else 'No expiry' }}</strong>
+                                    </div>
+                                </div>
+
+                                {% if is_unpub and job.unpublish_reason %}
+                                <div class="p-3 rounded-3 mb-3" style="background: rgba(239, 68, 68, 0.1); border: 1.5px solid rgba(239, 68, 68, 0.35); border-radius: 12px; display: flex; align-items: flex-start; gap: 12px;">
+                                    <i class="bi bi-exclamation-octagon-fill text-danger fs-5 flex-shrink-0" style="margin-top: 2px;"></i>
+                                    <div>
+                                        <div class="fw-bold text-danger mb-1" style="font-size: 0.88rem;">Unpublish Reason on Record:</div>
+                                        <div style="color: #fca5a5; font-size: 0.84rem; line-height: 1.5;">{{ job.unpublish_reason }}</div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <div class="mb-3">
+                                    <h6 class="fw-bold text-white mb-2">Job Description</h6>
+                                    <div class="p-3 rounded-3" style="background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255,255,255,0.1); font-size: 0.9rem; line-height: 1.6; color: #e2e8f0;">
+                                        {{ job.description|safe }}
+                                    </div>
+                                </div>
+
+                                {% if job.skills and job.skills.count() %}
+                                <div class="mb-2">
+                                    <h6 class="fw-bold text-white mb-2">Required Skills</h6>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for s in job.skills %}
+                                        <span class="badge px-3 py-1.5 rounded-pill" style="background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.35); font-size: 0.82rem;">{{ s.skill_name }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="modal-footer border-top border-secondary border-opacity-25 px-4 py-3" style="background: rgba(15, 23, 42, 0.8);">
+                                <button type="button" class="btn btn-sm btn-cp-ghost px-4 py-2" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# ── Modal 2: Unpublish Modal with Reason ── #}
+                <div class="modal fade" id="unpublishModal{{ job.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0" style="background: #0b1120; border: 1.5px solid rgba(239, 68, 68, 0.4) !important; box-shadow: 0 25px 70px rgba(0,0,0,0.95); border-radius: 18px; overflow: hidden;">
+                            <form method="POST" action="{{ url_for('admin.unpublish_job', job_id=job.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                
+                                <div class="modal-header border-bottom border-secondary border-opacity-25 px-4 py-3" style="background: rgba(15, 23, 42, 0.95);">
+                                    <div class="d-flex align-items-center">
+                                        <div class="cp-modal-icon-wrap" style="background: linear-gradient(135deg, #dc2626, #ef4444); box-shadow: 0 0 16px rgba(239, 68, 68, 0.55);">
+                                            <i class="bi bi-eye-slash-fill text-white fs-5"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="modal-title fw-bold text-white mb-1" style="font-size: 1.15rem;">Unpublish Job Listing</h5>
+                                            <div class="text-pearl small" style="color: #94a3b8; font-size: 0.82rem;">Company: <strong class="text-danger">{{ job.company.name if job.company else 'Employer' }}</strong></div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+
+                                <div class="modal-body p-4">
+                                    <div class="p-3 rounded-3 mb-3" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.08);">
+                                        <span class="text-muted small d-block">Target Job:</span>
+                                        <strong class="text-white fs-6">{{ job.title }}</strong>
+                                    </div>
+
+                                    <div style="margin-bottom: 20px;">
+                                        <label class="form-label small fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                                            <i class="bi bi-list-check text-danger"></i>
+                                            <span>Select Reason for Unpublishing *</span>
+                                        </label>
+                                        <select name="reason" class="form-select" onchange="toggleUnpublishCustom(this, 'adminCustomReason{{ job.id }}')" style="background: #0f172a; color: #fff; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 10px 14px; font-size: 0.88rem;">
+                                            <option value="Policy violation / Non-compliant job content">Policy violation / Non-compliant job content</option>
+                                            <option value="Misleading or incomplete job description">Misleading or incomplete job description</option>
+                                            <option value="Invalid salary, experience, or location details">Invalid salary, experience, or location details</option>
+                                            <option value="Duplicate or spam job posting">Duplicate or spam job posting</option>
+                                            <option value="Company authentication or verification pending">Company authentication or verification pending</option>
+                                            <option value="Other">Other (Specify custom reason)</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="d-none" id="adminCustomReason{{ job.id }}" style="margin-bottom: 20px;">
+                                        <label class="form-label small fw-bold text-white mb-2 d-flex align-items-center gap-2">
+                                            <i class="bi bi-pencil-square text-danger"></i>
+                                            <span>Specify Custom Reason *</span>
+                                        </label>
+                                        <textarea name="custom_reason" class="form-control" rows="2" placeholder="Write specific details for the employer..." style="background: #0f172a; color: #fff; border: 1.5px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 10px 14px; font-size: 0.88rem;"></textarea>
+                                    </div>
+
+                                    <div class="p-3 rounded-3" style="background: rgba(239, 68, 68, 0.08); border: 1.5px solid rgba(239, 68, 68, 0.3); border-radius: 12px; display: flex; align-items: flex-start; gap: 14px;">
+                                        <i class="bi bi-exclamation-triangle-fill text-danger fs-5 flex-shrink-0" style="margin-top: 2px;"></i>
+                                        <p class="text-pearl small mb-0" style="color: #cbd5e1; font-size: 0.84rem; line-height: 1.55;">
+                                            This listing will be hidden from candidates immediately. The employer will be alerted with this exact reason on their dashboard to make necessary updates.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="modal-footer border-top border-secondary border-opacity-25 px-4 py-3" style="background: rgba(15, 23, 42, 0.8);">
+                                    <button type="button" class="btn btn-sm btn-cp-ghost px-4 py-2" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="cp-modal-btn-submit" style="background: linear-gradient(135deg, #dc2626, #ef4444); border-color: rgba(239, 68, 68, 0.85); color: #fff; box-shadow: 0 4px 16px rgba(239, 68, 68, 0.45);">
+                                        <i class="bi bi-eye-slash-fill fs-6"></i>
+                                        <span>Confirm Unpublish</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                {# ── Modal 3: Re-Publish Modal ── #}
+                <div class="modal fade" id="publishModal{{ job.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0" style="background: #0b1120; border: 1.5px solid rgba(52, 211, 153, 0.4) !important; box-shadow: 0 25px 70px rgba(0,0,0,0.95); border-radius: 18px; overflow: hidden;">
+                            <form method="POST" action="{{ url_for('admin.publish_job', job_id=job.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                
+                                <div class="modal-header border-bottom border-secondary border-opacity-25 px-4 py-3" style="background: rgba(15, 23, 42, 0.95);">
+                                    <div class="d-flex align-items-center">
+                                        <div class="cp-modal-icon-wrap" style="background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 0 16px rgba(16, 185, 129, 0.55);">
+                                            <i class="bi bi-check2-circle text-white fs-5"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="modal-title fw-bold text-white mb-1" style="font-size: 1.15rem;">Re-Publish Job Listing</h5>
+                                            <div class="text-pearl small" style="color: #94a3b8; font-size: 0.82rem;">Company: <strong class="text-success">{{ job.company.name if job.company else 'Employer' }}</strong></div>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+
+                                <div class="modal-body p-4">
+                                    <div class="p-3 rounded-3 mb-3" style="background: rgba(16, 185, 129, 0.1); border: 1.5px solid rgba(16, 185, 129, 0.35); border-radius: 14px; display: flex; align-items: flex-start; gap: 14px;">
+                                        <i class="bi bi-check-circle-fill text-success fs-5 flex-shrink-0" style="margin-top: 2px;"></i>
+                                        <div>
+                                            <h6 class="fw-bold text-white mb-1" style="font-size: 0.92rem;">Ready to restore this job?</h6>
+                                            <p class="text-pearl small mb-0" style="color: #a7f3d0; font-size: 0.84rem; line-height: 1.55;">
+                                                This will clear any prior unpublish reason, activate <strong>{{ job.title }}</strong> live on the public job board, and notify the employer.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="modal-footer border-top border-secondary border-opacity-25 px-4 py-3" style="background: rgba(15, 23, 42, 0.8);">
+                                    <button type="button" class="btn btn-sm btn-cp-ghost px-4 py-2" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="cp-modal-btn-submit" style="background: linear-gradient(135deg, #059669, #10b981); border-color: rgba(52, 211, 153, 0.85); color: #fff; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.45);">
+                                        <i class="bi bi-check-lg fs-6"></i>
+                                        <span>Confirm Re-Publish</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                {% else %}
+                <tr><td colspan="5" class="text-muted text-center py-5">No jobs found matching the selected filter.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {# ── Pagination ─────────────────────────────────────────────────────── #}
+        {% if jobs.pages > 1 %}
+        <div class="p-3 border-top border-secondary border-opacity-25" style="background: rgba(11, 16, 27, 0.9);">
+            <nav><ul class="pagination pagination-sm mb-0 justify-content-center">
+                {% for p in jobs.iter_pages() %}{% if p %}
+                <li class="page-item {% if p == jobs.page %}active{% endif %}">
+                    <a class="page-link border-secondary" style="background: rgba(15,23,42,0.8); color: #9ca3af;" href="{{ url_for('admin.manage_jobs', page=p, status=status_filter, q=search) }}">{{ p }}</a>
+                </li>
+                {% endif %}{% endfor %}
+            </ul></nav>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+function toggleUnpublishCustom(selectElem, wrapId) {
+    var wrap = document.getElementById(wrapId);
+    if (!wrap) return;
+    if (selectElem.value === 'Other') {
+        wrap.classList.remove('d-none');
+    } else {
+        wrap.classList.add('d-none');
+    }
+}
+</script>
+{% endblock %}

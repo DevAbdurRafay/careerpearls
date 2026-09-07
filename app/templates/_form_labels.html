@@ -1,0 +1,7 @@
+{% macro required_label(text) -%}
+<span class="cp-label-text">{{ text }}</span><span class="cp-required" aria-hidden="true">*</span>
+{%- endmacro %}
+
+{% macro optional_label(text) -%}
+<span class="cp-label-text">{{ text }}</span><span class="cp-optional">Optional</span>
+{%- endmacro %}

@@ -1,0 +1,48 @@
+{% extends "email/_base.html" %}
+{% block email_title %}Application Status: {{ job_title }} — {{ company_name }}{% endblock %}
+{% block email_preheader %}Thank you {{ candidate_name }} for applying to {{ company_name }} for the {{ job_title }} position.{% endblock %}
+{% block email_heading %}Application Status Update{% endblock %}
+
+{% block email_body %}
+<p style="margin:0 0 16px;color:#e8eaf0;font-size:15px;">Dear <strong>{{ candidate_name }}</strong>,</p>
+
+<p style="margin:0 0 16px;color:#cbd5e1;font-size:14px;line-height:1.6;">
+    Thank you for your interest and for submitting your application to <strong>{{ company_name }}</strong> for the <strong>{{ job_title }}</strong> role.
+</p>
+
+<div style="background:#0f172a;border:1px solid rgba(255, 255, 255, 0.08);border-radius:12px;padding:16px;margin-bottom:22px;">
+    <table width="100%" cellpadding="8" cellspacing="0" style="font-size:14px;color:#e8eaf0;">
+        <tr>
+            <td width="32%" style="color:#94a3b8;font-weight:600;">Position:</td>
+            <td style="color:#ffffff;font-weight:600;">{{ job_title }}</td>
+        </tr>
+        <tr>
+            <td style="color:#94a3b8;font-weight:600;">Company:</td>
+            <td style="color:#ffffff;">{{ company_name }}</td>
+        </tr>
+        <tr>
+            <td style="color:#94a3b8;font-weight:600;">Status:</td>
+            <td style="color:#cbd5e1;">Not Selected</td>
+        </tr>
+        {% if reason %}
+        <tr>
+            <td style="color:#94a3b8;font-weight:600;">Remarks / Reason:</td>
+            <td style="color:#cbd5e1;font-style:italic;line-height:1.5;">{{ reason }}</td>
+        </tr>
+        {% endif %}
+    </table>
+</div>
+
+<p style="color:#cbd5e1;font-size:14px;line-height:1.6;margin-bottom:22px;">
+    After reviewing all submissions, our hiring team has decided to proceed with other candidates whose qualifications more closely meet our requirements for this specific role.
+</p>
+
+<div style="background: rgba(56, 189, 248, 0.06); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 10px; padding: 14px; margin-bottom: 22px;">
+    <p style="margin:0;color:#cbd5e1;font-size:13px;line-height:1.5;">
+        🌟 We appreciate the time and effort you dedicated to your application and encourage you to explore and apply for other suitable positions on CareerPearls.
+    </p>
+</div>
+
+<p style="margin:0 0 4px;color:#94a3b8;font-size:13px;">Best regards,</p>
+<p style="margin:0;color:#ffffff;font-size:15px;font-weight:700;">{{ company_name }} Recruitment Team</p>
+{% endblock %}

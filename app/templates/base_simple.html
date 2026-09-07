@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ current_user.theme_mode if (current_user.is_authenticated and current_user.theme_mode) else 'light' }}" data-accent="{{ current_user.accent_color if (current_user.is_authenticated and current_user.accent_color) else 'purple' }}">
+<head>
+    <script>
+        (function() {
+            {% if current_user.is_authenticated and current_user.is_admin() %}
+            document.documentElement.setAttribute('data-theme', 'dark');
+            {% else %}
+            const savedTheme = localStorage.getItem('cp-theme-mode') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            {% endif %}
+            document.documentElement.setAttribute('data-accent', 'purple');
+        })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CareerPearls{% endblock %}</title>
+    {% include '_favicon.html' %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;600;700;800&family=Outfit:wght@600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'Gill Sans';
+            src: local('Gill Sans'), local('Gill Sans MT'), local('Gill Sans MT Pro'), local('Gill Sans MT W01');
+            font-weight: normal;
+            font-style: normal;
+        }
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/flash-toast.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ai-chatbot.css') }}?v=3.1">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="{% if current_user.is_authenticated and current_user.is_employer() %}employer-page{% elif current_user.is_authenticated and current_user.is_candidate() %}candidate-page{% endif %}">
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top cp-navbar" id="landingNav"
+     style="top: 0; left: 0; right: 0; width: 100%; height: 72px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); background: rgba(10, 14, 26, 0.94); border-bottom: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 25px rgba(0, 0, 0, 0.45); z-index: 1050;">
+    <div class="container-fluid px-3 px-lg-5 d-flex align-items-center justify-content-between">
+        {% set brand_href = url_for('employer.dashboard') if (current_user.is_authenticated and current_user.is_employer()) else (url_for('candidate.profile') if (current_user.is_authenticated and current_user.is_candidate()) else url_for('index')) %}
+        <div class="d-flex align-items-center">
+            {% include '_navbar_brand.html' %}
+        </div>
+        <button class="navbar-toggler border-0 px-1 py-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navMain">
+            <ul class="navbar-nav mx-auto cp-nav-links align-items-center gap-2 gap-lg-3 my-2 my-lg-0">
+                {% if current_user.is_authenticated and current_user.is_employer() %}
+                    <li class="nav-item">
+                        <a class="nav-link cp-candidate-nav-link px-2.5 {% if request.endpoint == 'employer.dashboard' %}active fw-bold text-white{% endif %}" href="{{ url_for('employer.dashboard') }}">
+                            <i class="bi bi-grid-1x2 me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link cp-candidate-nav-link px-2.5 {% if request.endpoint == 'employer.manage_applications' %}active fw-bold text-white{% endif %}" href="{{ url_for('employer.manage_applications') }}">
+                            <i class="bi bi-file-earmark-person me-1"></i>Applications
+                            {% if unread_employer_apps and unread_employer_apps > 0 %}
+                            <span class="badge rounded-pill bg-danger ms-1 px-2 py-0.5" style="font-size: 0.72rem; vertical-align: middle; box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);">{{ unread_employer_apps }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link cp-candidate-nav-link px-2.5 {% if request.endpoint == 'employer.post_job' %}active fw-bold text-white{% endif %}" href="{{ url_for('employer.post_job') }}">
+                            <i class="bi bi-plus-circle me-1"></i>Post Job
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link cp-candidate-nav-link px-2.5 {% if request.endpoint == 'register_complaint' %}active fw-bold text-white{% endif %}" href="{{ url_for('register_complaint') }}" title="Help & Complaint Desk">
+                            <i class="bi bi-question-circle me-1"></i>Help
+                        </a>
+                    </li>
+                {% elif current_user.is_authenticated and current_user.is_candidate() %}
+                    <li class="nav-item">
+                        <a class="nav-link cp-candidate-nav-link px-2.5 {% if request.endpoint == 'jobboard.job_list' or request.endpoint == 'explore' or request.endpoint == 'jobboard.job_detail' %}active fw-bold text-white{% endif %}" href="{{ url_for('explore') }}">
+                            <i class="bi bi-briefcase me-1"></i>Browse Jobs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link cp-candidate-nav-link px-2.5 {% if request.endpoint == 'candidate.dashboard' %}active fw-bold text-white{% endif %}" href="{{ url_for('candidate.dashboard') }}" data-dashboard-url="{{ url_for('candidate.dashboard') }}" onclick="checkProfileBeforeRedirect(event)">
+                            <i class="bi bi-file-earmark-text me-1"></i>My Applications
+                            {% if unread_candidate_updates and unread_candidate_updates > 0 %}
+                            <span class="badge rounded-pill bg-danger ms-1 px-2 py-0.5" style="font-size: 0.72rem; vertical-align: middle; box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);">{{ unread_candidate_updates }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link cp-candidate-nav-link px-2.5 {% if request.endpoint == 'candidate.profile' %}active fw-bold text-white{% endif %}" href="{{ url_for('candidate.profile') }}">
+                            <i class="bi bi-person-badge me-1"></i>My Profile
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link cp-candidate-nav-link px-2.5 {% if request.endpoint == 'register_complaint' %}active fw-bold text-white{% endif %}" href="{{ url_for('register_complaint') }}" title="Help & Complaint Desk">
+                            <i class="bi bi-question-circle me-1"></i>Help
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="nav-item"><a class="nav-link px-3 {% if request.endpoint == 'about' %}active fw-bold text-white{% endif %}" href="{{ url_for('about') }}">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link px-3 {% if request.endpoint == 'explore' %}active fw-bold text-white{% endif %}" href="{{ url_for('explore') }}">Jobs</a></li>
+                    <li class="nav-item"><a class="nav-link px-3 {% if request.endpoint == 'privacy_policy' %}active fw-bold text-white{% endif %}" href="{{ url_for('privacy_policy') }}">Privacy Policy</a></li>
+                    <li class="nav-item"><a class="nav-link px-3 {% if request.endpoint == 'terms_of_service' %}active fw-bold text-white{% endif %}" href="{{ url_for('terms_of_service') }}">Terms of Use</a></li>
+                {% endif %}
+            </ul>
+
+            <div class="d-flex align-items-center gap-3 ms-lg-auto cp-nav-user-actions">
+                {% if current_user.is_authenticated %}
+                    <span id="notificationBadge" class="d-none" data-count="0"></span>
+                    {% include '_navbar_profile.html' %}
+                    <a class="btn btn-sm ms-2 cp-btn-logout d-inline-flex align-items-center" href="{{ url_for('auth.logout') }}" style="border-radius: 10px; padding: 6px 14px;">
+                        <i class="bi bi-box-arrow-right me-2"></i><span>Logout</span>
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-sm d-inline-flex align-items-center px-3 py-2 fw-semibold text-decoration-none" 
+                       style="background: rgba(255, 255, 255, 0.06); color: #f1f5f9; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; font-size: 0.88rem; transition: all 0.2s;">
+                        <i class="bi bi-box-arrow-in-right me-2 text-primary" style="font-size: 1rem;"></i>
+                        <span>Sign In</span>
+                    </a>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-cp-primary btn-sm px-4 py-2 fw-semibold d-inline-flex align-items-center gap-1.5 text-decoration-none" style="border-radius: 12px; font-size: 0.9rem; box-shadow: 0 4px 18px rgba(2, 132, 199, 0.4);">
+                        <span>Get Started</span>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<main class="cp-main" style="padding-top: 15px;">
+    {% if current_user.is_authenticated and not current_user.needs_oauth_onboarding() and not current_user.is_admin() %}
+    {% set show_welcome = (request.endpoint == 'candidate.profile' or request.endpoint == 'employer.dashboard') %}
+    {% if show_welcome %}
+    <div class="container-fluid px-4 mb-2">
+        <div class="cp-welcome-hero-banner w-100">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 py-1 w-100">
+                <div class="d-flex align-items-center gap-2 text-start">
+                    <div class="cp-avatar-glow-wrap flex-shrink-0">
+                        {% set initial_val = ((current_user.recruiter.company.name[0] if (current_user.is_employer() and current_user.recruiter and current_user.recruiter.company and current_user.recruiter.company.name) else current_user.name[0])|upper if current_user.name else 'U') %}
+                        {% if current_user.is_candidate() and current_user.candidate and current_user.candidate.profile_image %}
+                        <img src="{{ url_for('uploaded_file', filename=current_user.candidate.profile_image) }}" alt="Avatar" class="rounded-circle cp-avatar-glow-img" width="42" height="42" style="object-fit:cover;" data-profile-lightbox onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'; this.nextElementSibling.classList.add('d-flex');">
+                        <div class="rounded-circle align-items-center justify-content-center fw-bold text-white cp-avatar-glow-initial" style="width:42px; height:42px; font-size: 1.05rem; display: none;">
+                            {{ initial_val }}
+                        </div>
+                        {% elif current_user.is_employer() and current_user.recruiter and current_user.recruiter.company and current_user.recruiter.company.logo_path %}
+                        <img src="{{ url_for('uploaded_file', filename=current_user.recruiter.company.logo_path) }}" alt="Logo" class="rounded-circle cp-avatar-glow-img" width="42" height="42" style="object-fit:cover;" data-profile-lightbox onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'; this.nextElementSibling.classList.add('d-flex');">
+                        <div class="rounded-circle align-items-center justify-content-center fw-bold text-white cp-avatar-glow-initial" style="width:42px; height:42px; font-size: 1.05rem; display: none;">
+                            {{ initial_val }}
+                        </div>
+                        {% else %}
+                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white cp-avatar-glow-initial" style="width:42px; height:42px; font-size: 1.05rem;">
+                            {{ initial_val }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="ps-1">
+                        <h2 class="cp-welcome-single-line mb-0">
+                            {% if current_user.is_candidate() %}
+                                <span class="cp-welcome-label">Welcome Candidate,</span>
+                                <span class="cp-welcome-user-name">{{ current_user.candidate.full_name if (current_user.candidate and current_user.candidate.full_name) else current_user.name }}</span>
+                            {% elif current_user.is_employer() %}
+                                <span class="cp-welcome-label">Welcome Employer,</span>
+                                <span class="cp-welcome-user-name cp-name-employer">{{ current_user.recruiter.company.name if (current_user.recruiter and current_user.recruiter.company and current_user.recruiter.company.name) else current_user.name }}</span>
+                            {% else %}
+                                <span class="cp-welcome-label">Welcome Administrator,</span>
+                                <span class="cp-welcome-user-name">{{ current_user.name }}</span>
+                            {% endif %}
+                            <span class="cp-welcome-wave ms-1">👋</span>
+                        </h2>
+                        <p class="cp-welcome-subtitle mb-0">
+                            {% if current_user.is_candidate() %}
+                                Explore top jobs, track your applications, and showcase your professional profile.
+                            {% elif current_user.is_employer() %}
+                                Manage job listings, review top talent applications, and connect with candidates.
+                            {% else %}
+                                System Administration and Platform Overview.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="cp-welcome-badge-wrap ms-auto">
+                    {% if current_user.is_candidate() %}
+                    <span class="cp-status-pill cp-status-pill-candidate">
+                        <span class="cp-status-dot"></span>
+                        Candidate Dashboard
+                    </span>
+                    {% elif current_user.is_employer() %}
+                    <span class="cp-status-pill cp-status-pill-employer">
+                        <span class="cp-status-dot cp-status-dot-employer"></span>
+                        Employer Dashboard
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if current_user.is_employer() and current_user.recruiter and current_user.recruiter.company %}
+    <div class="container-fluid px-4 mb-2" style="margin-top: -5px;">
+        <div class="cp-org-badge-bar d-inline-flex align-items-center gap-2">
+            <i class="bi bi-building-fill cp-org-badge-icon"></i>
+            <span class="cp-org-badge-label">Organization:</span>
+            <strong class="cp-org-name-aesthetic">{{ current_user.recruiter.company.name }}</strong>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+    {% endif %}
+
+    {% block content %}{% endblock %}
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/password-toggle.js') }}"></script>
+<script src="{{ url_for('static', filename='js/flash-toast.js') }}"></script>
+<script src="{{ url_for('static', filename='js/phone-input.js') }}"></script>
+<script src="{{ url_for('static', filename='js/profile-lightbox.js') }}"></script>
+<script src="{{ url_for('static', filename='js/button-error-handler.js') }}"></script>
+{% if current_user.is_authenticated %}
+<script>
+try {
+    // Clear all CareerPearls local storage data
+    localStorage.removeItem('cp_privacy_accepted');
+    localStorage.removeItem('cp_consent_date');
+    localStorage.removeItem('cp_pending_verification');
+    localStorage.removeItem('verification_store');
+    localStorage.removeItem('cp_verification_anchor');
+} catch (e) {}
+</script>
+<script>
+function checkProfileBeforeRedirect(event) {
+    {% if current_user.is_candidate() %}
+    var hasProfile = {{ 'true' if current_user.candidate and current_user.candidate.onboarding_complete else 'false' }};
+    if (!hasProfile) {
+        event.preventDefault();
+        alert('Please create your profile first before accessing My Applications.');
+        window.location.href = "{{ url_for('candidate.profile') }}";
+    }
+    {% endif %}
+}
+</script>
+<script>
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl, {
+        html: true,
+        boundary: 'viewport',
+        fallbackPlacements: ['top', 'bottom'],
+        container: 'body',
+        delay: { show: 300, hide: 100 }
+    })
+})
+</script>
+{% endif %}
+
+    <!-- Next-Gen AI Assistant Chatbot (Candidate & Employer) -->
+    {% if not (current_user.is_authenticated and current_user.is_admin()) %}
+    {% include '_ai_chatbot_drawer.html' %}
+    <script src="{{ url_for('static', filename='js/ai-chatbot.js') }}?v=3.1"></script>
+    {% endif %}
+
+    <!-- Notification System -->
+    {% if current_user.is_authenticated and not current_user.is_admin() %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        loadNotifications();
+        setInterval(loadNotifications, 30000);
+
+        var floatBtn = document.getElementById('cpFloatingNotifBtn');
+        var panel = document.getElementById('cpNotifPanel');
+        var closeBtn = document.getElementById('cpNotifClose');
+
+        if (floatBtn) {
+            floatBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (panel) {
+                    panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+                    if (panel.style.display === 'flex') {
+                        loadNotifications();
+                    }
+                }
+            });
+        }
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function() {
+                if (panel) panel.style.display = 'none';
+            });
+        }
+        document.addEventListener('click', function(e) {
+            if (panel && panel.style.display === 'flex') {
+                if (!panel.contains(e.target) && e.target !== floatBtn && !floatBtn?.contains(e.target)) {
+                    panel.style.display = 'none';
+                }
+            }
+        });
+    });
+
+    function loadNotifications() {
+        fetch('/api/notifications')
+            .then(function(r) { return r.json(); })
+            .then(function(data) { updateNotificationUI(data); })
+            .catch(function(e) { console.error('Error loading notifications:', e); });
+    }
+
+    function updateNotificationUI(notifications) {
+        var badge = document.getElementById('cpFloatingNotifCount');
+        var list = document.getElementById('cpNotifPanelList');
+
+        if (!notifications || !Array.isArray(notifications)) return;
+
+        var unreadCount = notifications.filter(function(n) { return !n.is_read; }).length;
+
+        if (badge) {
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        if (list) {
+            if (notifications.length === 0) {
+                list.innerHTML = '<div class="text-center py-4 text-pearl small"><i class="bi bi-inbox display-6 d-block mb-2 opacity-50"></i>No notifications yet</div>';
+            } else {
+                list.innerHTML = notifications.slice(0, 15).map(function(n) {
+                    return '<a class="cp-notif-item ' + (n.is_read ? 'cp-notif-item-read' : 'cp-notif-item-unread') + '" href="' + (n.link || '#') + '">' +
+                        '<span class="cp-notif-dot ' + (n.is_read ? '' : 'active') + '"></span>' +
+                        '<div class="flex-grow-1 min-w-0">' +
+                        '<div class="mb-1 small ' + (n.is_read ? 'text-muted' : 'text-white fw-semibold') + '" style="font-size:0.82rem;line-height:1.45;white-space:pre-wrap;word-break:break-word;">' + n.message + '</div>' +
+                        '<span class="text-muted" style="font-size:0.72rem;">' + (n.time_ago || '') + '</span></div></a>';
+                }).join('');
+            }
+        }
+    }
+
+    document.getElementById('cpMarkAllRead')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        fetch('/api/notifications/mark-read', { method: 'POST', headers: {'X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.content || ''} })
+            .then(function() {
+                // Immediately hide all notification / message bubble badges
+                var badge = document.getElementById('cpFloatingNotifCount');
+                if (badge) { badge.style.display = 'none'; badge.textContent = '0'; }
+                var msgBadge = document.getElementById('cpMsgCount');
+                if (msgBadge) { msgBadge.style.display = 'none'; msgBadge.textContent = '0'; }
+                document.querySelectorAll('.cp-notif-badge, .notif-bubble').forEach(function(el) { el.style.display = 'none'; });
+                loadNotifications();
+            })
+            .catch(function(e) { console.error('Error marking read:', e); });
+    });
+    </script>
+    {% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
+<script src="{{ url_for('static', filename='js/photo-crop.js') }}"></script>
+{% include '_photo_crop_modal.html' %}
+{% include '_flash_messages.html' %}
+{% block extra_scripts %}{% endblock %}
+<script>
+(function() {
+    const quotes = [
+        "Your Career Journey Starts Here",
+        "Discover Your Perfect Job Match",
+        "Connect with Top Employers",
+        "Transform Your Professional Future",
+        "Build Your Dream Career Today",
+        "Every Application is Progress",
+        "Skills Open Doors to Success",
+        "Persistence Leads to Breakthroughs"
+    ];
+
+    const darkColors = [
+        'linear-gradient(135deg, #4facfe, #00f2fe)',
+        'linear-gradient(135deg, #7b2ff7, #a855f7)',
+        'linear-gradient(135deg, #f472b6, #ec4899)',
+        'linear-gradient(135deg, #38bdf8, #0ea5e9)',
+        'linear-gradient(135deg, #a78bfa, #8b5cf6)',
+        'linear-gradient(135deg, #fbbf24, #f59e0b)',
+        'linear-gradient(135deg, #34d399, #10b981)',
+        'linear-gradient(135deg, #f87171, #ef4444)'
+    ];
+
+    const lightColors = [
+        'linear-gradient(135deg, #0284c7, #0369a1)', // Rich Cyan / Sapphire Blue
+        'linear-gradient(135deg, #6d28d9, #7c3aed)', // Rich Purple
+        'linear-gradient(135deg, #db2777, #be185d)', // Rich Pink / Rose
+        'linear-gradient(135deg, #0284c7, #2563eb)', // Rich Sky / Ocean Blue
+        'linear-gradient(135deg, #7c3aed, #4f46e5)', // Rich Indigo / Violet
+        'linear-gradient(135deg, #d97706, #b45309)', // Rich Amber / Gold
+        'linear-gradient(135deg, #059669, #047857)', // Rich Emerald Green
+        'linear-gradient(135deg, #dc2626, #b91c1c)'  // Rich Coral Red
+    ];
+
+    const quoteElement = document.getElementById('quoteText');
+    if (quoteElement) {
+        let currentIndex = 0;
+        let colorIndex = 0;
+
+        function showNextQuote() {
+            // Remove spreading class for transition
+            quoteElement.classList.remove('spreading');
+
+            // Wait a bit for the transition to complete
+            setTimeout(() => {
+                const isLight = (document.documentElement.getAttribute('data-theme') === 'light') || 
+                                (localStorage.getItem('cp-theme-mode') === 'light');
+                const activeColors = isLight ? lightColors : darkColors;
+                
+                // Set new quote and color
+                quoteElement.textContent = quotes[currentIndex];
+                quoteElement.style.background = activeColors[colorIndex % activeColors.length];
+                quoteElement.style.webkitBackgroundClip = 'text';
+                quoteElement.style.webkitTextFillColor = 'transparent';
+                quoteElement.style.backgroundClip = 'text';
+
+                // Add spreading animation
+                quoteElement.classList.add('spreading');
+
+                // Update indices
+                currentIndex = (currentIndex + 1) % quotes.length;
+                colorIndex = (colorIndex + 1) % activeColors.length;
+            }, 300);
+        }
+
+        // Initial quote
+        showNextQuote();
+
+        // Change quote every 4 seconds
+        setInterval(showNextQuote, 4000);
+    }
+})();
+</script>
+    {% include '_settings_panel.html' %}
+</body>
+</html>

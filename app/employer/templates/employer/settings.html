@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Settings — CareerPearls{% endblock %}
+
+{% block content %}
+<div class="container-fluid pt-2">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="cp-card mb-4">
+                <div class="card-header">
+                    <h2 class="mb-0">Account Settings</h2>
+                </div>
+                <div class="card-body">
+                    <h5 class="mb-3">Company Information</h5>
+                    <div class="mb-4">
+                        <strong>Company Name:</strong> {{ company.name }}
+                    </div>
+                    <div class="mb-4">
+                        <strong>Industry:</strong> {{ company.industry }}
+                    </div>
+                    <div class="mb-4">
+                        <strong>Website:</strong> {{ company.website or 'Not specified' }}
+                    </div>
+                    <div class="mb-4">
+                        <strong>Verification Status:</strong> 
+                        <span class="badge {% if company.is_verified %}bg-success{% else %}bg-warning{% endif %}">
+                            {{ company.verification_status }}
+                        </span>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="alert alert-warning cp-warning-alert my-3">
+                        <strong class="cp-warning-title"><i class="bi bi-shield-exclamation me-1"></i>Warning:</strong> <span class="cp-warning-text">Deactivating your account will remove your access to the platform. Your email will be freed up for new registrations.</span>
+                    </div>
+                    
+                    <form method="POST" id="deactivateForm">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="action" value="deactivate">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Reason for Deactivation</label>
+                            <select name="reason" class="form-select cp-input-glow" required>
+                                <option value="">Select a business reason</option>
+                                <option value="hiring_completed">Completed our hiring goals / Positions filled</option>
+                                <option value="company_restructuring">Company restructuring or budget adjustment</option>
+                                <option value="pause_hiring">Temporarily pausing recruitment operations</option>
+                                <option value="switching_recruitment_method">Switching to alternative hiring channels</option>
+                                <option value="business_downscaling">Business closure or downscaling</option>
+                                <option value="dissatisfied_experience">Candidate response did not match expectations</option>
+                                <option value="other">Other business reason</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label text-danger">Confirm Password <span class="text-danger">*</span></label>
+                            <input type="password" name="password" class="form-control border-danger" required>
+                            {% if not current_user.password_hash %}
+                            <small class="text-warning">Since you use Google Auth, enter your email address to confirm.</small>
+                            {% else %}
+                            <small class="text-muted">Enter your account password to confirm deactivation.</small>
+                            {% endif %}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to deactivate your account? This action cannot be undone.')">
+                            Deactivate Account
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

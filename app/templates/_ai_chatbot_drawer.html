@@ -1,0 +1,164 @@
+<!-- ═════════════════════════════════════════════════════════════════
+     CareerPearls Next-Gen AI Floating Assistant & Trigger
+     ═════════════════════════════════════════════════════════════════ -->
+<div id="cpAiChatContainer"
+     data-user-id="{{ current_user.id if (current_user and current_user.is_authenticated) else 'guest' }}"
+     data-user-email="{{ current_user.email if (current_user and current_user.is_authenticated) else 'guest' }}"
+     data-user-role="{{ current_user.role if (current_user and current_user.is_authenticated) else 'guest' }}">
+    <!-- Floating AI Trigger Button (Bottom-Right) -->
+    <button type="button" id="cpAiTriggerBtn" class="cp-ai-trigger-btn shadow-lg" title="Open CareerPearls AI Assistant" aria-label="Open AI Assistant">
+        <div class="cp-ai-trigger-inner">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+                <circle cx="12" cy="5" r="2"></circle>
+                <path d="M12 7v4"></path>
+                <line x1="8" y1="16" x2="8" y2="16"></line>
+                <line x1="16" y1="16" x2="16" y2="16"></line>
+            </svg>
+            <span class="cp-ai-pulse-ring"></span>
+        </div>
+        <span class="cp-ai-badge-label">Ask AI</span>
+    </button>
+
+    <!-- Slide-in Drawer Backdrop -->
+    <div id="cpAiDrawerBackdrop" class="cp-ai-drawer-backdrop d-none"></div>
+
+    <!-- Floating AI Chat Window -->
+    <div id="cpAiDrawer" class="cp-ai-floating-window" role="dialog" aria-labelledby="cpAiTitle" aria-hidden="true">
+        <!-- Window Header -->
+        <div class="cp-ai-drawer-header d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2.5">
+                <div class="cp-ai-avatar-wrap">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+                        <circle cx="12" cy="5" r="2"></circle>
+                        <path d="M12 7v4"></path>
+                        <circle cx="9" cy="16" r="1" fill="#ffffff"></circle>
+                        <circle cx="15" cy="16" r="1" fill="#ffffff"></circle>
+                    </svg>
+                    <span class="cp-ai-online-dot"></span>
+                </div>
+                <div>
+                    <h6 class="mb-0 fw-bold cp-ai-title" id="cpAiTitle">
+                        CareerPearls <span class="cp-ai-gradient-text">AI</span>
+                    </h6>
+                    <small class="cp-ai-subtitle">
+                        {% if current_user.is_authenticated and current_user.is_employer() %}
+                            Recruitment &amp; Hiring Strategist
+                        {% else %}
+                            Career Coach &amp; Platform Guide
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="cp-ai-header-btn" id="cpAiRefreshBtn" title="Refresh Assistant View" aria-label="Refresh Assistant View">
+                    <i class="bi bi-arrow-clockwise"></i>
+                </button>
+                <button type="button" class="cp-ai-header-btn cp-ai-trash-btn" id="cpAiClearChat" title="Clear Chat History" aria-label="Clear Chat History">
+                    <i class="bi bi-trash3-fill"></i>
+                </button>
+                <button type="button" class="cp-ai-header-btn" id="cpAiCloseDrawer" title="Close" aria-label="Close">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Prompt Chips (Short Focused Tasks) -->
+        <div class="cp-ai-quick-prompts-bar">
+            <div class="cp-ai-chips-scroll">
+                {% if current_user.is_authenticated and current_user.is_employer() %}
+                    <button type="button" class="cp-ai-chip" data-prompt="Rank all candidate applicants for my jobs in best-to-least match order according to job requirements.">
+                        <span>Rank Applicants</span>
+                    </button>
+                    <button type="button" class="cp-ai-chip" data-prompt="Summarize candidate profile and resume credentials for our received applications.">
+                        <span>Candidate Summary</span>
+                    </button>
+                    <button type="button" class="cp-ai-chip" data-prompt="Suggest targeted technical and scenario-based screening questions for candidates.">
+                        <span>Screening Questions</span>
+                    </button>
+                {% else %}
+                    <button type="button" class="cp-ai-chip" data-prompt="Suggest relevant jobs matching my skills and explain the exact match reasons.">
+                        <span>Job Matches</span>
+                    </button>
+                    <button type="button" class="cp-ai-chip" data-prompt="Check my full profile and resume to estimate my hiring chances and suggest actionable improvements.">
+                        <span>Hiring Chances &amp; Fixes</span>
+                    </button>
+                    <button type="button" class="cp-ai-chip" data-prompt="Review my candidate profile and resume to highlight key strengths and missing skills.">
+                        <span>Resume &amp; Profile Feedback</span>
+                    </button>
+                    <button type="button" class="cp-ai-chip" data-prompt="What is the current status of my submitted job applications on CareerPearls?">
+                        <span>Application Status</span>
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Chat Messages Container -->
+        <div class="cp-ai-messages-wrap" id="cpAiMessages">
+            <div class="cp-ai-msg cp-ai-msg-assistant">
+                <div class="cp-ai-msg-avatar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+                        <circle cx="12" cy="5" r="2"></circle>
+                        <path d="M12 7v4"></path>
+                    </svg>
+                </div>
+                <div class="cp-ai-msg-bubble">
+                    <p class="mb-1 fw-semibold">Hello{% if current_user.is_authenticated and current_user.name %} {{ current_user.name }}{% endif %}!</p>
+                    <p class="mb-2">I am your <strong>CareerPearls AI Assistant</strong>. How can I assist you today?</p>
+                    <ul class="mb-0 ps-3 small text-opacity-75">
+                        {% if current_user.is_authenticated and current_user.is_employer() %}
+                            <li>Drafting high-impact <strong>Job Descriptions</strong></li>
+                            <li>Designing <strong>Screening &amp; Interview Questions</strong></li>
+                            <li>Summarizing &amp; Ranking <strong>Candidate Applications</strong></li>
+                        {% else %}
+                            <li>Matching <strong>Real Jobs to your Profile &amp; Skills</strong></li>
+                            <li>Reviewing <strong>Resumes &amp; Identifying Skill Gaps</strong></li>
+                            <li>Preparing <strong>Interview Tips &amp; Tracking Application Status</strong></li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stop Generating Control Bar -->
+        <div class="cp-ai-stop-bar d-none" id="cpAiStopBar">
+            <button type="button" class="btn btn-sm cp-ai-stop-btn" id="cpAiStopBtn">
+                <i class="bi bi-stop-circle-fill me-1 text-danger"></i>
+                <span>Stop Generating</span>
+            </button>
+        </div>
+
+        <!-- Drawer Input Footer -->
+        <div class="cp-ai-drawer-footer">
+            <form id="cpAiChatForm" class="d-flex align-items-center gap-2">
+                <div class="cp-ai-input-wrap flex-grow-1">
+                    <textarea id="cpAiInput" class="form-control cp-ai-input" rows="1" placeholder="Ask AI anything (in English)..." maxlength="1500" required></textarea>
+                </div>
+                <button type="submit" class="cp-ai-send-btn" id="cpAiSendBtn" title="Send Prompt" aria-label="Send Prompt">
+                    <i class="bi bi-send-fill"></i>
+                </button>
+            </form>
+            <div class="d-flex align-items-center justify-content-between mt-1.5 px-1">
+                <small class="cp-ai-footer-note">Powered by Gemini &amp; Groq AI Core</small>
+                <small class="cp-ai-footer-char" id="cpAiCharCount">0/1500</small>
+            </div>
+        </div>
+
+        <!-- Clear Chat History Confirmation Overlay -->
+        <div id="cpAiConfirmOverlay" class="cp-ai-confirm-overlay d-none">
+            <div class="cp-ai-confirm-card shadow-lg">
+                <div class="cp-ai-confirm-icon">
+                    <i class="bi bi-trash3-fill text-danger"></i>
+                </div>
+                <h6 class="fw-bold text-white mb-1">Clear Chat History?</h6>
+                <p class="small text-pearl mb-3" style="font-size: 0.82rem; line-height: 1.4;">Are you sure you want to remove all saved chat messages? This action cannot be undone.</p>
+                <div class="d-flex align-items-center justify-content-center gap-2">
+                    <button type="button" class="btn btn-sm btn-cp-outline px-3" id="cpAiConfirmNo">No, Keep</button>
+                    <button type="button" class="btn btn-sm btn-danger px-3 shadow-sm" id="cpAiConfirmYes">Yes, Clear</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

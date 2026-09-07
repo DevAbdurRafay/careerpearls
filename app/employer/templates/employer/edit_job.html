@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Edit Job — {{ job.title }} — CareerPearls{% endblock %}
+
+{% block content %}
+<div class="container-fluid pt-2 pb-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-9 col-xl-8">
+            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                <div>
+                    <h3 class="fw-bold mb-1" style="background: linear-gradient(135deg, #4facfe, #7b2ff7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 1rem;">
+                        <i class="bi bi-pencil-fill me-2" style="-webkit-text-fill-color: #4facfe; font-size: 0.875rem;"></i>Edit Job Listing
+                    </h3>
+                    <p class="text-pearl small mb-0">Update details for <strong class="text-white">{{ job.title }}</strong></p>
+                </div>
+                <a href="{{ url_for('employer.my_jobs') }}" class="btn btn-cp-outline btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i>My Jobs
+                </a>
+            </div>
+
+            <div class="cp-card p-4 p-md-5" style="border: 1px solid rgba(79, 172, 254, 0.25); background: rgba(17, 24, 39, 0.85); backdrop-filter: blur(16px); border-radius: 20px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);">
+                <form method="POST" enctype="multipart/form-data" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <!-- Job Title -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-white" for="title">Job Title <span class="text-danger">*</span></label>
+                        {{ form.title(class="form-control cp-input-glow" + (" is-invalid" if form.title.errors else ""), placeholder="e.g. Senior Python Developer") }}
+                        {% if form.title.errors %}
+                        <div class="invalid-feedback d-block mt-1">{% for e in form.title.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ e }}{% endfor %}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Category & Employment Type -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-white">Category <span class="text-danger">*</span></label>
+                            {{ form.category_id(class="form-select cp-input-glow" + (" is-invalid" if form.category_id.errors else "")) }}
+                            {% if form.category_id.errors %}
+                            <div class="invalid-feedback d-block mt-1">{% for e in form.category_id.errors %}{{ e }}{% endfor %}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-white">Employment Type <span class="text-danger">*</span></label>
+                            {{ form.employment_type(class="form-select cp-input-glow" + (" is-invalid" if form.employment_type.errors else "")) }}
+                            {% if form.employment_type.errors %}
+                            <div class="invalid-feedback d-block mt-1">{% for e in form.employment_type.errors %}{{ e }}{% endfor %}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Location & Salary -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-white">Location <span class="text-danger">*</span></label>
+                            {{ form.location(class="form-control cp-input-glow" + (" is-invalid" if form.location.errors else ""), placeholder="e.g. Karachi, Remote") }}
+                            {% if form.location.errors %}
+                            <div class="invalid-feedback d-block mt-1">{% for e in form.location.errors %}{{ e }}{% endfor %}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-white">Salary Range</label>
+                            {{ form.salary_range(class="form-control cp-input-glow", placeholder="e.g. PKR 80,000 – 120,000/mo") }}
+                        </div>
+                    </div>
+
+                    <!-- Experience & Closing Date -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-white">Experience Required</label>
+                            {{ form.experience_required(class="form-control cp-input-glow", placeholder="e.g. 2–4 years") }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-white">Application Closes <span class="text-danger">*</span></label>
+                            {{ form.closes_at(class="form-control cp-input-glow" + (" is-invalid" if form.closes_at.errors else "")) }}
+                            {% if form.closes_at.errors %}
+                            <div class="invalid-feedback d-block mt-1">{% for e in form.closes_at.errors %}{{ e }}{% endfor %}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Skills -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-white">Required Skills</label>
+                        {{ form.skills(class="form-control cp-input-glow", placeholder="Python, Django, PostgreSQL (comma-separated)") }}
+                        <div class="form-text small text-muted">Enter skills separated by commas.</div>
+                    </div>
+
+                    <!-- Job Description -->
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-white">Job Description <span class="text-danger">*</span></label>
+                        {{ form.description(class="form-control cp-input-glow" + (" is-invalid" if form.description.errors else ""), rows=8, placeholder="Describe responsibilities, requirements and benefits...") }}
+                        {% if form.description.errors %}
+                        <div class="invalid-feedback d-block mt-1">{% for e in form.description.errors %}{{ e }}{% endfor %}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Logo Upload -->
+                    <div class="mb-4">
+                        <label class="form-label small fw-semibold text-white">Job / Company Logo <span class="text-muted fw-normal">(Optional)</span></label>
+                        {% if job.logo_path %}
+                        <div class="mb-2">
+                            <img src="{{ url_for('uploaded_file', filename=job.logo_path) }}" alt="Current Logo" style="width:56px;height:56px;object-fit:contain;border-radius:10px;background:rgba(255,255,255,0.05);padding:4px;">
+                            <span class="text-muted small ms-2">Current logo</span>
+                        </div>
+                        {% endif %}
+                        <input type="file" name="logo_file" class="form-control cp-input-glow" accept="image/png,image/jpeg,image/svg+xml,image/webp">
+                        <div class="form-text small text-muted">Upload a new logo to replace the current one. PNG/JPEG/SVG, max 2MB.</div>
+                    </div>
+
+                    <!-- Submit Buttons -->
+                    <div class="d-flex gap-3 justify-content-end pt-3 border-top" style="border-color:rgba(255,255,255,0.08)!important;">
+                        <a href="{{ url_for('employer.my_jobs') }}" class="btn btn-outline-secondary px-4">Cancel</a>
+                        <button type="submit" class="btn btn-cp-primary px-5 fw-semibold">
+                            <i class="bi bi-check-circle me-2"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "auth_base.html" %}
+{% block title %}Confirm Your Role — CareerPearls{% endblock %}
+
+{% block content %}
+<style>
+    .verify-confirm-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: calc(100vh - 60px);
+        padding: 2rem 1rem;
+    }
+    .verify-card {
+        background: rgba(10, 14, 26, 0.92);
+        border: 1px solid rgba(79, 172, 254, 0.25);
+        border-radius: 28px;
+        padding: 2.5rem 2rem;
+        max-width: 440px;
+        width: 100%;
+        text-align: center;
+        backdrop-filter: blur(24px);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(79,172,254,0.1);
+        position: relative;
+        overflow: hidden;
+    }
+    .verify-card::before {
+        content: '';
+        position: absolute;
+        top: -60px; left: 50%; transform: translateX(-50%);
+        width: 260px; height: 260px;
+        background: radial-gradient(circle, {% if role_hint == 'employer' %}rgba(168,85,247,0.18){% else %}rgba(79,172,254,0.18){% endif %} 0%, transparent 70%);
+        pointer-events: none;
+    }
+    .verify-icon-ring {
+        width: 76px; height: 76px;
+        border-radius: 50%;
+        background: {% if role_hint == 'employer' %}rgba(168,85,247,0.12){% else %}rgba(79,172,254,0.12){% endif %};
+        border: 2px solid {% if role_hint == 'employer' %}rgba(168,85,247,0.4){% else %}rgba(79,172,254,0.4){% endif %};
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 1.25rem;
+        animation: verifyIconPulse 2.5s ease-in-out infinite;
+        box-shadow: 0 0 0 0 {% if role_hint == 'employer' %}rgba(168,85,247,0.4){% else %}rgba(79,172,254,0.4){% endif %};
+    }
+    @keyframes verifyIconPulse {
+        0%, 100% { box-shadow: 0 0 0 0 {% if role_hint == 'employer' %}rgba(168,85,247,0.35){% else %}rgba(79,172,254,0.35){% endif %}; }
+        50% { box-shadow: 0 0 0 14px {% if role_hint == 'employer' %}rgba(168,85,247,0){% else %}rgba(79,172,254,0){% endif %}; }
+    }
+    .verify-user-pill {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 14px;
+        padding: 0.75rem 1rem;
+        display: flex; align-items: center; gap: 0.75rem;
+        margin: 0 auto 1.5rem;
+        text-align: left;
+    }
+    .verify-user-avatar {
+        width: 42px; height: 42px; min-width: 42px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, {% if role_hint == 'employer' %}#a855f7, #3b82f6{% else %}#4facfe, #7b2ff7{% endif %});
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 1.1rem; color: #fff;
+    }
+    .verify-btn-confirm {
+        width: 100%;
+        padding: 0.85rem 1.5rem;
+        border: none; border-radius: 14px;
+        font-weight: 600; font-size: 1rem; color: #fff;
+        background: linear-gradient(135deg, {% if role_hint == 'employer' %}#a855f7 0%, #3b82f6 100%{% else %}#4facfe 0%, #7b2ff7 100%{% endif %});
+        cursor: pointer; position: relative; overflow: hidden;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 4px 20px {% if role_hint == 'employer' %}rgba(168,85,247,0.35){% else %}rgba(79,172,254,0.35){% endif %};
+        display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+    .verify-btn-confirm::before {
+        content: '';
+        position: absolute;
+        top: 0; left: -100%; width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+        transition: left 0.5s;
+    }
+    .verify-btn-confirm:hover { transform: translateY(-2px); box-shadow: 0 8px 30px {% if role_hint == 'employer' %}rgba(168,85,247,0.55){% else %}rgba(79,172,254,0.55){% endif %}; }
+    .verify-btn-confirm:hover::before { left: 100%; }
+    .verify-btn-confirm:active { transform: translateY(0); }
+
+    .verify-btn-cancel {
+        width: 100%;
+        padding: 0.75rem 1.5rem;
+        border: 1px solid rgba(255,255,255,0.15); border-radius: 14px;
+        font-weight: 500; font-size: 0.92rem;
+        color: rgba(255,255,255,0.65); background: rgba(255,255,255,0.04);
+        cursor: pointer;
+        transition: border-color 0.2s, color 0.2s, background 0.2s;
+        display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .verify-btn-cancel:hover {
+        border-color: rgba(255,255,255,0.3);
+        color: #fff;
+        background: rgba(255,255,255,0.08);
+    }
+</style>
+
+<div class="verify-confirm-wrap">
+    <div class="verify-card">
+        <!-- Animated Role Icon -->
+        <div class="verify-icon-ring">
+            {% if role_hint == 'employer' %}
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2.2">
+                <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+            </svg>
+            {% else %}
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#4facfe" stroke-width="2.2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+            {% endif %}
+        </div>
+
+        <!-- User Info -->
+        <div class="verify-user-pill">
+            <div class="verify-user-avatar">{{ current_user.name[0]|upper if current_user.name else 'U' }}</div>
+            <div class="overflow-hidden">
+                <div class="text-white fw-semibold text-truncate" style="font-size:0.95rem;">{{ current_user.name }}</div>
+                <div class="text-truncate" style="font-size:0.82rem; color:#9ca3af;">{{ current_user.email }}</div>
+            </div>
+        </div>
+
+        <!-- Heading -->
+        <h3 class="text-white fw-bold mb-2" style="font-size: 1.3rem; font-family: 'Poppins', sans-serif;">
+            Are you sure you want to continue as <span style="color: {% if role_hint == 'employer' %}#c084fc{% else %}#4facfe{% endif %};">{{ role_hint|title }}</span>?
+        </h3>
+        <p style="font-size:0.88rem; color:#9ca3af; line-height:1.55; margin-bottom:1.75rem;">
+            Your Google account will be permanently linked as <strong class="text-white">{{ role_hint|title }}</strong>.
+            This cannot be changed later.
+        </p>
+
+        <!-- Buttons -->
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <input type="hidden" name="role" value="{{ role_hint }}">
+            <button type="submit" name="action" value="confirm" class="verify-btn-confirm">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                Yes, Continue as {{ role_hint|title }}
+            </button>
+            <button type="submit" name="action" value="cancel" class="verify-btn-cancel">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
+                No, Go Back to Login
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

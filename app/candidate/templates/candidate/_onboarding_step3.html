@@ -1,0 +1,28 @@
+{% from '_form_labels.html' import required_label %}
+
+<form method="POST" class="cp-wizard-form" id="onboardingForm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <label class="form-label d-block mb-2">{{ required_label('What fields are you interested in?') }}</label>
+    <p class="interest-counter" id="interestCounter">Select at least 3 fields (0 selected)</p>
+    <p class="cp-field-hint mb-3">Employers hiring in these areas will discover your profile — for example, selecting <strong>Data Analysis</strong> puts you in front of companies filtering by that field.</p>
+
+        <div class="interest-grid" id="interestGrid">
+        {% for interest in interest_options %}
+        <div class="interest-chip {% if interest in selected_interests %}selected{% endif %}" data-interest="{{ interest }}">
+            <input type="checkbox" name="interests" value="{{ interest }}"
+                   {% if interest in selected_interests %}checked{% endif %}>
+            <span>{{ interest }}</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="cp-wizard-actions">
+        {% if edit_mode %}
+        <a href="{{ url_for('candidate.profile') }}" class="btn btn-cp-outline">Cancel</a>
+        {% else %}
+        <a href="{{ url_for('candidate.onboarding', step=2) }}" class="btn btn-cp-outline">Back</a>
+        {% endif %}
+        <button type="submit" class="btn btn-cp-primary px-4" id="submitBtn">Continue</button>
+    </div>
+</form>

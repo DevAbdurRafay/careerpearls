@@ -1,0 +1,63 @@
+<div class="cp-wizard-shell">
+    <div class="cp-wizard-identity">
+        <div class="cp-wizard-avatar" id="wizardAvatarPreview">
+            {% if candidate.profile_image %}
+            <img src="{{ url_for('uploaded_file', filename=candidate.profile_image) }}" alt="{{ candidate.full_name }}">
+            {% else %}
+            <span class="cp-wizard-avatar-initial">{{ candidate.full_name[0]|upper }}</span>
+            {% endif %}
+        </div>
+        <div class="cp-wizard-identity-text">
+            <p class="cp-wizard-identity-label">Setting up profile for</p>
+            <h2 class="cp-wizard-identity-name" id="wizardNamePreview">{{ candidate.full_name }}</h2>
+        </div>
+    </div>
+
+    {% if not edit_mode %}
+    <div class="cp-wizard-progress" aria-label="Onboarding progress">
+        {% for item in steps_meta %}
+        <div class="cp-wizard-progress-item {% if item.num < step %}done{% elif item.num == step %}active{% endif %}">
+            <div class="cp-wizard-progress-dot">
+                {% if item.num < step %}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                {% else %}
+                {{ item.num }}
+                {% endif %}
+            </div>
+            <span class="cp-wizard-progress-label">{{ item.title }}</span>
+        </div>
+        {% if not loop.last %}
+        <div class="cp-wizard-progress-line {% if item.num < step %}done{% endif %}"></div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="cp-wizard-edit-banner">
+        <span>Editing profile section</span>
+        <a href="{{ url_for('candidate.profile') }}" class="cp-wizard-edit-back">Back to profile</a>
+    </div>
+    {% endif %}
+
+    <div class="cp-wizard-card">
+        {% set current = steps_meta[step - 1] %}
+        <div class="cp-wizard-card-header">
+            <p class="cp-wizard-step-badge">Step {{ step }} of {{ total_steps }}</p>
+            <h1 class="cp-wizard-title">{{ current.title }}</h1>
+            <p class="cp-wizard-subtitle">{{ current.subtitle }}</p>
+        </div>
+
+        <div class="cp-wizard-body">
+            {% if step == 1 %}
+                {% include 'candidate/_onboarding_step1.html' %}
+            {% elif step == 2 %}
+                {% include 'candidate/_onboarding_step2.html' %}
+            {% elif step == 3 %}
+                {% include 'candidate/_onboarding_step3.html' %}
+            {% elif step == 4 %}
+                {% include 'candidate/_onboarding_step4.html' %}
+            {% elif step == 5 %}
+                {% include 'candidate/_onboarding_step5.html' %}
+            {% endif %}
+        </div>
+    </div>
+</div>

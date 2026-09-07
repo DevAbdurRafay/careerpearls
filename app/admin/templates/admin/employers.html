@@ -1,0 +1,631 @@
+{% extends "admin/admin_base.html" %}
+
+{% block extra_head %}
+<style>
+/* Universal badge & icon spacing rules */
+.admin-badge-pill {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 6px 14px !important;
+    border-radius: 9999px !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    white-space: nowrap !important;
+    line-height: 1.2 !important;
+}
+.admin-badge-pill i {
+    font-size: 0.95rem !important;
+    flex-shrink: 0 !important;
+}
+
+.cp-admin-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px !important;
+    border-radius: 12px !important;
+    font-size: 0.86rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.cp-tab-pending {
+    background: rgba(245, 158, 11, 0.1) !important;
+    color: #fbbf24 !important;
+    border: 1px solid rgba(245, 158, 11, 0.3) !important;
+}
+.cp-tab-pending:hover, .cp-tab-pending.active {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35);
+}
+.cp-tab-approved {
+    background: rgba(16, 185, 129, 0.1) !important;
+    color: #34d399 !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+}
+.cp-tab-approved:hover, .cp-tab-approved.active {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+}
+.cp-tab-flagged {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: #f87171 !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+}
+.cp-tab-flagged:hover, .cp-tab-flagged.active {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.35);
+}
+.cp-tab-rejected {
+    background: rgba(100, 116, 139, 0.1) !important;
+    color: #94a3b8 !important;
+    border: 1px solid rgba(100, 116, 139, 0.3) !important;
+}
+.cp-tab-rejected:hover, .cp-tab-rejected.active {
+    background: linear-gradient(135deg, #64748b, #475569) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(100, 116, 139, 0.35);
+}
+.cp-tab-all {
+    background: rgba(56, 189, 248, 0.1) !important;
+    color: #38bdf8 !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+}
+.cp-tab-all:hover, .cp-tab-all.active {
+    background: linear-gradient(135deg, #0284c7, #2563eb) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(2, 132, 199, 0.35);
+}
+
+.cp-action-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    padding: 7px 15px !important;
+    border-radius: 10px !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+}
+.cp-action-profile {
+    background: rgba(56, 189, 248, 0.12) !important;
+    color: #38bdf8 !important;
+    border: 1px solid rgba(56, 189, 248, 0.35) !important;
+}
+.cp-action-profile:hover {
+    background: rgba(56, 189, 248, 0.25) !important;
+    border-color: rgba(56, 189, 248, 0.8) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
+}
+.cp-action-approve {
+    background: rgba(16, 185, 129, 0.12) !important;
+    color: #34d399 !important;
+    border: 1px solid rgba(16, 185, 129, 0.35) !important;
+}
+.cp-action-approve:hover {
+    background: rgba(16, 185, 129, 0.25) !important;
+    border-color: rgba(16, 185, 129, 0.8) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+.cp-action-flag {
+    background: rgba(239, 68, 68, 0.12) !important;
+    color: #f87171 !important;
+    border: 1px solid rgba(239, 68, 68, 0.35) !important;
+}
+.cp-action-flag:hover {
+    background: rgba(239, 68, 68, 0.25) !important;
+    border-color: rgba(239, 68, 68, 0.8) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+}
+.cp-action-reject {
+    background: rgba(148, 163, 184, 0.12) !important;
+    color: #94a3b8 !important;
+    border: 1px solid rgba(148, 163, 184, 0.35) !important;
+}
+.cp-action-reject:hover {
+    background: rgba(148, 163, 184, 0.25) !important;
+    border-color: rgba(148, 163, 184, 0.8) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+</style>
+{% endblock %}
+
+{% block admin_content %}
+<div class="container-fluid py-3 px-3 px-lg-4">
+
+    {# ── Page header with generous spacing ─────────────────────────────────── #}
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 p-4 rounded-4" 
+         style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.8)); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);">
+        <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center justify-content-center flex-shrink-0" 
+                 style="width: 54px; height: 54px; border-radius: 16px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(37, 99, 235, 0.25)); border: 1px solid rgba(56, 189, 248, 0.4); box-shadow: 0 0 20px rgba(56, 189, 248, 0.25);">
+                <i class="bi bi-building-check fs-3" style="color: #38bdf8;"></i>
+            </div>
+            <div>
+                <h3 class="fw-bold mb-1 text-white" style="letter-spacing: -0.5px;">
+                    Employer Verification Engine
+                </h3>
+                <p class="text-pearl small mb-0" style="color: #94a3b8;">
+                    Review business registrations, verify official email domains, validate NTN tax records, and manage hiring access.
+                </p>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge px-3 py-2 rounded-pill d-inline-flex align-items-center gap-2" style="background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.82rem; font-weight: 600;">
+                <i class="bi bi-shield-lock-fill"></i><span>Secure Admin Desk</span>
+            </span>
+        </div>
+    </div>
+
+    {# ── Status tab pills with generous space ──────────────────────────────── #}
+    <div class="d-flex flex-wrap align-items-center gap-3 mb-4">
+        <a href="{{ url_for('admin.manage_employers', status='Pending Verification') }}"
+           class="cp-admin-tab cp-tab-pending {% if status_filter == 'Pending Verification' %}active{% endif %}">
+            <i class="bi bi-clock-history"></i>
+            <span>Pending</span>
+            <span class="badge rounded-pill px-2 py-0.5" style="background: rgba(0,0,0,0.3); color: inherit; font-size: 0.78rem;">
+                {{ pending_count }}
+            </span>
+        </a>
+        <a href="{{ url_for('admin.manage_employers', status='Approved') }}"
+           class="cp-admin-tab cp-tab-approved {% if status_filter == 'Approved' %}active{% endif %}">
+            <i class="bi bi-patch-check"></i>
+            <span>Approved</span>
+            <span class="badge rounded-pill px-2 py-0.5" style="background: rgba(0,0,0,0.3); color: inherit; font-size: 0.78rem;">
+                {{ approved_count }}
+            </span>
+        </a>
+        <a href="{{ url_for('admin.manage_employers', status='Flagged') }}"
+           class="cp-admin-tab cp-tab-flagged {% if status_filter == 'Flagged' %}active{% endif %}">
+            <i class="bi bi-flag-fill"></i>
+            <span>Flagged</span>
+            <span class="badge rounded-pill px-2 py-0.5" style="background: rgba(0,0,0,0.3); color: inherit; font-size: 0.78rem;">
+                {{ flagged_count }}
+            </span>
+        </a>
+        <a href="{{ url_for('admin.manage_employers', status='Rejected') }}"
+           class="cp-admin-tab cp-tab-rejected {% if status_filter == 'Rejected' %}active{% endif %}">
+            <i class="bi bi-x-circle"></i>
+            <span>Rejected</span>
+            <span class="badge rounded-pill px-2 py-0.5" style="background: rgba(0,0,0,0.3); color: inherit; font-size: 0.78rem;">
+                {{ rejected_count }}
+            </span>
+        </a>
+        <a href="{{ url_for('admin.manage_employers', status='') }}"
+           class="cp-admin-tab cp-tab-all {% if not status_filter %}active{% endif %}">
+            <i class="bi bi-grid-fill"></i>
+            <span>All Organizations</span>
+            <span class="badge rounded-pill px-2 py-0.5" style="background: rgba(0,0,0,0.3); color: inherit; font-size: 0.78rem;">
+                {{ all_count }}
+            </span>
+        </a>
+    </div>
+
+    {# ── Search bar ───────────────────────────────────────────────────────── #}
+    <div class="rounded-4 mb-4 p-3"
+         style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 14px rgba(0,0,0,0.2);">
+        <form method="GET" action="{{ url_for('admin.manage_employers') }}" class="row g-2 align-items-center">
+            {% if status_filter %}
+            <input type="hidden" name="status" value="{{ status_filter }}">
+            {% endif %}
+            <div class="col-md-9">
+                <div class="input-group">
+                    <span class="input-group-text border-0 ps-3 pe-2" style="background: rgba(11, 16, 27, 0.95); color: #38bdf8; border-radius: 10px 0 0 10px;">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <input type="text" name="q" value="{{ search }}"
+                           class="form-control border-0 py-2.5"
+                           style="background: rgba(11, 16, 27, 0.95); color: #fff; font-size: 0.92rem; border-radius: 0 10px 10px 0;"
+                           placeholder="Search by Company Name, Domain, Official Email, or Tax NTN ID...">
+                </div>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn flex-grow-1 py-2 fw-semibold d-inline-flex align-items-center justify-content-center gap-2"
+                        style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; border: none; border-radius: 10px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);">
+                    <i class="bi bi-search"></i><span>Search</span>
+                </button>
+                {% if search or status_filter %}
+                <a href="{{ url_for('admin.manage_employers') }}"
+                   class="btn btn-outline-secondary py-2 px-3 fw-semibold d-inline-flex align-items-center gap-1" style="border-radius: 10px;">
+                    <i class="bi bi-arrow-counterclockwise"></i><span>Reset</span>
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    {# ── Table ────────────────────────────────────────────────────────────── #}
+    <div class="rounded-4 overflow-hidden mb-4" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" style="border-collapse: separate; border-spacing: 0; min-width: 1050px;">
+                <thead style="background: rgba(11, 16, 27, 0.98);">
+                    <tr>
+                        <th class="text-white fw-bold py-3 px-4" style="font-size: 0.88rem; letter-spacing: 0.02em; min-width: 260px;">Organization &amp; Domain</th>
+                        <th class="text-white fw-bold py-3 px-3" style="font-size: 0.88rem; letter-spacing: 0.02em; min-width: 200px;">Official Email</th>
+                        <th class="text-white fw-bold py-3 px-3" style="font-size: 0.88rem; letter-spacing: 0.02em; min-width: 170px;">Domain Match</th>
+                        <th class="text-white fw-bold py-3 px-3" style="font-size: 0.88rem; letter-spacing: 0.02em; min-width: 150px;">NTN / Tax ID</th>
+                        <th class="text-white fw-bold py-3 px-3" style="font-size: 0.88rem; letter-spacing: 0.02em; min-width: 120px;">Size</th>
+                        <th class="text-white fw-bold py-3 px-3" style="font-size: 0.88rem; letter-spacing: 0.02em; min-width: 170px;">Verification Status</th>
+                        <th class="text-white fw-bold py-3 px-4 text-end" style="font-size: 0.88rem; letter-spacing: 0.02em; min-width: 230px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if verified_data %}
+                        {% for item in verified_data %}
+                        {% set comp = item.company %}
+                        <tr style="background: {% if loop.index is odd %}rgba(15,23,42,0.6){% else %}rgba(11,16,27,0.4){% endif %}; border-bottom: 1px solid rgba(255,255,255,0.05); transition: all 0.2s ease;">
+
+                            {# Organization & Domain (Clean space between logo and text) #}
+                            <td class="px-4 py-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    {% if comp.logo_path %}
+                                    <img src="{{ url_for('uploaded_file', filename=comp.logo_path) }}"
+                                         alt="Logo"
+                                         style="width:46px;height:46px;border-radius:12px;object-fit:cover;border:1px solid rgba(255,255,255,0.12);box-shadow:0 4px 10px rgba(0,0,0,0.3);flex-shrink:0;">
+                                    {% else %}
+                                    <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg, rgba(56, 189, 248, 0.15), rgba(37, 99, 235, 0.2));border:1px solid rgba(56, 189, 248, 0.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                                        <i class="bi bi-building fs-5" style="color: #38bdf8;"></i>
+                                    </div>
+                                    {% endif %}
+                                    <div class="ps-1">
+                                        <div class="fw-bold text-white fs-6 mb-1">{{ comp.name }}</div>
+                                        <div class="small d-flex align-items-center gap-2" style="color: #94a3b8; font-size: 0.82rem;">
+                                            {% if comp.website %}
+                                            <a href="{{ comp.website }}" target="_blank" rel="noopener noreferrer"
+                                               class="text-decoration-none d-inline-flex align-items-center gap-2" style="color: #38bdf8;">
+                                                <i class="bi bi-box-arrow-up-right"></i><span>{{ comp.website | truncate(32) }}</span>
+                                            </a>
+                                            {% elif comp.domain %}
+                                            <span style="color: #60a5fa;" class="d-inline-flex align-items-center gap-2"><i class="bi bi-globe2"></i><span>{{ comp.domain }}</span></span>
+                                            {% else %}
+                                            <span class="fst-italic text-muted">No domain specified</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            {# Official email #}
+                            <td class="px-3 py-3">
+                                <div class="text-white fw-medium small mb-1">{{ comp.official_email or 'Not provided' }}</div>
+                                <div class="text-muted d-flex align-items-center gap-1" style="font-size:0.78rem;">
+                                    <span>Domain:</span>
+                                    <code class="px-2 py-0.5 rounded" style="background: rgba(255,255,255,0.06); color: #38bdf8;">{{ item.email_domain or 'N/A' }}</code>
+                                </div>
+                            </td>
+
+                            {# Domain match badge with generous space #}
+                            <td class="px-3 py-3">
+                                {% if item.domain_matched %}
+                                <span class="admin-badge-pill"
+                                      style="background: rgba(16, 185, 129, 0.14); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35);">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    <span>Domain Matched</span>
+                                </span>
+                                {% elif item.email_domain and item.web_domain %}
+                                <span class="admin-badge-pill"
+                                      style="background: rgba(245, 158, 11, 0.14); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35);">
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                    <span>Domain Mismatch</span>
+                                </span>
+                                {% else %}
+                                <span class="admin-badge-pill"
+                                      style="background: rgba(148, 163, 184, 0.12); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3);">
+                                    <i class="bi bi-dash-circle"></i>
+                                    <span>Incomplete Info</span>
+                                </span>
+                                {% endif %}
+                            </td>
+
+                            {# NTN badge with clean spacing #}
+                            <td class="px-3 py-3">
+                                {% if comp.ntn_id %}
+                                <span class="badge font-monospace px-3 py-1.5 rounded-2 d-inline-flex align-items-center gap-2"
+                                      style="background: rgba(30, 41, 59, 0.95); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.15); font-size: 0.82rem; font-weight: 600; letter-spacing: 0.5px;">
+                                    <i class="bi bi-hash text-primary fs-6"></i>
+                                    <span>{{ comp.ntn_id }}</span>
+                                </span>
+                                {% else %}
+                                <span class="badge px-3 py-1.5 rounded-2" style="background: rgba(239, 68, 68, 0.08); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.78rem;">
+                                    Missing NTN
+                                </span>
+                                {% endif %}
+                            </td>
+
+                            {# Company size pill with clean spacing #}
+                            <td class="px-3 py-3">
+                                {% if comp.company_size %}
+                                <span class="admin-badge-pill"
+                                      style="background: rgba(6, 182, 212, 0.12); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.3);">
+                                    <i class="bi bi-people-fill text-info"></i>
+                                    <span>{{ comp.company_size }}</span>
+                                </span>
+                                {% else %}
+                                <span class="text-muted small ps-2">—</span>
+                                {% endif %}
+                            </td>
+
+                            {# Verification status pill with clean spacing #}
+                            <td class="px-3 py-3">
+                                {% if comp.verification_status == 'Approved' %}
+                                <span class="admin-badge-pill"
+                                      style="background: rgba(16, 185, 129, 0.14); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35);">
+                                    <i class="bi bi-shield-check"></i>
+                                    <span>Approved</span>
+                                </span>
+                                {% elif comp.verification_status == 'Flagged' %}
+                                <span class="admin-badge-pill"
+                                      style="background: rgba(239, 68, 68, 0.14); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35);">
+                                    <i class="bi bi-flag-fill"></i>
+                                    <span>Flagged</span>
+                                </span>
+                                {% elif comp.verification_status == 'Rejected' %}
+                                <span class="admin-badge-pill"
+                                      style="background: rgba(148, 163, 184, 0.14); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.35);">
+                                    <i class="bi bi-x-circle"></i>
+                                    <span>Rejected</span>
+                                </span>
+                                {% else %}
+                                <span class="admin-badge-pill"
+                                      style="background: rgba(245, 158, 11, 0.14); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35);">
+                                    <i class="bi bi-clock-history"></i>
+                                    <span>Pending Verification</span>
+                                </span>
+                                {% endif %}
+                            </td>
+
+                            {# Action buttons (In-Panel Profile Inspection Modal) #}
+                            <td class="text-end px-4 py-3" style="white-space: nowrap;">
+                                <div class="d-inline-flex align-items-center gap-2">
+                                    {# In-Panel Profile Dossier Modal Trigger #}
+                                    <button type="button"
+                                            class="btn btn-sm cp-action-btn cp-action-profile"
+                                            title="Inspect Organization Dossier on Admin Panel"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#companyProfileModal{{ comp.id }}">
+                                        <i class="bi bi-building"></i><span>Profile</span>
+                                    </button>
+
+                                    {# Approve (if not approved) #}
+                                    {% if comp.verification_status != 'Approved' and not comp.is_verified %}
+                                    <form method="POST"
+                                          action="{{ url_for('admin.verify_employer', company_id=comp.id, action='approve') }}"
+                                          class="d-inline m-0 p-0">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-sm cp-action-btn cp-action-approve"
+                                                title="Approve Employer">
+                                            <i class="bi bi-check-lg"></i><span>Approve</span>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+
+                                    {# Flag #}
+                                    {% if comp.verification_status != 'Flagged' %}
+                                    <form method="POST"
+                                          action="{{ url_for('admin.verify_employer', company_id=comp.id, action='flag') }}"
+                                          class="d-inline m-0 p-0">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-sm cp-action-btn cp-action-flag"
+                                                title="Flag Account">
+                                            <i class="bi bi-flag"></i><span>Flag</span>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+
+                                    {# Reject (with modal) #}
+                                    {% if comp.verification_status != 'Rejected' %}
+                                    <button type="button"
+                                            class="btn btn-sm cp-action-btn cp-action-reject"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#rejectModal{{ comp.id }}"
+                                            title="Reject">
+                                        <i class="bi bi-x-lg"></i><span>Reject</span>
+                                    </button>
+                                    {% endif %}
+                                </div>
+
+                                {# ── IN-PANEL ORGANIZATION DOSSIER MODAL ── #}
+                                <div class="modal fade" id="companyProfileModal{{ comp.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg text-start">
+                                        <div class="modal-content border-secondary" style="background: rgba(11,16,27,0.98); border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.7);">
+                                            <div class="modal-header border-secondary p-4">
+                                                <div class="d-flex align-items-center gap-3">
+                                                    {% if comp.logo_path %}
+                                                    <img src="{{ url_for('uploaded_file', filename=comp.logo_path) }}"
+                                                         alt="Logo"
+                                                         style="width:52px;height:52px;border-radius:14px;object-fit:cover;border:1px solid rgba(255,255,255,0.15);">
+                                                    {% else %}
+                                                    <div style="width:52px;height:52px;border-radius:14px;background:rgba(56, 189, 248, 0.15);border:1px solid rgba(56, 189, 248, 0.35);display:flex;align-items:center;justify-content:center;">
+                                                        <i class="bi bi-building fs-4" style="color: #38bdf8;"></i>
+                                                    </div>
+                                                    {% endif %}
+                                                    <div>
+                                                        <h5 class="modal-title text-white fw-bold mb-1">{{ comp.name }}</h5>
+                                                        <span class="text-pearl small" style="color: #94a3b8;">Organization Dossier &amp; Digital Footprint</span>
+                                                    </div>
+                                                </div>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body p-4">
+                                                {# Metadata Grid #}
+                                                <div class="row g-3 mb-4">
+                                                    <div class="col-md-6">
+                                                        <div class="p-3 rounded-3" style="background: rgba(15,23,42,0.85); border: 1px solid rgba(255,255,255,0.08);">
+                                                            <small class="text-muted d-block mb-2">Official Website &amp; Domain</small>
+                                                            {% if comp.website %}
+                                                            <a href="{{ comp.website }}" target="_blank" rel="noopener noreferrer"
+                                                               class="btn btn-sm d-inline-flex align-items-center gap-2 px-3 py-2 rounded-2 text-white fw-semibold"
+                                                               style="background: linear-gradient(135deg, #0284c7, #2563eb); border: none;">
+                                                                <i class="bi bi-box-arrow-up-right"></i><span>Open Official Website</span>
+                                                            </a>
+                                                            {% elif comp.domain %}
+                                                            <strong class="text-white">{{ comp.domain }}</strong>
+                                                            {% else %}
+                                                            <span class="text-muted small fst-italic">Not provided</span>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="p-3 rounded-3" style="background: rgba(15,23,42,0.85); border: 1px solid rgba(255,255,255,0.08);">
+                                                            <small class="text-muted d-block mb-1">Official Business Email</small>
+                                                            <strong class="text-white">{{ comp.official_email or 'Not provided' }}</strong>
+                                                            <div class="text-muted small mt-1 d-flex align-items-center gap-2">
+                                                                <span>Domain:</span>
+                                                                <code style="color: #38bdf8;">{{ item.email_domain or 'N/A' }}</code>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="p-3 rounded-3" style="background: rgba(15,23,42,0.85); border: 1px solid rgba(255,255,255,0.08);">
+                                                            <small class="text-muted d-block mb-1">NTN / Tax Record ID</small>
+                                                            <strong class="text-white font-monospace">{{ comp.ntn_id or 'Missing NTN' }}</strong>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="p-3 rounded-3" style="background: rgba(15,23,42,0.85); border: 1px solid rgba(255,255,255,0.08);">
+                                                            <small class="text-muted d-block mb-1">Company Size</small>
+                                                            <strong class="text-white">{{ comp.company_size or 'Not specified' }}</strong>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="p-3 rounded-3" style="background: rgba(15,23,42,0.85); border: 1px solid rgba(255,255,255,0.08);">
+                                                            <small class="text-muted d-block mb-1">Verification Status</small>
+                                                            <span class="badge px-3 py-1.5 rounded-pill" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">
+                                                                {{ comp.verification_status or 'Pending' }}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {# Description / About #}
+                                                <div class="mb-3">
+                                                    <label class="form-label text-muted small fw-semibold">Company Overview &amp; Description</label>
+                                                    <div class="p-3 rounded-3 small" style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255, 255, 255, 0.08); color: #cbd5e1; line-height: 1.6; max-height: 180px; overflow-y: auto;">
+                                                        {{ comp.description or 'No detailed description submitted yet.' }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer border-secondary p-3">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {# Reject Modal #}
+                                <div class="modal fade" id="rejectModal{{ comp.id }}"
+                                     tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog text-start">
+                                        <div class="modal-content border-secondary"
+                                             style="background: rgba(11,16,27,0.98); border-radius: 16px;">
+                                            <form method="POST"
+                                                  action="{{ url_for('admin.verify_employer', company_id=comp.id, action='reject') }}">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <div class="modal-header border-secondary">
+                                                    <h6 class="modal-title text-white">
+                                                        <i class="bi bi-x-circle text-danger me-2"></i>
+                                                        Reject Employer Verification
+                                                    </h6>
+                                                    <button type="button" class="btn-close btn-close-white"
+                                                            data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p class="small text-muted mb-3">
+                                                        Specify a rejection reason for
+                                                        <strong class="text-white">{{ comp.name }}</strong>:
+                                                    </p>
+                                                    <textarea name="reason"
+                                                              class="form-control form-control-sm border-secondary"
+                                                              style="background: rgba(15,23,42,0.9); color: #fff; border-radius: 10px;"
+                                                              rows="3"
+                                                              placeholder="e.g., Invalid NTN ID or business domain mismatch."
+                                                              required></textarea>
+                                                </div>
+                                                <div class="modal-footer border-secondary">
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-outline-secondary"
+                                                            style="border-radius: 8px;"
+                                                            data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit"
+                                                            class="btn btn-sm btn-danger"
+                                                            style="border-radius: 8px;">
+                                                        Confirm Rejection
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox display-6 d-block mb-2 text-secondary"></i>
+                            <h6 class="fw-bold text-white mb-1">
+                                No {% if status_filter %}{{ status_filter }}{% else %}Employer{% endif %} Registrations
+                            </h6>
+                            <p class="small text-muted mb-0">
+                                Organizations waiting for verification review will appear here.
+                            </p>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        {# Pagination #}
+        {% if companies.pages > 1 %}
+        <div class="p-3 border-top border-secondary">
+            <nav>
+                <ul class="pagination pagination-sm mb-0 justify-content-center">
+                    {% for p in companies.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                        {% if p %}
+                        <li class="page-item {% if p == companies.page %}active{% endif %}">
+                            <a class="page-link border-secondary"
+                               style="background: rgba(15,23,42,0.8); color: #9ca3af;"
+                               href="{{ url_for('admin.manage_employers', page=p, status=status_filter, q=search) }}">
+                                {{ p }}
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link border-secondary">…</span>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

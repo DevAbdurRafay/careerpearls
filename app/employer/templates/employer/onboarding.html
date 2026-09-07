@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% block title %}Set Up Your Organization — CareerPearls{% endblock %}
+
+{% block content %}
+<div class="container-fluid pt-2 pb-5" style="max-width: 1600px;">
+    <div class="mb-4">
+        <h2 class="text-white fw-bold mb-1" style="background: linear-gradient(135deg, #4facfe, #7b2ff7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 1.75rem;">Complete Your Organization Profile</h2>
+        <p class="text-pearl small mb-0">Set up your company profile to start connecting with top talent</p>
+    </div>
+    <div class="cp-card p-4 p-md-5" style="background: var(--cp-bg-card); border: 1px solid var(--cp-border); border-radius: 20px; box-shadow: 0 0 40px rgba(79, 172, 254, 0.15), 0 0 80px rgba(123, 47, 247, 0.1); position: relative; overflow: hidden;">
+        <!-- Glowing accent border effect -->
+        <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #4facfe, #7b2ff7, #4facfe); background-size: 200% 100%; animation: glowingBorder 3s ease-in-out infinite;"></div>
+        
+        <style>
+        @keyframes glowingBorder {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        </style>
+        <form method="POST" id="employerOnboardingForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold text-white">
+                    Organization name <span class="text-danger">*</span>
+                </label>
+                <input type="text" name="organization_name" class="form-control cp-input-glow"
+                       value="{{ company.name if company.onboarding_complete else '' }}"
+                       placeholder="e.g. Acme Technologies"
+                       required
+                       style="padding: 0.75rem 1rem; border-radius: 12px;">
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold text-white">
+                    Industry <span class="text-danger">*</span>
+                </label>
+                <input type="text" name="industry" class="form-control cp-input-glow"
+                       value="{{ company.industry or '' }}"
+                       placeholder="e.g., Technology, Healthcare, Finance"
+                       required
+                       style="padding: 0.75rem 1rem; border-radius: 12px;">
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold text-white">
+                    Company Founded Date <span class="text-danger">*</span>
+                </label>
+                <input type="date" name="founded_date" id="founded_date" class="form-control cp-input-glow"
+                       value="{{ company.founded_date.strftime('%Y-%m-%d') if company.founded_date else '' }}"
+                       min="1950-01-01"
+                       max="{{ now.strftime('%Y-%m-%d') if now is defined and now else '' }}"
+                       required
+                       style="padding: 0.75rem 1rem; border-radius: 12px;">
+                <small class="text-muted">When was your company established (1950 to present)? Dynamic company age will be displayed on your profile.</small>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold text-white">
+                    Organization type <span class="text-danger">*</span>
+                </label>
+                <div class="status-cards d-flex flex-wrap gap-2">
+                    {% for value, label in org_type_options %}
+                    <label class="status-card {% if company.organization_type == value %}selected{% endif %}" 
+                           style="flex: 1; min-width: 140px; padding: 1rem; border: 1px solid var(--cp-border); border-radius: 12px; cursor: pointer; transition: all 0.2s ease; background: var(--cp-bg-elevated);">
+                        <input type="radio" name="organization_type" value="{{ value }}"
+                               {% if company.organization_type == value %}checked{% endif %} required class="d-none">
+                        <div class="status-card-title text-center" style="font-size: 0.9rem; font-weight: 500;">{{ label }}</div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold text-white">
+                    Company size <span class="text-danger">*</span>
+                </label>
+                <div class="status-cards d-flex flex-wrap gap-2">
+                    {% for value, label in size_options %}
+                    <label class="status-card {% if company.company_size == value %}selected{% endif %}"
+                           style="flex: 1; min-width: 140px; padding: 1rem; border: 1px solid var(--cp-border); border-radius: 12px; cursor: pointer; transition: all 0.2s ease; background: var(--cp-bg-elevated);">
+                        <input type="radio" name="company_size" value="{{ value }}"
+                               {% if company.company_size == value %}checked{% endif %} required class="d-none">
+                        <div class="status-card-title text-center" style="font-size: 0.9rem; font-weight: 500;">{{ label }}</div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold text-white">
+                    What types of roles do you hire for? <span class="text-danger">*</span>
+                </label>
+                <p class="interest-counter text-pearl small mb-2" id="fieldCounter">Select at least 3 fields (0 selected)</p>
+                <p class="text-pearl small mb-3">Candidates with matching interests will appear when you search for talent — e.g. filter by <strong>Data Analysis</strong> to see students interested in that field.</p>
+                <div class="interest-grid d-flex flex-wrap gap-2" id="fieldGrid">
+                    {% for field in field_options %}
+                    <label class="interest-chip {% if field in selected_fields %}selected{% endif %}"
+                           style="padding: 0.6rem 1.2rem; border: 1px solid var(--cp-border); border-radius: 25px; cursor: pointer; transition: all 0.2s ease; background: var(--cp-bg-elevated); font-size: 0.85rem; position: relative; z-index: 1;">
+                        <input type="checkbox" name="hiring_fields" value="{{ field }}"
+                               {% if field in selected_fields %}checked{% endif %} style="position: absolute; opacity: 0; pointer-events: none;">
+                        <span>{{ field }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold text-white">
+                    What employment types do you offer? <span class="text-danger">*</span>
+                </label>
+                <p class="interest-counter text-pearl small mb-2" id="employmentCounter">Select at least 1 type (0 selected)</p>
+                <div class="interest-grid d-flex flex-wrap gap-2" id="employmentGrid">
+                    {% for emp in employment_options %}
+                    <label class="interest-chip {% if emp in selected_employment %}selected{% endif %}"
+                           style="padding: 0.6rem 1.2rem; border: 1px solid var(--cp-border); border-radius: 25px; cursor: pointer; transition: all 0.2s ease; background: var(--cp-bg-elevated); font-size: 0.85rem; position: relative; z-index: 1;">
+                        <input type="checkbox" name="employment_types" value="{{ emp }}"
+                               {% if emp in selected_employment %}checked{% endif %} style="position: absolute; opacity: 0; pointer-events: none;">
+                        <span>{{ emp }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="text-center mt-5">
+                <button type="submit" class="btn btn-cp-primary px-5 py-3 fw-semibold" id="submitBtn" 
+                        style="border-radius: 12px; background: linear-gradient(135deg, #4facfe 0%, #7b2ff7 100%); border: none; font-size: 1rem; min-width: 250px; box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4), 0 0 30px rgba(123, 47, 247, 0.2); transition: all 0.3s ease;">
+                    Continue to Dashboard
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.querySelectorAll('.status-card').forEach(card => {
+    card.addEventListener('click', () => {
+        const name = card.querySelector('input').name;
+        document.querySelectorAll(`.status-card input[name="${name}"]`).forEach(inp => {
+            inp.closest('.status-card').classList.remove('selected');
+            inp.closest('.status-card').style.background = 'var(--cp-bg-elevated)';
+            inp.closest('.status-card').style.borderColor = 'var(--cp-border)';
+        });
+        card.classList.add('selected');
+        card.style.background = 'rgba(79, 172, 254, 0.15)';
+        card.style.borderColor = 'rgba(79, 172, 254, 0.4)';
+        card.querySelector('input').checked = true;
+    });
+});
+
+// Initialize selected cards
+document.querySelectorAll('.status-card.selected').forEach(card => {
+    card.style.background = 'rgba(79, 172, 254, 0.15)';
+    card.style.borderColor = 'rgba(79, 172, 254, 0.4)';
+});
+
+document.querySelectorAll('.status-card').forEach(card => {
+    card.addEventListener('mouseenter', () => {
+        if (!card.classList.contains('selected')) {
+            card.style.background = 'rgba(255, 255, 255, 0.08)';
+            card.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+        }
+    });
+    card.addEventListener('mouseleave', () => {
+        if (!card.classList.contains('selected')) {
+            card.style.background = 'var(--cp-bg-elevated)';
+            card.style.borderColor = 'var(--cp-border)';
+        }
+    });
+});
+
+const fieldCounter = document.getElementById('fieldCounter');
+const employmentCounter = document.getElementById('employmentCounter');
+const submitBtn = document.getElementById('submitBtn');
+
+function bindChips(gridId, counterEl, minCount, label) {
+    function update() {
+        const checked = document.querySelectorAll(`#${gridId} .interest-chip input:checked`).length;
+        counterEl.textContent = `Select at least ${minCount} ${label} (${checked} selected)`;
+        counterEl.classList.toggle('valid', checked >= minCount);
+        validateForm();
+    }
+    document.querySelectorAll(`#${gridId} .interest-chip`).forEach(chip => {
+        chip.addEventListener('click', (e) => {
+            e.preventDefault();
+            const input = chip.querySelector('input');
+            input.checked = !input.checked;
+            chip.classList.toggle('selected', input.checked);
+            if (input.checked) {
+                chip.style.background = 'rgba(79, 172, 254, 0.15)';
+                chip.style.borderColor = 'rgba(79, 172, 254, 0.4)';
+            } else {
+                chip.style.background = 'var(--cp-bg-elevated)';
+                chip.style.borderColor = 'var(--cp-border)';
+            }
+            update();
+        });
+        
+        chip.querySelector('input').addEventListener('change', (e) => {
+            e.stopPropagation();
+            chip.classList.toggle('selected', chip.querySelector('input').checked);
+            if (chip.querySelector('input').checked) {
+                chip.style.background = 'rgba(79, 172, 254, 0.15)';
+                chip.style.borderColor = 'rgba(79, 172, 254, 0.4)';
+            } else {
+                chip.style.background = 'var(--cp-bg-elevated)';
+                chip.style.borderColor = 'var(--cp-border)';
+            }
+            update();
+        });
+    });
+    update();
+}
+
+// Initialize selected chips
+document.querySelectorAll('.interest-chip.selected').forEach(chip => {
+    chip.style.background = 'rgba(79, 172, 254, 0.15)';
+    chip.style.borderColor = 'rgba(79, 172, 254, 0.4)';
+});
+
+function validateForm() {
+    const fields = document.querySelectorAll('#fieldGrid .interest-chip input:checked').length;
+    const employment = document.querySelectorAll('#employmentGrid .interest-chip input:checked').length;
+    submitBtn.disabled = fields < 3 || employment < 1;
+}
+
+bindChips('fieldGrid', fieldCounter, 3, 'fields');
+bindChips('employmentGrid', employmentCounter, 1, 'types');
+
+// Add hover effect to submit button
+if (submitBtn) {
+    submitBtn.addEventListener('mouseenter', () => {
+        submitBtn.style.boxShadow = '0 6px 20px rgba(79, 172, 254, 0.6), 0 0 40px rgba(123, 47, 247, 0.3)';
+        submitBtn.style.transform = 'translateY(-2px)';
+    });
+    submitBtn.addEventListener('mouseleave', () => {
+        submitBtn.style.boxShadow = '0 4px 15px rgba(79, 172, 254, 0.4), 0 0 30px rgba(123, 47, 247, 0.2)';
+        submitBtn.style.transform = 'translateY(0)';
+    });
+}
+// Disable future date selection for founded_date
+const fdInput = document.getElementById('founded_date');
+if (fdInput) {
+    fdInput.setAttribute('max', new Date().toISOString().split('T')[0]);
+}
+</script>
+{% endblock %}

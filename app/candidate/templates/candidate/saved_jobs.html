@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Saved Jobs — CareerPearls{% endblock %}
+{% from '_loading_states.html' import loading_spinner %}
+{% from '_empty_states.html' import empty_state_saved_jobs %}
+{% from '_job_card.html' import render_job_card %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header Card -->
+    <div class="cp-page-header-card d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4 p-4 rounded-4" style="background: var(--cp-bg-card); border: 1px solid var(--cp-border); box-shadow: 0 4px 20px rgba(0,0,0,0.06);">
+        <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width: 50px; height: 50px; border-radius: 14px; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3);">
+                <i class="bi bi-bookmark-heart-fill text-primary fs-3"></i>
+            </div>
+            <div>
+                <h3 class="fw-bold mb-1 cp-saved-title" style="font-size: 1.4rem;">Saved Jobs</h3>
+                <p class="small mb-0 cp-saved-subtitle" style="color: var(--cp-text-muted);">Review positions you've bookmarked for later and submit your applications anytime.</p>
+            </div>
+        </div>
+        <div>
+            <a href="{{ url_for('explore') }}" class="btn btn-sm btn-cp-primary px-4 py-2">
+                <i class="bi bi-search me-1"></i> Browse More Jobs
+            </a>
+        </div>
+    </div>
+
+    <!-- Job Cards Grid -->
+    <div class="row">
+        {% if saved.items %}
+            {% for item in saved.items %}
+                {% if item.job %}
+                    {{ render_job_card(item.job, mode='saved') }}
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <div class="col-12 py-3">
+                {{ empty_state_saved_jobs(url_for('explore')) }}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    {% if saved.pages > 1 %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% for p in saved.iter_pages() %}
+                {% if p %}
+                <li class="page-item {% if p == saved.page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('candidate.saved_jobs', page=p) }}">{{ p }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
