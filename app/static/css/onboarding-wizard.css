@@ -360,3 +360,100 @@
         flex: 1 1 auto;
     }
 }
+
+/* ==========================================================================
+   Light Theme Overrides — High Contrast Onboarding & Profile Setup
+   ========================================================================== */
+:root[data-theme="light"] .cp-wizard-shell,
+:root[data-theme="light"] .cp-onboarding-page {
+    color: #0f172a !important;
+}
+
+:root[data-theme="light"] .cp-wizard-card,
+:root[data-theme="light"] .cp-card,
+:root[data-theme="light"] .profile-section {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06) !important;
+}
+
+:root[data-theme="light"] .cp-wizard-title,
+:root[data-theme="light"] .cp-wizard-identity-name,
+:root[data-theme="light"] .profile-section-title,
+:root[data-theme="light"] .cp-wizard-subsection-title {
+    color: #0f172a !important;
+}
+
+:root[data-theme="light"] .cp-wizard-subtitle,
+:root[data-theme="light"] .cp-subtext,
+:root[data-theme="light"] .cp-field-hint,
+:root[data-theme="light"] .cp-wizard-identity-label {
+    color: #475569 !important;
+}
+
+:root[data-theme="light"] .form-label,
+:root[data-theme="light"] .cp-label,
+:root[data-theme="light"] .cp-wizard-form .form-label,
+:root[data-theme="light"] label.form-label {
+    color: #1e293b !important;
+    font-weight: 600 !important;
+}
+
+:root[data-theme="light"] .status-card,
+:root[data-theme="light"] label.status-card {
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+:root[data-theme="light"] .status-card .text-white,
+:root[data-theme="light"] .status-card-title,
+:root[data-theme="light"] .status-card div {
+    color: #0f172a !important;
+    font-weight: 600 !important;
+}
+
+:root[data-theme="light"] .status-card.selected,
+:root[data-theme="light"] label.status-card.selected {
+    background: #e0f2fe !important;
+    border-color: #0284c7 !important;
+    color: #0369a1 !important;
+}
+
+:root[data-theme="light"] .status-card.selected .text-white,
+:root[data-theme="light"] .status-card.selected .status-card-title,
+:root[data-theme="light"] .status-card.selected div {
+    color: #0369a1 !important;
+}
+
+:root[data-theme="light"] .interest-chip,
+:root[data-theme="light"] label.interest-chip,
+:root[data-theme="light"] span.interest-chip {
+    background: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #1e293b !important;
+}
+
+:root[data-theme="light"] .interest-chip.selected,
+:root[data-theme="light"] label.interest-chip.selected,
+:root[data-theme="light"] span.interest-chip.selected {
+    background: #e0f2fe !important;
+    border-color: #0284c7 !important;
+    color: #0369a1 !important;
+    font-weight: 600 !important;
+}
+
+:root[data-theme="light"] .cp-input-glow,
+:root[data-theme="light"] input.form-control,
+:root[data-theme="light"] select.form-select,
+:root[data-theme="light"] textarea.form-control {
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+:root[data-theme="light"] .cp-input-glow::placeholder,
+:root[data-theme="light"] input.form-control::placeholder,
+:root[data-theme="light"] textarea.form-control::placeholder {
+    color: #94a3b8 !important;
+}

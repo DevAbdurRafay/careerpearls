@@ -200,15 +200,11 @@ def dashboard():
     jobs = Job.query.filter_by(company_id=company.id).all()
     job_ids = [j.id for j in jobs]
 
-    twelve_hours_ago = datetime.utcnow() - timedelta(hours=12)
     recent_applications = (
         Application.query.join(Job)
         .filter(
             Job.company_id == company.id,
-            or_(
-                Application.status != 'Withdrawn',
-                and_(Application.status == 'Withdrawn', Application.withdrawn_at >= twelve_hours_ago)
-            )
+            Application.status != 'Withdrawn'
         )
         .order_by(Application.applied_at.desc())
         .options(
@@ -412,8 +408,8 @@ def post_job():
     form.category_id.choices = [(c.id, c.name) for c in JobCategory.query.order_by(JobCategory.name).all()]
 
     if form.validate_on_submit():
-        if form.closes_at.data and form.closes_at.data.date() < datetime.utcnow().date():
-            flash('Job expiry date cannot be in the past.', 'danger')
+        if form.closes_at.data and form.closes_at.data < datetime.utcnow():
+            flash('Application deadline date cannot be in the past. Please select a future date & time.', 'danger')
             return render_template('employer/post_job.html', form=form)
 
         job = Job(
@@ -439,6 +435,20 @@ def post_job():
 
         create_audit_log(current_user.id, 'job_posted', 'Job', job.id)
         db.session.commit()
+        
+        # Trigger automated job notifications to candidates
+        try:
+            from app.models import Candidate
+            from app.email_utils import send_job_notifier_email
+            subscribed_cands = Candidate.query.filter(
+                or_(Candidate.job_notifier_enabled == True, Candidate.job_notifier_enabled.is_(None))
+            ).all()
+            for cand in subscribed_cands:
+                if cand.user and cand.user.email:
+                    send_job_notifier_email(cand, job)
+        except Exception as mail_err:
+            current_app.logger.warning(f"Job notification email error: {mail_err}")
+
         flash('Job posted successfully and is now visible to candidates!', 'success')
         return redirect(url_for('employer.dashboard'))
 
@@ -462,6 +472,11 @@ def manage_applications():
     # Calculate comprehensive metrics
     jobs = Job.query.filter_by(company_id=company.id).all()
     job_ids = [j.id for j in jobs]
+    active_jobs = Job.query.filter(
+        Job.company_id == company.id,
+        Job.status == 'active',
+        or_(Job.is_hired == False, Job.is_hired.is_(None))
+    ).count()
 
     # Mark all unread applications for this employer as read when visiting applications page
     if job_ids:
@@ -471,7 +486,10 @@ def manage_applications():
         ).update({'is_read_by_employer': True}, synchronize_session=False)
         db.session.commit()
 
-    total_applications = Application.query.filter(Application.job_id.in_(job_ids)).count() if job_ids else 0
+    total_applications = Application.query.filter(
+        Application.job_id.in_(job_ids),
+        Application.status != 'Withdrawn'
+    ).count() if job_ids else 0
     contacted_count = Application.query.filter(Application.job_id.in_(job_ids), Application.status.in_(['Contacted', 'Interview Scheduled'])).count() if job_ids else 0
     rejected_count = Application.query.filter(Application.job_id.in_(job_ids), Application.status == 'Rejected').count() if job_ids else 0
     under_review_count = Application.query.filter(Application.job_id.in_(job_ids), Application.status == 'Under Review').count() if job_ids else 0
@@ -500,15 +518,11 @@ def manage_applications():
     shortlisted = Application.query.filter(Application.job_id.in_(job_ids), Application.status == 'Shortlisted').count() if job_ids else 0
     offer_acceptance = round((selected / total_applications * 100), 1) if total_applications else 0
 
-    twelve_hours_ago = datetime.utcnow() - timedelta(hours=12)
     query = (
         Application.query.join(Job)
         .filter(
             Job.company_id == recruiter.company_id,
-            or_(
-                Application.status != 'Withdrawn',
-                and_(Application.status == 'Withdrawn', Application.withdrawn_at >= twelve_hours_ago)
-            )
+            Application.status != 'Withdrawn'
         )
     )
     if status_filter:
@@ -1520,8 +1534,8 @@ def edit_job(job_id):
     form.category_id.choices = [(c.id, c.name) for c in JobCategory.query.order_by(JobCategory.name).all()]
 
     if form.validate_on_submit():
-        if form.closes_at.data and form.closes_at.data.date() < datetime.utcnow().date():
-            flash('Job expiry date cannot be in the past.', 'danger')
+        if form.closes_at.data and form.closes_at.data < datetime.utcnow():
+            flash('Application deadline date cannot be in the past. Please select a future date & time.', 'danger')
             return render_template('employer/edit_job.html', form=form, job=job)
         job.title = form.title.data.strip()
         job.category_id = form.category_id.data

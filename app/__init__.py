@@ -72,12 +72,17 @@ def create_app(config_class=Config):
 
     with app.app_context():
         try:
-            db.session.execute(db.text("ALTER TABLE applications ADD COLUMN is_read_by_employer BOOLEAN DEFAULT 0"))
+            db.session.execute(db.text("ALTER TABLE applications ADD COLUMN IF NOT EXISTS is_read_by_employer BOOLEAN DEFAULT FALSE"))
             db.session.commit()
         except Exception:
             db.session.rollback()
         try:
-            db.session.execute(db.text("ALTER TABLE applications ADD COLUMN is_read_by_candidate BOOLEAN DEFAULT 1"))
+            db.session.execute(db.text("ALTER TABLE applications ADD COLUMN IF NOT EXISTS is_read_by_candidate BOOLEAN DEFAULT TRUE"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+        try:
+            db.session.execute(db.text("ALTER TABLE candidates ADD COLUMN IF NOT EXISTS job_notifier_enabled BOOLEAN DEFAULT TRUE"))
             db.session.commit()
         except Exception:
             db.session.rollback()
@@ -478,7 +483,7 @@ def create_app(config_class=Config):
             return redirect(url_for('auth.login', role='candidate', next=request.url))
         
         target_type = request.args.get('target_type') or request.form.get('target_type') or 'Job'
-        target_id = request.args.get('target_id') or request.form.get('target_id') or None
+        target_id = request.args.get('target_id') or request.args.get('job_id') or request.form.get('target_id') or request.form.get('job_id') or None
         if target_id:
             try:
                 target_id = int(target_id)
@@ -486,16 +491,24 @@ def create_app(config_class=Config):
                 target_id = None
         
         job = None
-        if target_type == 'Job' and target_id:
+        if target_id:
             job = Job.query.get(target_id)
+            if job:
+                target_type = 'Job'
             
         user_email = current_user.email if (current_user and current_user.is_authenticated) else None
+        active_statuses = ['Pending', 'Under Review', 'In Progress', 'In Review', 'Open']
+        active_complaints = []
+        active_complaints_count = 0
         existing_active = None
         if user_email:
-            existing_active = Complaint.query.filter(
+            active_complaints = Complaint.query.filter(
                 Complaint.complainant_email.ilike(user_email.strip()),
-                Complaint.status.in_(['Pending', 'Under Review', 'In Progress'])
-            ).order_by(Complaint.created_at.desc()).first()
+                Complaint.status.in_(active_statuses)
+            ).order_by(Complaint.created_at.desc()).all()
+            active_complaints_count = len(active_complaints)
+            if active_complaints:
+                existing_active = active_complaints[0]
 
         if request.method == 'POST':
             name = request.form.get('complainant_name', '').strip()
@@ -516,24 +529,26 @@ def create_app(config_class=Config):
                 user_id = None
                 if not name or not email:
                     flash('Please provide your name and email address.', 'danger')
-                    return render_template('complaint_form.html', job=job, target_type=target_type, target_id=target_id, existing_active=existing_active)
+                    return render_template('complaint_form.html', job=job, target_type=target_type, target_id=target_id, active_complaints=active_complaints, active_complaints_count=active_complaints_count, max_active_complaints=5, existing_active=existing_active)
 
-            # Prevent duplicate / spam complaints: Single active complaint allowed per email until resolved
-            pending_complaint = Complaint.query.filter(
-                Complaint.complainant_email.ilike(email),
-                Complaint.status.in_(['Pending', 'Under Review', 'In Progress', 'In Review', 'Open'])
-            ).order_by(Complaint.created_at.desc()).first()
+            # Enforce maximum 5 active complaints limit per email address
+            email_active_complaints = Complaint.query.filter(
+                Complaint.complainant_email.ilike(email.strip()),
+                Complaint.status.in_(active_statuses)
+            ).order_by(Complaint.created_at.desc()).all()
+            email_active_count = len(email_active_complaints)
+            email_existing_active = email_active_complaints[0] if email_active_complaints else None
 
-            if pending_complaint:
+            if email_active_count >= 5:
                 flash(
-                    f'You already have an active complaint under review ({pending_complaint.ticket_id}: "{pending_complaint.subject}"). To maintain platform integrity, a single email address can only have one open ticket at a time until it is resolved by our Trust & Safety Team.',
+                    f'Active Complaint Limit Reached: You currently have {email_active_count}/5 active tickets under investigation. Once an open ticket is resolved by our Trust & Safety Team, you will be able to file new reports.',
                     'warning'
                 )
-                return render_template('complaint_form.html', job=job, target_type=target_type, target_id=target_id, existing_active=pending_complaint)
+                return render_template('complaint_form.html', job=job, target_type=target_type, target_id=target_id, active_complaints=email_active_complaints, active_complaints_count=email_active_count, max_active_complaints=5, existing_active=email_existing_active)
             
             if not category or not description:
                 flash('Please select a complaint category and provide a full description.', 'danger')
-                return render_template('complaint_form.html', job=job, target_type=target_type, target_id=target_id, existing_active=existing_active)
+                return render_template('complaint_form.html', job=job, target_type=target_type, target_id=target_id, active_complaints=active_complaints, active_complaints_count=active_complaints_count, max_active_complaints=5, existing_active=existing_active)
                 
             # Handle attachment upload
             attachment_url = None
@@ -555,6 +570,13 @@ def create_app(config_class=Config):
             while Complaint.query.filter_by(ticket_id=ticket_id).first():
                 ticket_id = f"#CMP-{random.randint(1000, 9999)}"
                 
+            # Check form for specific target job ID
+            selected_job_id = request.form.get('target_job_id') or request.form.get('target_id') or request.form.get('against_job_id')
+            if selected_job_id and str(selected_job_id).isdigit():
+                sel_job = Job.query.get(int(selected_job_id))
+                if sel_job:
+                    job = sel_job
+
             # Intelligently assign Reported Entity Target
             if job:
                 final_target_type = 'Job'
@@ -577,10 +599,14 @@ def create_app(config_class=Config):
                     final_target_type = 'Candidate'
                     final_target_id = None
                     against_job_id = None
-                elif category in ('Fake Job Listing',):
+                elif category in ('Fake Job Listing',) or form_target_type == 'Job':
                     final_target_type = 'Job'
-                    final_target_id = int(form_target_id) if form_target_id and form_target_id.isdigit() else None
-                    against_job_id = final_target_id
+                    if form_target_id and str(form_target_id).isdigit():
+                        final_target_id = int(form_target_id)
+                        against_job_id = final_target_id
+                    else:
+                        final_target_id = None
+                        against_job_id = None
                 else:
                     final_target_type = form_target_type or 'General Support'
                     final_target_id = int(form_target_id) if form_target_id and form_target_id.isdigit() else None
@@ -623,7 +649,8 @@ def create_app(config_class=Config):
             flash(f'Your complaint has been successfully submitted with Ticket ID: {ticket_id}. We have also sent a confirmation to your email.', 'success')
             return redirect(url_for('index'))
             
-        return render_template('complaint_form.html', job=job, target_type=target_type, target_id=target_id, existing_active=existing_active)
+        all_jobs = Job.query.filter_by(status='active').order_by(Job.title.asc()).all()
+        return render_template('complaint_form.html', job=job, target_type=target_type, target_id=target_id, active_complaints=active_complaints, active_complaints_count=active_complaints_count, max_active_complaints=5, existing_active=existing_active, all_jobs=all_jobs)
 
     try:
         with app.app_context():

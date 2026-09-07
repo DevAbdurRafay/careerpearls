@@ -125,6 +125,7 @@ class Candidate(db.Model):
     location_verified_at = db.Column(db.DateTime, nullable=True)
     location_verified_by_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     onboarding_complete = db.Column(db.Boolean, default=False, nullable=False)
+    job_notifier_enabled = db.Column(db.Boolean, default=True, nullable=False)
 
     skills = db.relationship('CandidateSkill', backref='candidate', lazy='dynamic', cascade='all, delete-orphan')
     interests = db.relationship('CandidateInterest', backref='candidate', lazy='dynamic', cascade='all, delete-orphan')
@@ -781,6 +782,19 @@ class Complaint(db.Model):
         if self.raised_by_user and self.raised_by_user.role:
             return self.raised_by_user.role.title()
         return "Guest Complainant"
+
+    @property
+    def target_job(self):
+        from app.models import Job
+        if self.against_job_id:
+            j = Job.query.get(self.against_job_id)
+            if j:
+                return j
+        if (self.reported_entity_type or '').lower() == 'job' and self.reported_entity_id:
+            j = Job.query.get(self.reported_entity_id)
+            if j:
+                return j
+        return None
 
 
 

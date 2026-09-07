@@ -446,6 +446,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    // Lock out past dates on application deadline picker
+    const closesAtInput = document.getElementById('closes_at');
+    if (closesAtInput) {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        closesAtInput.min = now.toISOString().slice(0, 16);
+    }
 });
 </script>
 {% endblock %}

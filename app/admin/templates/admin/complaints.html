@@ -93,6 +93,30 @@
     transform: translateY(-1px);
     box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35);
 }
+.cp-admin-btn-view, .cp-admin-btn-success, .cp-admin-btn-danger {
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.cp-admin-btn-view:hover {
+    background: rgba(56, 189, 248, 0.28) !important;
+    color: #ffffff !important;
+    border-color: #38bdf8 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 14px rgba(56, 189, 248, 0.35) !important;
+}
+.cp-admin-btn-success:hover {
+    background: rgba(16, 185, 129, 0.28) !important;
+    color: #ffffff !important;
+    border-color: #34d399 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35) !important;
+}
+.cp-admin-btn-danger:hover {
+    background: rgba(239, 68, 68, 0.28) !important;
+    color: #ffffff !important;
+    border-color: #f87171 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35) !important;
+}
 </style>
 {% endblock %}
 
@@ -237,11 +261,22 @@
 
                         {# Reported Entity #}
                         <td class="px-3 py-3">
+                            {% set tjob = c.target_job %}
+                            {% if tjob %}
+                            <div class="d-flex flex-column gap-1">
+                                <span class="badge px-2.5 py-1 rounded-pill d-inline-flex align-items-center gap-1 w-auto me-auto" style="background: rgba(6, 182, 212, 0.14); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.35); font-size: 0.78rem; font-weight: 600;">
+                                    <i class="bi bi-briefcase-fill"></i><span>Job Listing</span>
+                                </span>
+                                <strong class="text-white small text-truncate" style="max-width: 180px;" title="{{ tjob.title }}">{{ tjob.title }}</strong>
+                                <span class="text-info small text-truncate" style="max-width: 180px; font-size: 0.76rem;" title="{{ tjob.company.name if tjob.company else 'N/A' }}"><i class="bi bi-building me-1"></i>{{ tjob.company.name if tjob.company else 'N/A' }}</span>
+                            </div>
+                            {% else %}
                             <span class="badge px-2.5 py-1.5 rounded-pill d-inline-flex align-items-center gap-1" style="background: rgba(6, 182, 212, 0.12); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.3); font-size: 0.78rem; font-weight: 600;">
                                 <i class="bi bi-tag-fill"></i>
-                                <span>{{ c.reported_entity_type or 'Job' }}</span>
+                                <span>{{ c.reported_entity_type or 'Platform / UI' }}</span>
                                 {% if c.reported_entity_id %}<span>#{{ c.reported_entity_id }}</span>{% endif %}
                             </span>
+                            {% endif %}
                         </td>
 
                         {# Evidence Proof #}
@@ -362,8 +397,6 @@
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                     </div>
 
-                    <form method="POST" action="{{ url_for('admin.update_complaint', complaint_id=c.id) }}">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <div class="modal-body p-4">
 
                             {# 1. Complainant Identity Dossier #}
@@ -389,7 +422,7 @@
                                             {{ sender_role }}
                                         </span>
                                     </div>
-                                    <div class="col-md-6">
+                                     <div class="col-md-6">
                                         <span class="text-muted d-block mb-1">Reported Entity Target:</span>
                                         <span class="text-white fw-semibold">
                                             {{ c.reported_entity_type or 'Platform / UI' }}
@@ -398,6 +431,103 @@
                                     </div>
                                 </div>
                             </div>
+
+                            {# Reported Job Details & Direct Admin Actions #}
+                            {% set tjob = c.target_job %}
+                            {% if tjob %}
+                            <div class="rounded-4 p-4 mb-4" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.9)); border: 1.5px solid rgba(56, 189, 248, 0.35); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3.5 pb-3 border-bottom" style="border-color: rgba(255, 255, 255, 0.12) !important;">
+                                    <div class="d-flex align-items-center gap-2.5">
+                                        <div class="d-flex align-items-center justify-content-center" style="width: 38px; height: 38px; border-radius: 10px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35);">
+                                            <i class="bi bi-briefcase-fill fs-5"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="text-white fw-bold mb-0" style="font-size: 1.02rem;">Reported Job Listing Details</h6>
+                                            <span class="text-muted small" style="font-size: 0.78rem;">Verified platform job posting tied to this dispute</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        {% if tjob.status == 'unpublished' or tjob.approval_status == 'unpublished' or tjob.unpublish_reason %}
+                                        <span class="badge px-3 py-1.5 rounded-pill" style="background: rgba(239, 68, 68, 0.18); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.45); font-size: 0.8rem; font-weight: 600;">
+                                            <i class="bi bi-eye-slash-fill me-1"></i>Unpublished
+                                        </span>
+                                        {% else %}
+                                        <span class="badge px-3 py-1.5 rounded-pill" style="background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.45); font-size: 0.8rem; font-weight: 600;">
+                                            <i class="bi bi-check-circle-fill me-1"></i>Active Live Job
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="row g-3 small mb-3.5">
+                                    <div class="col-md-6">
+                                        <span class="text-muted d-block mb-1">Job Title:</span>
+                                        <strong class="text-white fs-6 mb-0 d-block">{{ tjob.title }}</strong>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <span class="text-muted d-block mb-1">Hiring Organization / Company:</span>
+                                        <strong class="text-info fs-6 mb-0 d-block"><i class="bi bi-building me-1"></i>{{ tjob.company.name if tjob.company else 'N/A' }}</strong>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <span class="text-muted d-block mb-1">Category &amp; Employment Type:</span>
+                                        <span class="text-white font-semibold">{{ tjob.category.name if tjob.category else 'General' }} · {{ (tjob.employment_type or 'Full Time')|replace('_',' ')|title }}</span>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <span class="text-muted d-block mb-1">Location:</span>
+                                        <span class="text-white font-semibold"><i class="bi bi-geo-alt me-1 text-warning"></i>{{ tjob.location or 'Karachi, Pakistan' }}</span>
+                                    </div>
+                                </div>
+
+                                {% if tjob.unpublish_reason %}
+                                <div class="p-3 rounded-3 mb-3.5" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #fca5a5; font-size: 0.82rem;">
+                                    <strong><i class="bi bi-exclamation-triangle-fill me-1"></i>Unpublish Reason:</strong> {{ tjob.unpublish_reason }}
+                                </div>
+                                {% endif %}
+
+                                {# Direct Actions Row #}
+                                <div class="d-flex align-items-center flex-wrap gap-3 pt-3 mt-2 border-top" style="border-color: rgba(255, 255, 255, 0.12) !important;">
+                                    <a href="{{ url_for('admin.job_detail', job_id=tjob.id) }}" target="_blank" 
+                                       class="btn btn-sm px-3.5 py-2 fw-semibold d-inline-flex align-items-center gap-2 cp-admin-btn-view"
+                                       style="background: rgba(56, 189, 248, 0.14); color: #38bdf8; border: 1.5px solid rgba(56, 189, 248, 0.4); border-radius: 12px; text-decoration: none;">
+                                        <i class="bi bi-box-arrow-up-right"></i>
+                                        <span>View Job on Site</span>
+                                    </a>
+
+                                    {% if tjob.status == 'unpublished' or tjob.approval_status == 'unpublished' or tjob.unpublish_reason %}
+                                    <form method="POST" action="{{ url_for('admin.publish_job', job_id=tjob.id) }}" class="d-inline m-0">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-sm px-3.5 py-2 fw-semibold d-inline-flex align-items-center gap-2 cp-admin-btn-success" style="background: rgba(16, 185, 129, 0.16); color: #34d399; border: 1.5px solid rgba(16, 185, 129, 0.45); border-radius: 12px;">
+                                            <i class="bi bi-arrow-counterclockwise"></i>
+                                            <span>Republish Job</span>
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <button type="button" class="btn btn-sm px-3.5 py-2 fw-semibold d-inline-flex align-items-center gap-2 cp-admin-btn-danger" style="background: rgba(239, 68, 68, 0.16); color: #f87171; border: 1.5px solid rgba(239, 68, 68, 0.45); border-radius: 12px;" data-bs-toggle="collapse" data-bs-target="#unpublishCollapse{{ c.id }}">
+                                        <i class="bi bi-slash-circle-fill"></i>
+                                        <span>Unpublish Job</span>
+                                    </button>
+                                    {% endif %}
+                                </div>
+
+                                {# Collapsible Unpublish Reason Form #}
+                                {% if tjob.status != 'unpublished' and tjob.approval_status != 'unpublished' and not tjob.unpublish_reason %}
+                                <div class="collapse mt-3" id="unpublishCollapse{{ c.id }}">
+                                    <form method="POST" action="{{ url_for('admin.unpublish_job', job_id=tjob.id) }}" class="p-3 rounded-3" style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.3);">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <label class="form-label small fw-bold text-white mb-1.5 d-flex align-items-center gap-1">
+                                            <i class="bi bi-exclamation-octagon text-danger"></i>
+                                            <span>Specify Mandatory Reason for Unpublishing Job:</span>
+                                        </label>
+                                        <textarea name="reason" class="form-control form-control-sm text-white mb-2" rows="2" style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 8px;" placeholder="Provide detailed explanation for unpublishing (e.g. Reported for misleading info, duplicate, policy violation...)" required></textarea>
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary px-3 py-1" data-bs-toggle="collapse" data-bs-target="#unpublishCollapse{{ c.id }}">Cancel</button>
+                                            <button type="submit" class="btn btn-sm btn-danger px-3 py-1 fw-bold"><i class="bi bi-check-lg me-1"></i>Confirm &amp; Unpublish</button>
+                                        </div>
+                                    </form>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
 
                             {# 2. Subject & Detailed Description #}
                             <div class="mb-4">
@@ -428,39 +558,41 @@
                             </div>
                             {% endif %}
 
-                            {# 4. Admin Resolution Controls #}
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label text-muted small fw-semibold">Update Ticket Status</label>
-                                    <select name="status" class="form-select border-secondary" style="background: rgba(15, 23, 42, 0.9); color: #fff; border-radius: 10px;">
-                                        <option value="Pending" {% if modal_stat in ['pending', 'open'] %}selected{% endif %}>Pending Investigation</option>
-                                        <option value="In Review" {% if modal_stat in ['in review', 'under review', 'in progress'] %}selected{% endif %}>In Review (Assigned)</option>
-                                        <option value="Resolved" {% if modal_stat in ['resolved', 'closed', 'settled'] %}selected{% endif %}>Resolved (Issue Settled)</option>
-                                        <option value="Rejected" {% if modal_stat in ['rejected', 'dismissed'] %}selected{% endif %}>Rejected (Invalid / Dismissed)</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6 d-flex align-items-end">
-                                    <div class="form-check p-2.5 rounded-3 w-100" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08);">
-                                        <input class="form-check-input ms-1 me-2" type="checkbox" name="send_email" id="sendEmail{{ c.id }}" value="1" checked>
-                                        <label class="form-check-label text-white small" for="sendEmail{{ c.id }}">
-                                            Email Status Notification to Complainant
-                                        </label>
+                            {# 4. Admin Resolution Controls Form #}
+                            <form method="POST" action="{{ url_for('admin.update_complaint', complaint_id=c.id) }}">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label text-muted small fw-semibold">Update Ticket Status</label>
+                                        <select name="status" class="form-select border-secondary" style="background: rgba(15, 23, 42, 0.9); color: #fff; border-radius: 10px;">
+                                            <option value="Pending" {% if modal_stat in ['pending', 'open'] %}selected{% endif %}>Pending Investigation</option>
+                                            <option value="In Review" {% if modal_stat in ['in review', 'under review', 'in progress'] %}selected{% endif %}>In Review (Assigned)</option>
+                                            <option value="Resolved" {% if modal_stat in ['resolved', 'closed', 'settled'] %}selected{% endif %}>Resolved (Issue Settled)</option>
+                                            <option value="Rejected" {% if modal_stat in ['rejected', 'dismissed'] %}selected{% endif %}>Rejected (Invalid / Dismissed)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 d-flex align-items-end">
+                                        <div class="form-check p-2.5 rounded-3 w-100" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08);">
+                                            <input class="form-check-input ms-1 me-2" type="checkbox" name="send_email" id="sendEmail{{ c.id }}" value="1" checked>
+                                            <label class="form-check-label text-white small" for="sendEmail{{ c.id }}">
+                                                Email Status Notification to Complainant
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label text-muted small fw-semibold">Admin Resolution Note / Investigation Summary</label>
+                                        <textarea name="admin_note" rows="3" class="form-control border-secondary" style="background: rgba(15, 23, 42, 0.9); color: #fff; border-radius: 10px;" placeholder="Document internal findings, actions taken, or reply note for the complainant...">{{ c.admin_note or '' }}</textarea>
                                     </div>
                                 </div>
-                                <div class="col-12">
-                                    <label class="form-label text-muted small fw-semibold">Admin Resolution Note / Investigation Summary</label>
-                                    <textarea name="admin_note" rows="3" class="form-control border-secondary" style="background: rgba(15, 23, 42, 0.9); color: #fff; border-radius: 10px;" placeholder="Document internal findings, actions taken, or reply note for the complainant...">{{ c.admin_note or '' }}</textarea>
+                                <div class="modal-footer border-secondary p-3 mt-4">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <button type="submit" class="btn btn-sm fw-semibold px-4 py-2" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; border-radius: 10px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);">
+                                        Save Resolution &amp; Update
+                                    </button>
                                 </div>
-                            </div>
+                            </form>
 
                         </div>
-                        <div class="modal-footer border-secondary p-3">
-                            <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-sm fw-semibold px-4 py-2" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none; border-radius: 10px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);">
-                                Save Resolution &amp; Update
-                            </button>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>

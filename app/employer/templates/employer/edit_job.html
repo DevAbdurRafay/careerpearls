@@ -120,3 +120,16 @@
     </div>
 </div>
 {% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const closesAtInput = document.querySelector('input[name="closes_at"]');
+    if (closesAtInput) {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        closesAtInput.min = now.toISOString().slice(0, 16);
+    }
+});
+</script>
+{% endblock %}

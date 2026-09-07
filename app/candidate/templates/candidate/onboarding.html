@@ -20,7 +20,7 @@
                         <input type="radio" name="career_status" value="{{ value }}" class="d-none career-status-radio" {% if current_status == value %}checked{% endif %}>
                         <div class="status-card p-3 rounded h-100 d-flex align-items-center justify-content-between {% if current_status == value %}selected{% endif %}">
                             <div>
-                                <div class="fw-semibold text-white mb-0">{{ parts[0] }}</div>
+                                <div class="fw-semibold mb-0">{{ parts[0] }}</div>
                                 {% if parts|length > 1 %}
                                 <div class="cp-subtext">{{ parts[1] }}</div>
                                 {% endif %}

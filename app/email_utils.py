@@ -588,4 +588,158 @@ def send_interview_reminder_email(candidate_email, candidate_name, company_name,
     return ok, err
 
 
+def send_job_application_email(candidate, job):
+    """
+    Sends confirmation email to candidate's registered email address upon applying for a job.
+    Includes job title, company name, location, applied date, and a 'View Job' button.
+    """
+    if not candidate or not candidate.user or not candidate.user.email or not job:
+        return False, "Invalid candidate or job."
+
+    cand_email = candidate.user.email
+    cand_name = candidate.full_name or candidate.user.name or "Candidate"
+    comp_name = job.company.name if (job and job.company) else "Employer"
+    job_title = job.title
+    job_loc = job.location or "Not Specified"
+    emp_type = job.employment_type or "Full-time"
+    base_url = current_app.config.get('APP_BASE_URL', 'http://127.0.0.1:5000')
+    job_url = f"{base_url}/jobs/{job.id}"
+
+    subject = f"Application Submitted: {job_title} at {comp_name} — CareerPearls"
+    
+    html_content = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #0f172a; color: #f8fafc; border-radius: 16px; border: 1px solid rgba(255,255,255,0.15);">
+        <div style="text-align: center; margin-bottom: 24px;">
+            <h2 style="color: #38bdf8; margin: 0 0 8px 0; font-size: 24px;">CareerPearls</h2>
+            <p style="color: #94a3b8; margin: 0; font-size: 14px;">Where Great Talent Meets Great Opportunity</p>
+        </div>
+        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1);">
+            <p style="font-size: 16px; color: #e2e8f0; margin-top: 0;">Hi <strong>{cand_name}</strong>,</p>
+            <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6;">You have successfully submitted your application for <strong>{job_title}</strong> at <strong>{comp_name}</strong>.</p>
+            <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 16px 0;">
+            <table style="width: 100%; color: #cbd5e1; font-size: 14px; line-height: 1.8;">
+                <tr><td style="color: #94a3b8; width: 120px;">Position:</td><td><strong style="color: #ffffff;">{job_title}</strong></td></tr>
+                <tr><td style="color: #94a3b8;">Company:</td><td><strong style="color: #38bdf8;">{comp_name}</strong></td></tr>
+                <tr><td style="color: #94a3b8;">Location:</td><td>{job_loc}</td></tr>
+                <tr><td style="color: #94a3b8;">Job Type:</td><td>{emp_type}</td></tr>
+                <tr><td style="color: #94a3b8;">Applied Date:</td><td>{datetime.utcnow().strftime('%b %d, %Y')}</td></tr>
+            </table>
+        </div>
+        <div style="text-align: center; margin: 28px 0;">
+            <a href="{job_url}" style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #ffffff; padding: 12px 32px; font-weight: bold; text-decoration: none; border-radius: 10px; font-size: 15px; display: inline-block; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4);">
+                View Job Listing
+            </a>
+        </div>
+        <p style="color: #94a3b8; font-size: 13px; text-align: center; margin-bottom: 0;">
+            The hiring team at {comp_name} will review your candidate profile. You can track your application status anytime on your Candidate Dashboard.
+        </p>
+    </div>
+    """
+
+    plain_content = f"Hi {cand_name},\n\nYour application for {job_title} at {comp_name} has been submitted successfully.\n\nView Job: {job_url}\n\nCareerPearls"
+    
+    return send_email(subject, [cand_email], plain_body=plain_content, template=None, html_body=html_content)
+
+
+def send_job_withdrawal_email(candidate, job):
+    """
+    Sends confirmation email to candidate's registered email address upon withdrawing a job application.
+    Includes job title, company name, withdrawal date, and a 'View Job' button.
+    """
+    if not candidate or not candidate.user or not candidate.user.email or not job:
+        return False, "Invalid candidate or job."
+
+    cand_email = candidate.user.email
+    cand_name = candidate.full_name or candidate.user.name or "Candidate"
+    comp_name = job.company.name if (job and job.company) else "Employer"
+    job_title = job.title
+    base_url = current_app.config.get('APP_BASE_URL', 'http://127.0.0.1:5000')
+    job_url = f"{base_url}/jobs/{job.id}"
+
+    subject = f"Application Withdrawn: {job_title} at {comp_name} — CareerPearls"
+
+    html_content = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #0f172a; color: #f8fafc; border-radius: 16px; border: 1px solid rgba(239,68,68,0.3);">
+        <div style="text-align: center; margin-bottom: 24px;">
+            <h2 style="color: #ef4444; margin: 0 0 8px 0; font-size: 24px;">CareerPearls</h2>
+            <p style="color: #94a3b8; margin: 0; font-size: 14px;">Application Status Update</p>
+        </div>
+        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1);">
+            <p style="font-size: 16px; color: #e2e8f0; margin-top: 0;">Hi <strong>{cand_name}</strong>,</p>
+            <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6;">As requested, your application for <strong>{job_title}</strong> at <strong>{comp_name}</strong> has been withdrawn.</p>
+            <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 16px 0;">
+            <table style="width: 100%; color: #cbd5e1; font-size: 14px; line-height: 1.8;">
+                <tr><td style="color: #94a3b8; width: 140px;">Position Withdrawn:</td><td><strong style="color: #ffffff;">{job_title}</strong></td></tr>
+                <tr><td style="color: #94a3b8;">Company:</td><td><strong style="color: #ef4444;">{comp_name}</strong></td></tr>
+                <tr><td style="color: #94a3b8;">Withdrawal Date:</td><td>{datetime.utcnow().strftime('%b %d, %Y')}</td></tr>
+            </table>
+        </div>
+        <div style="text-align: center; margin: 28px 0;">
+            <a href="{job_url}" style="background: rgba(255,255,255,0.12); color: #ffffff; padding: 12px 32px; font-weight: bold; text-decoration: none; border-radius: 10px; font-size: 15px; display: inline-block; border: 1px solid rgba(255,255,255,0.25);">
+                View Job Listing
+            </a>
+        </div>
+        <p style="color: #94a3b8; font-size: 13px; text-align: center; margin-bottom: 0;">
+            You can continue searching and applying for other opportunities on CareerPearls.
+        </p>
+    </div>
+    """
+
+    plain_content = f"Hi {cand_name},\n\nYour application for {job_title} at {comp_name} has been withdrawn as requested.\n\nView Job: {job_url}\n\nCareerPearls"
+
+    return send_email(subject, [cand_email], plain_body=plain_content, template=None, html_body=html_content)
+
+
+def send_job_notifier_email(candidate, job):
+    """
+    Sends automated Job Alert email to candidate's registered email address when a new matching job is posted.
+    Includes job highlights and a 'View Job' button.
+    """
+    if not candidate or not candidate.user or not candidate.user.email or not job:
+        return False, "Invalid candidate or job."
+
+    cand_email = candidate.user.email
+    cand_name = candidate.full_name or candidate.user.name or "Candidate"
+    comp_name = job.company.name if (job and job.company) else "Employer"
+    job_title = job.title
+    job_loc = job.location or "Remote / Flexible"
+    emp_type = job.employment_type or "Full-time"
+    base_url = current_app.config.get('APP_BASE_URL', 'http://127.0.0.1:5000')
+    job_url = f"{base_url}/jobs/{job.id}"
+
+    subject = f"New Job Alert: {job_title} at {comp_name} — CareerPearls"
+
+    html_content = f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #0f172a; color: #f8fafc; border-radius: 16px; border: 1px solid rgba(56,189,248,0.3);">
+        <div style="text-align: center; margin-bottom: 24px;">
+            <h2 style="color: #38bdf8; margin: 0 0 8px 0; font-size: 24px;">CareerPearls Job Notifier</h2>
+            <p style="color: #94a3b8; margin: 0; font-size: 14px;">Matching Position Found For Your Profile</p>
+        </div>
+        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 12px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1);">
+            <p style="font-size: 16px; color: #e2e8f0; margin-top: 0;">Hi <strong>{cand_name}</strong>,</p>
+            <p style="color: #cbd5e1; font-size: 15px; line-height: 1.6;">A new job matching your profile skills and headline was just posted by <strong>{comp_name}</strong>!</p>
+            <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 16px 0;">
+            <table style="width: 100%; color: #cbd5e1; font-size: 14px; line-height: 1.8;">
+                <tr><td style="color: #94a3b8; width: 120px;">Position:</td><td><strong style="color: #38bdf8;">{job_title}</strong></td></tr>
+                <tr><td style="color: #94a3b8;">Company:</td><td><strong style="color: #ffffff;">{comp_name}</strong></td></tr>
+                <tr><td style="color: #94a3b8;">Location:</td><td>{job_loc}</td></tr>
+                <tr><td style="color: #94a3b8;">Employment:</td><td>{emp_type}</td></tr>
+            </table>
+        </div>
+        <div style="text-align: center; margin: 28px 0;">
+            <a href="{job_url}" style="background: linear-gradient(135deg, #10b981, #059669); color: #ffffff; padding: 12px 32px; font-weight: bold; text-decoration: none; border-radius: 10px; font-size: 15px; display: inline-block; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
+                View Job &amp; Apply Now
+            </a>
+        </div>
+        <p style="color: #94a3b8; font-size: 13px; text-align: center; margin-bottom: 0;">
+            You received this notification because Job Notifier is enabled on your registered email address ({cand_email}).
+        </p>
+    </div>
+    """
+
+    plain_content = f"Hi {cand_name},\n\nA new job matching your profile was just posted: {job_title} at {comp_name}.\n\nView Job: {job_url}\n\nCareerPearls"
+
+    return send_email(subject, [cand_email], plain_body=plain_content, template=None, html_body=html_content)
+
+
 

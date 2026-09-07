@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Job Inspection — {{ job.title }} — CareerPearls</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: #0b101b;
+            color: #f8fafc;
+            min-height: 100vh;
+            padding-top: 80px;
+        }
+        .cp-admin-topbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(11, 16, 27, 0.96);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1050;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .cp-card-dark {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+        .cp-pill-info {
+            background: rgba(56, 189, 248, 0.12);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 10px;
+            padding: 6px 14px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .cp-pill-success {
+            background: rgba(16, 185, 129, 0.12);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 10px;
+            padding: 6px 14px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .cp-pill-purple {
+            background: rgba(168, 85, 247, 0.12);
+            color: #c084fc;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 10px;
+            padding: 6px 14px;
+            font-size: 0.84rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Dedicated Admin Topbar (NO Candidate Navbar) -->
+    <header class="cp-admin-topbar">
+        <div class="d-flex align-items-center gap-3">
+            <span class="fw-extrabold fs-4 text-white" style="letter-spacing: -0.5px;">
+                <span style="color: #38bdf8;">CareerPearls</span> <span class="badge bg-danger ms-2 px-2.5 py-1 text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">ADMIN INSPECTION MODE</span>
+            </span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{{ url_for('admin.manage_complaints') }}" class="btn btn-sm btn-outline-info px-3 py-1.5 rounded-3 fw-semibold">
+                <i class="bi bi-shield-exclamation me-1"></i> Complaints Desk
+            </a>
+            <a href="{{ url_for('admin.manage_jobs') }}" class="btn btn-sm btn-outline-secondary px-3 py-1.5 rounded-3 me-2">
+                <i class="bi bi-briefcase me-1"></i> Jobs Directory
+            </a>
+            <button onclick="window.close();" class="btn btn-sm btn-danger px-3 py-1.5 rounded-3 fw-bold">
+                <i class="bi bi-x-lg me-1"></i> Close View
+            </button>
+        </div>
+    </header>
+
+    <div class="container py-4">
+        
+        {# Unpublished Alert Banner #}
+        {% set is_unpub = (job.status == 'unpublished' or job.approval_status == 'unpublished' or job.unpublish_reason) %}
+        {% if is_unpub %}
+        <div class="alert alert-danger mb-4 p-4 rounded-4 border-danger shadow-lg d-flex align-items-start gap-3" style="background: rgba(239, 68, 68, 0.15); border: 1.5px solid rgba(239, 68, 68, 0.45); color: #fca5a5;">
+            <i class="bi bi-slash-circle-fill fs-2 text-danger flex-shrink-0 mt-1"></i>
+            <div class="flex-grow-1">
+                <h5 class="fw-bold text-danger mb-1">⚠️ This Job Listing Has Been Unpublished By Admin</h5>
+                <p class="mb-1 small" style="color: #fca5a5; line-height: 1.5;">
+                    <strong>Mandatory Unpublish Reason:</strong> {{ job.unpublish_reason or 'Non-compliant job details' }}
+                </p>
+                <span class="small text-white opacity-75">This job is hidden from the candidate job board and public search.</span>
+            </div>
+            <form method="POST" action="{{ url_for('admin.publish_job', job_id=job.id) }}" class="m-0">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm btn-success px-3 py-2 fw-bold rounded-3 text-nowrap">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Republish Live
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+        <div class="row g-4">
+            <!-- Left Main Column: Job Details Content ONLY -->
+            <div class="col-lg-8">
+                <div class="cp-card-dark p-4 p-md-5">
+                    
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                        <span class="badge px-3 py-1.5 rounded-pill" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.35); font-size: 0.82rem; font-weight: 600;">
+                            {{ job.category.name if job.category else 'General' }}
+                        </span>
+                        <span class="small text-muted">
+                            Job ID: <strong class="text-white">#{{ job.id }}</strong>
+                        </span>
+                    </div>
+
+                    <h2 class="fw-extrabold text-white mb-2" style="font-size: 1.85rem; letter-spacing: -0.5px;">{{ job.title }}</h2>
+
+                    <div class="d-flex align-items-center gap-2 mb-4 pb-3 border-bottom border-secondary border-opacity-25" style="color: #94a3b8; font-size: 0.95rem;">
+                        <span class="fw-semibold text-info"><i class="bi bi-building me-1"></i>{{ job.company.name if job.company else 'Analysis Workforce' }}</span>
+                        <span>•</span>
+                        <span><i class="bi bi-geo-alt text-warning me-1"></i>{{ job.location or 'Karachi, Pakistan' }}</span>
+                    </div>
+
+                    <div class="d-flex flex-wrap align-items-center mb-4" style="gap: 14px !important;">
+                        <span class="cp-pill-info">
+                            <i class="bi bi-geo-alt-fill text-info"></i> {{ job.location or 'Remote' }}
+                        </span>
+                        {% if job.salary_range %}
+                        <span class="cp-pill-success">
+                            <i class="bi bi-wallet2 text-success"></i> {{ job.salary_range }}
+                        </span>
+                        {% endif %}
+                        {% if job.experience_required %}
+                        <span class="cp-pill-purple">
+                            <i class="bi bi-clock-history text-purple"></i> {{ job.experience_required }}
+                        </span>
+                        {% endif %}
+                        <span class="cp-pill-info">
+                            <i class="bi bi-briefcase text-info"></i> {{ (job.employment_type or 'Full Time')|replace('_',' ')|title }}
+                        </span>
+                    </div>
+
+                    {# Job Description #}
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-file-text text-primary"></i>
+                            <span>Job Description</span>
+                        </h5>
+                        <div class="small" style="color: #cbd5e1; line-height: 1.7; white-space: pre-wrap;">{{ job.description }}</div>
+                    </div>
+
+                    {# Requirements / Responsibilities if available #}
+                    {% if job.requirements %}
+                    <div class="mb-4 pt-3 border-top border-secondary border-opacity-25">
+                        <h5 class="fw-bold text-white mb-3 d-flex align-items-center gap-2">
+                            <i class="bi bi-check2-square text-success"></i>
+                            <span>Requirements &amp; Qualifications</span>
+                        </h5>
+                        <div class="small" style="color: #cbd5e1; line-height: 1.7; white-space: pre-wrap;">{{ job.requirements }}</div>
+                    </div>
+                    {% endif %}
+
+                    {# Required Skills #}
+                    {% if job.skills.count() > 0 %}
+                    <div class="pt-3 border-top border-secondary border-opacity-25">
+                        <h6 class="fw-bold text-white mb-2.5">Target Skills &amp; Tech Stack</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for s in job.skills %}
+                            <span class="badge px-3 py-1.5 rounded-pill" style="background: rgba(30, 41, 59, 0.9); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 0.82rem;">
+                                {{ s.skill_name }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+
+            <!-- Right Column: Admin Moderation Dossier & Metadata (NO Apply/Save/Report buttons!) -->
+            <div class="col-lg-4">
+                <div class="cp-card-dark p-4 position-sticky" style="top: 90px;">
+                    
+                    <h5 class="fw-bold text-white mb-3 pb-2 border-bottom border-secondary border-opacity-25 d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-check text-danger"></i>
+                        <span>Admin Inspection Dossier</span>
+                    </h5>
+
+                    <div class="d-flex flex-column gap-3.5 small mb-4">
+                        <div>
+                            <span class="d-block mb-1.5 fw-semibold" style="color: #94a3b8; font-size: 0.84rem;">Live Status:</span>
+                            {% if is_unpub %}
+                            <span class="badge bg-danger px-3 py-1.5 rounded-pill fw-bold" style="font-size: 0.8rem;"><i class="bi bi-eye-slash-fill me-1"></i>Unpublished</span>
+                            {% else %}
+                            <span class="badge bg-success px-3 py-1.5 rounded-pill fw-bold" style="font-size: 0.8rem;"><i class="bi bi-check-circle-fill me-1"></i>Active Live Job</span>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <span class="d-block mb-1.5 fw-semibold" style="color: #94a3b8; font-size: 0.84rem;">Posted Date:</span>
+                            <strong class="text-white fs-6">{{ job.created_at.strftime('%b %d, %Y') }}</strong>
+                        </div>
+                        <div>
+                            <span class="d-block mb-1.5 fw-semibold" style="color: #94a3b8; font-size: 0.84rem;">Application Deadline:</span>
+                            <strong class="text-warning fs-6">{{ job.closes_at.strftime('%b %d, %Y') if job.closes_at else 'No Expiry' }}</strong>
+                        </div>
+                        <div>
+                            <span class="d-block mb-1.5 fw-semibold" style="color: #94a3b8; font-size: 0.84rem;">Hiring Organization:</span>
+                            <strong class="text-info fs-6">{{ job.company.name if job.company else 'Analysis Workforce' }}</strong>
+                        </div>
+                        <div>
+                            <span class="d-block mb-1.5 fw-semibold" style="color: #94a3b8; font-size: 0.84rem;">Recruiter Account:</span>
+                            <span class="text-white fw-semibold fs-6">{{ job.posted_by_recruiter.user.email if (job.posted_by_recruiter and job.posted_by_recruiter.user) else 'Platform Administrator' }}</span>
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-3 mb-4" style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(255, 255, 255, 0.08);">
+                        <span class="text-pearl small d-block mb-1" style="color: #94a3b8;"><i class="bi bi-info-circle me-1 text-info"></i>Admin Note:</span>
+                        <p class="small text-white mb-0" style="font-size: 0.8rem; line-height: 1.45;">
+                            This view is strictly isolated for administrator inspection. Candidate action buttons and public navigations are disabled.
+                        </p>
+                    </div>
+
+                    {# Direct Moderation Actions #}
+                    <div class="d-flex flex-column gap-2 pt-2 border-top border-secondary border-opacity-25">
+                        {% if not is_unpub %}
+                        <button type="button" class="btn btn-danger w-100 py-2.5 fw-bold rounded-3 d-flex align-items-center justify-content-center gap-2" data-bs-toggle="collapse" data-bs-target="#adminUnpublishForm">
+                            <i class="bi bi-slash-circle-fill"></i>
+                            <span>Unpublish Job Listing</span>
+                        </button>
+                        <div class="collapse mt-2" id="adminUnpublishForm">
+                            <form method="POST" action="{{ url_for('admin.unpublish_job', job_id=job.id) }}" class="p-3 rounded-3" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <label class="form-label small fw-bold text-white mb-1">Specify Reason for Unpublishing:</label>
+                                <textarea name="reason" class="form-control form-control-sm text-white mb-2" rows="2" style="background: rgba(15, 23, 42, 0.9); border-color: rgba(239,68,68,0.4);" placeholder="Mandatory unpublish reason..." required></textarea>
+                                <button type="submit" class="btn btn-sm btn-danger w-100 fw-bold">Confirm &amp; Unpublish</button>
+                            </form>
+                        </div>
+                        {% else %}
+                        <form method="POST" action="{{ url_for('admin.publish_job', job_id=job.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-success w-100 py-2.5 fw-bold rounded-3 d-flex align-items-center justify-content-center gap-2">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                                <span>Re-Publish Live Job</span>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Anti-Escape & Browser Back Protection to Google -->
+    <script>
+    (function() {
+        // Intercept browser back button and redirect to Google Search
+        history.pushState(null, "", location.href);
+        window.onpopstate = function () {
+            window.location.replace("https://www.google.com");
+        };
+    })();
+    </script>
+</body>
+</html>

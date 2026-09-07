@@ -79,22 +79,54 @@
     <div class="row justify-content-center">
         <div class="col-lg-8 col-md-10">
             
-            {% if existing_active %}
-            <!-- Existing Active Complaint Notice -->
-            <div class="card mb-4 border-0" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.08)); border: 1.5px solid rgba(245, 158, 11, 0.45) !important; border-radius: 16px; padding: 22px;">
+            {% set current_active_count = active_complaints_count or (1 if existing_active|default(None) else 0) %}
+            {% set active_limit = max_active_complaints or 5 %}
+            {% if current_active_count and current_active_count > 0 %}
+            <!-- Active Complaints Counter & Ticket Dossier -->
+            <div class="card mb-4 border-0" style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.14), rgba(217, 119, 6, 0.08)); border: 1.5px solid rgba(245, 158, 11, 0.45) !important; border-radius: 16px; padding: 22px;">
                 <div class="d-flex align-items-start gap-3">
                     <div class="d-flex align-items-center justify-content-center flex-shrink-0" 
                          style="width: 46px; height: 46px; border-radius: 12px; background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.4);">
                         <i class="bi bi-hourglass-split text-warning fs-4"></i>
                     </div>
-                    <div>
-                        <h5 class="fw-bold text-warning mb-1" style="font-size: 1.1rem;">Active Ticket Under Investigation</h5>
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
+                            <h5 class="fw-bold text-warning mb-0" style="font-size: 1.08rem;">Active Tickets Under Investigation</h5>
+                            <span class="badge px-3 py-1.5 rounded-pill fw-bold" style="background: rgba(245, 158, 11, 0.25); color: #fbbf24; border: 1.5px solid rgba(245, 158, 11, 0.5); font-size: 0.82rem;">
+                                Active Counter: {{ current_active_count }} / {{ active_limit }}
+                            </span>
+                        </div>
                         <p class="small mb-2 text-white" style="line-height: 1.55;">
-                            You have an existing complaint <strong>{{ existing_active.ticket_id }}</strong> (<em>"{{ existing_active.subject }}"</em>) currently marked as <strong>{{ existing_active.status }}</strong>.
+                            Each account/email address can maintain up to <strong>{{ active_limit }}</strong> active tickets under investigation at a time. Once a ticket is marked <strong>Resolved</strong> or <strong>Closed</strong> by our Trust &amp; Safety Team, a slot is automatically freed up.
                         </p>
-                        <p class="small mb-0 text-white-50" style="font-size: 0.82rem;">
-                            To avoid duplicate reports and ensure rapid investigation, a single email address can only maintain one active ticket at a time until resolved by our Trust &amp; Safety Team.
-                        </p>
+
+                        {% if active_complaints %}
+                        <div class="d-flex flex-column gap-2 mt-3 pt-2.5 border-top" style="border-color: rgba(245, 158, 11, 0.25) !important;">
+                            {% for ac in active_complaints %}
+                            <div class="d-flex align-items-center justify-content-between p-2.5 rounded-3" style="background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(245, 158, 11, 0.3);">
+                                <div class="d-flex align-items-center gap-2 overflow-hidden">
+                                    <span class="badge bg-warning text-dark font-monospace fw-bold flex-shrink-0">{{ ac.ticket_id or ('#CMP-' ~ ac.id) }}</span>
+                                    <span class="small text-white fw-semibold text-truncate" style="max-width: 320px;">"{{ ac.subject }}"</span>
+                                </div>
+                                <span class="badge px-2.5 py-1 rounded-pill flex-shrink-0 ms-2" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); font-size: 0.76rem;">
+                                    <i class="bi bi-clock-history me-1"></i>{{ ac.status }}
+                                </span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% elif existing_active|default(None) %}
+                        <div class="p-2.5 rounded-3 mt-2" style="background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(245, 158, 11, 0.3);">
+                            <span class="badge bg-warning text-dark font-monospace fw-bold me-2">{{ existing_active.ticket_id }}</span>
+                            <span class="small text-white fw-semibold">"{{ existing_active.subject }}"</span>
+                        </div>
+                        {% endif %}
+
+                        {% if current_active_count >= active_limit %}
+                        <div class="alert alert-danger mb-0 mt-3 py-2 px-3 small fw-bold d-flex align-items-center gap-2" style="border-radius: 10px; background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.5); color: #fca5a5;">
+                            <i class="bi bi-exclamation-octagon-fill fs-5"></i>
+                            <span>Maximum limit of {{ active_limit }} active tickets reached. Form submission is disabled until open tickets are resolved by administrators.</span>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -123,9 +155,11 @@
                     {% if job %}
                     <input type="hidden" name="target_type" value="Job">
                     <input type="hidden" name="target_id" value="{{ job.id }}">
+                    <input type="hidden" name="target_job_id" value="{{ job.id }}">
                     {% elif target_type and target_id %}
                     <input type="hidden" name="target_type" value="{{ target_type }}">
                     <input type="hidden" name="target_id" value="{{ target_id }}">
+                    <input type="hidden" name="target_job_id" value="{{ target_id }}">
                     {% endif %}
 
                     <!-- Complainant Details -->
@@ -163,7 +197,7 @@
                                     <span class="badge bg-primary text-white" style="font-size: 0.7rem;">Job #{{ job.id }}</span>
                                 </div>
                             {% else %}
-                                <select name="target_type" class="form-select form-select-sm" id="reportedEntitySelect">
+                                <select name="target_type" class="form-select form-select-sm" id="reportedEntitySelect" onchange="toggleJobSelect()">
                                     <option value="Platform / UI" {% if target_type == 'Platform' or target_type == 'Platform / UI' or not target_type %}selected{% endif %}>Platform / UI &amp; Technical Bug</option>
                                     <option value="Job" {% if target_type == 'Job' %}selected{% endif %}>Job Listing</option>
                                     <option value="Employer" {% if target_type == 'Employer' %}selected{% endif %}>Employer / Organization</option>
@@ -173,6 +207,32 @@
                             {% endif %}
                         </div>
                     </div>
+
+                    {% if not job %}
+                    <!-- Job Selection Dropdown if Job Listing is reported -->
+                    <div class="mb-3 {% if target_type != 'Job' %}d-none{% endif %}" id="targetJobSelectContainer">
+                        <label class="form-label text-pearl small fw-semibold">Select Job Posting *</label>
+                        <select name="target_job_id" class="form-select form-select-sm" id="targetJobSelect">
+                            <option value="" disabled selected>-- Select Specific Job Listing --</option>
+                            {% for j in all_jobs|default([]) %}
+                            <option value="{{ j.id }}" {% if target_id and target_id|string == j.id|string %}selected{% endif %}>{{ j.title }} ({{ j.company.name if j.company else 'N/A' }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <script>
+                    function toggleJobSelect() {
+                        const sel = document.getElementById('reportedEntitySelect');
+                        const container = document.getElementById('targetJobSelectContainer');
+                        if (sel && container) {
+                            if (sel.value === 'Job') {
+                                container.classList.remove('d-none');
+                            } else {
+                                container.classList.add('d-none');
+                            }
+                        }
+                    }
+                    </script>
+                    {% endif %}
 
                     <!-- Complaint Category -->
                     <div class="mb-3">
@@ -234,9 +294,15 @@
                         <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-secondary px-3">
                             <i class="bi bi-arrow-left me-1"></i> Cancel
                         </a>
+                        {% if current_active_count and current_active_count >= active_limit %}
+                        <button type="button" class="btn btn-sm btn-secondary px-4 py-2 fw-semibold" disabled title="Limit of {{ active_limit }} active tickets reached">
+                            <i class="bi bi-slash-circle me-1"></i> Limit Reached ({{ current_active_count }}/{{ active_limit }} Active)
+                        </button>
+                        {% else %}
                         <button type="submit" class="btn btn-sm btn-danger px-4 py-2 fw-semibold">
                             <i class="bi bi-send-check me-1"></i> Submit Complaint Ticket
                         </button>
+                        {% endif %}
                     </div>
                 </form>
             </div>

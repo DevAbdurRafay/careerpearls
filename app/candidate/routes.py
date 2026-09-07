@@ -1083,10 +1083,49 @@ def withdraw_application(app_id):
             current_app.logger.warning(f"Could not notify recruiter for withdrawal: {e}")
 
         db.session.commit()
+        try:
+            from app.email_utils import send_job_withdrawal_email
+            if application.job:
+                send_job_withdrawal_email(candidate, application.job)
+        except Exception as mail_err:
+            current_app.logger.warning(f"Could not send withdrawal email: {mail_err}")
+
         safe_flash_success(f'Your application for "{job_title}" at {company_name} has been withdrawn successfully.')
         return redirect(url_for('candidate.dashboard'))
     except Exception as e:
         current_app.logger.error(f"Withdraw application error: {e}", exc_info=True)
         db.session.rollback()
-        safe_flash_error('An error occurred while withdrawing your application. Please try again.')
+        safe_flash_error('Could not process withdrawal. Please try again.')
         return redirect(url_for('candidate.dashboard'))
+
+
+@candidate_bp.route('/toggle-job-notifier', methods=['POST'])
+@login_required
+@role_required('candidate')
+@csrf.exempt
+def toggle_job_notifier():
+    try:
+        from flask import jsonify
+        candidate = current_user.candidate
+        if not candidate:
+            return jsonify({'success': False, 'message': 'Candidate profile not found.'}), 404
+        
+        data = request.get_json(silent=True) or {}
+        if 'enabled' in data:
+            candidate.job_notifier_enabled = bool(data['enabled'])
+        elif 'enabled' in request.form:
+            candidate.job_notifier_enabled = request.form.get('enabled') in ('1', 'true', 'True', 'on')
+        else:
+            candidate.job_notifier_enabled = not candidate.job_notifier_enabled
+
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'enabled': candidate.job_notifier_enabled,
+            'email': current_user.email,
+            'message': f"Job Notifier {'enabled' if candidate.job_notifier_enabled else 'disabled'} for {current_user.email}."
+        })
+    except Exception as e:
+        db.session.rollback()
+        from flask import jsonify
+        return jsonify({'success': False, 'message': str(e)}), 500

@@ -154,6 +154,11 @@ def apply(job_id):
         ))
         create_audit_log(current_user.id, 'application_submitted', 'Application', application.id)
         db.session.commit()
+        try:
+            from app.email_utils import send_job_application_email
+            send_job_application_email(candidate, job)
+        except Exception:
+            pass
         flash('Application submitted successfully!', 'success')
         return redirect(url_for('candidate.dashboard'))
 

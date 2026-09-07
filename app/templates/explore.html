@@ -139,6 +139,185 @@
             color: #000000 !important;
             border-color: rgba(0, 0, 0, 0.25) !important;
         }
+
+        /* ── Smart Job Notifier Modal Base & Theme Styles ── */
+        .cp-notifier-modal-content {
+            background: rgba(15, 23, 42, 0.98) !important;
+            border-radius: 24px !important;
+            border: 1.5px solid rgba(56, 189, 248, 0.35) !important;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6) !important;
+            overflow: hidden !important;
+        }
+        .cp-notifier-icon-box {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1.5px solid rgba(56, 189, 248, 0.35);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem auto;
+        }
+        .cp-notifier-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0.25rem;
+        }
+        .cp-notifier-subtext {
+            color: #cbd5e1;
+            font-size: 0.88rem;
+            line-height: 1.5;
+            margin-bottom: 1.25rem;
+        }
+        .cp-notifier-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 0.35rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .cp-notifier-input {
+            background: rgba(255, 255, 255, 0.08) !important;
+            color: #38bdf8 !important;
+            border: 1.5px solid rgba(255, 255, 255, 0.18) !important;
+            border-radius: 12px !important;
+            font-weight: 600 !important;
+            padding: 10px 14px !important;
+            font-size: 0.9rem !important;
+            cursor: not-allowed !important;
+        }
+        .cp-notifier-helptext {
+            color: #94a3b8 !important;
+            font-size: 0.78rem;
+            margin-top: 0.35rem;
+            display: block;
+        }
+        .cp-notifier-status-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .cp-notifier-status-label {
+            font-weight: 600;
+            color: #ffffff;
+            font-size: 0.88rem;
+        }
+        .cp-btn-notifier-close {
+            background: rgba(255, 255, 255, 0.08) !important;
+            color: #cbd5e1 !important;
+            border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
+            border-radius: 12px !important;
+            padding: 10px 24px !important;
+            font-weight: 600 !important;
+            font-size: 0.9rem !important;
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        .cp-btn-notifier-close:hover {
+            background: rgba(255, 255, 255, 0.18) !important;
+            color: #ffffff !important;
+            border-color: rgba(255, 255, 255, 0.4) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3) !important;
+        }
+        .cp-btn-notifier-save {
+            background: linear-gradient(135deg, #0284c7, #2563eb) !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 12px !important;
+            padding: 10px 24px !important;
+            font-weight: 600 !important;
+            font-size: 0.9rem !important;
+            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4) !important;
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        .cp-btn-notifier-save:hover {
+            background: linear-gradient(135deg, #0369a1, #1d4ed8) !important;
+            color: #ffffff !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.55) !important;
+        }
+
+        /* Light Theme Overrides for Notifier Modal & Header Toggle Button */
+        :root[data-theme="light"] .cp-notifier-toggle-btn {
+            background: rgba(2, 132, 199, 0.08) !important;
+            color: #0284c7 !important;
+            border: 1.5px solid rgba(2, 132, 199, 0.35) !important;
+        }
+        :root[data-theme="light"] .cp-notifier-toggle-btn:hover {
+            background: rgba(2, 132, 199, 0.15) !important;
+            color: #0369a1 !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2) !important;
+        }
+        :root[data-theme="light"] .cp-notifier-modal-content {
+            background: #ffffff !important;
+            border: 1.5px solid #cbd5e1 !important;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15) !important;
+        }
+        :root[data-theme="light"] .cp-notifier-icon-box {
+            background: rgba(2, 132, 199, 0.12) !important;
+            color: #0284c7 !important;
+            border: 1.5px solid rgba(2, 132, 199, 0.3) !important;
+            box-shadow: 0 0 20px rgba(2, 132, 199, 0.15) !important;
+        }
+        :root[data-theme="light"] .cp-notifier-title {
+            color: #0f172a !important;
+        }
+        :root[data-theme="light"] .cp-notifier-subtext {
+            color: #475569 !important;
+        }
+        :root[data-theme="light"] .cp-notifier-label {
+            color: #1e293b !important;
+        }
+        :root[data-theme="light"] .cp-notifier-input {
+            background: #f8fafc !important;
+            color: #0284c7 !important;
+            border: 1.5px solid #cbd5e1 !important;
+        }
+        :root[data-theme="light"] .cp-notifier-helptext {
+            color: #64748b !important;
+        }
+        :root[data-theme="light"] .cp-notifier-status-box {
+            background: #f1f5f9 !important;
+            border: 1px solid #cbd5e1 !important;
+        }
+        :root[data-theme="light"] .cp-notifier-status-label {
+            color: #0f172a !important;
+        }
+        :root[data-theme="light"] .cp-btn-notifier-close {
+            background: #f1f5f9 !important;
+            color: #334155 !important;
+            border: 1.5px solid #cbd5e1 !important;
+        }
+        :root[data-theme="light"] .cp-btn-notifier-close:hover {
+            background: #e2e8f0 !important;
+            color: #0f172a !important;
+            border-color: #94a3b8 !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+        }
+        :root[data-theme="light"] .cp-btn-notifier-save {
+            background: linear-gradient(135deg, #0284c7, #2563eb) !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 15px rgba(2, 132, 199, 0.35) !important;
+        }
+        :root[data-theme="light"] .cp-btn-notifier-save:hover {
+            background: linear-gradient(135deg, #0369a1, #1d4ed8) !important;
+            color: #ffffff !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(2, 132, 199, 0.5) !important;
+        }
     
 /* ── Category Filter Pills & Reset Button ── */
 .lp-category-pill {
@@ -393,6 +572,24 @@
 {# ── Explore Hero & Search Section ── #}
 <div class="lp-explore-header" style="position: relative; z-index: 50; padding-top: 20px; padding-bottom: 1.25rem; background: radial-gradient(circle at 50% -20%, rgba(56, 189, 248, 0.15), rgba(10, 14, 26, 0.98) 70%); border-bottom: 1px solid rgba(255, 255, 255, 0.06);">
     <div class="container" style="max-width: 1200px;">
+        
+        {# Upper Left Job Notifier Toggle Button #}
+        {% if current_user.is_authenticated and current_user.is_candidate() %}
+        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+            <button type="button" class="btn btn-sm d-inline-flex align-items-center gap-2 cp-notifier-toggle-btn" 
+                    data-bs-toggle="modal" data-bs-target="#jobNotifierModal"
+                    style="background: rgba(56, 189, 248, 0.12); color: #38bdf8; border: 1.5px solid rgba(56, 189, 248, 0.4); border-radius: 12px; padding: 7px 16px; font-weight: 600; font-size: 0.86rem; transition: all 0.25s ease;">
+                <i class="bi bi-bell-fill" style="font-size: 0.95rem;"></i>
+                <span>Enable Job Notifier</span>
+                {% if current_user.candidate and current_user.candidate.job_notifier_enabled %}
+                <span class="badge bg-success rounded-pill px-2 py-0.5" style="font-size: 0.7rem;">Active</span>
+                {% else %}
+                <span class="badge bg-secondary rounded-pill px-2 py-0.5" style="font-size: 0.7rem;">Disabled</span>
+                {% endif %}
+            </button>
+        </div>
+        {% endif %}
+
         <div class="text-center mb-4 pb-1 pt-0">
             <h1 class="fw-bold text-white mb-2" style="font-size: 2.15rem; letter-spacing: -0.6px; line-height: 1.2; margin-top: 0;">
                 Explore <span style="background: linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Dream Jobs &amp; Careers</span>
@@ -454,6 +651,39 @@
                     </button>
                 </div>
             </form>
+        </div>
+
+        {# ── Job Type Quick Filter Pills ── #}
+        <div class="d-flex flex-wrap align-items-center justify-content-center gap-2 pt-1 mb-2">
+            <span class="small fw-semibold text-pearl me-1" style="color: #94a3b8;"><i class="bi bi-funnel-fill me-1 text-info"></i>Job Type:</span>
+            <a href="{{ url_for('explore', q=q, location=location, salary=salary, category=category_name) }}"
+               class="lp-category-pill {% if not employment_type %}active{% endif %}">
+                All Types
+            </a>
+            <a href="{{ url_for('explore', type='Full-time', q=q, location=location, salary=salary, category=category_name) }}"
+               class="lp-category-pill {% if employment_type in ['Full-time', 'full_time'] %}active{% endif %}">
+                <i class="bi bi-briefcase-fill me-1"></i>Full Time
+            </a>
+            <a href="{{ url_for('explore', type='Part-time', q=q, location=location, salary=salary, category=category_name) }}"
+               class="lp-category-pill {% if employment_type in ['Part-time', 'part_time'] %}active{% endif %}">
+                <i class="bi bi-clock-fill me-1"></i>Part Time
+            </a>
+            <a href="{{ url_for('explore', type='Contract', q=q, location=location, salary=salary, category=category_name) }}"
+               class="lp-category-pill {% if employment_type in ['Contract', 'contract'] %}active{% endif %}">
+                <i class="bi bi-file-earmark-text-fill me-1"></i>Contract
+            </a>
+            <a href="{{ url_for('explore', type='Internship', q=q, location=location, salary=salary, category=category_name) }}"
+               class="lp-category-pill {% if employment_type in ['Internship', 'internship'] %}active{% endif %}">
+                <i class="bi bi-mortarboard-fill me-1"></i>Internship
+            </a>
+            <a href="{{ url_for('explore', type='Fresher', q=q, location=location, salary=salary, category=category_name) }}"
+               class="lp-category-pill {% if employment_type in ['Fresher', 'fresher'] %}active{% endif %}">
+                <i class="bi bi-award-fill me-1"></i>Fresher
+            </a>
+            <a href="{{ url_for('explore', type='Remote', q=q, location=location, salary=salary, category=category_name) }}"
+               class="lp-category-pill {% if employment_type in ['Remote', 'remote'] %}active{% endif %}">
+                <i class="bi bi-laptop-fill me-1"></i>Remote
+            </a>
         </div>
 
         {# ── Category Filter Pills & Reset Button ── #}
@@ -592,6 +822,82 @@ document.addEventListener('click', function(e) {
     }
 });
 </script>
+{% if current_user.is_authenticated and current_user.is_candidate() %}
+<!-- Job Notifier Center Modal -->
+<div class="modal fade" id="jobNotifierModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 460px;">
+        <div class="modal-content cp-notifier-modal-content border-0">
+            <div class="modal-body p-4 text-center">
+                <div class="cp-notifier-icon-box">
+                    <i class="bi bi-bell-fill fs-3"></i>
+                </div>
+                <h5 class="cp-notifier-title">Smart Job Notifier</h5>
+                <p class="cp-notifier-subtext">
+                    Receive instant email notifications whenever an employer posts a new position matching your candidate profile, skills, and headline.
+                </p>
+
+                {# Candidate Registered Email Display (Read-Only) #}
+                <div class="mb-4 text-start">
+                    <label class="form-label cp-notifier-label">
+                        <i class="bi bi-envelope-fill text-info"></i>
+                        <span>Registered Notification Email:</span>
+                    </label>
+                    <input type="email" class="form-control cp-notifier-input" value="{{ current_user.email }}" readonly disabled>
+                    <span class="cp-notifier-helptext">
+                        Job notifications will be delivered directly to your verified account email above.
+                    </span>
+                </div>
+
+                {# Toggle Switch Controls #}
+                <div class="cp-notifier-status-box">
+                    <span class="cp-notifier-status-label">Notification Status:</span>
+                    <div class="form-check form-switch m-0">
+                        <input class="form-check-input" type="checkbox" role="switch" id="jobNotifierSwitch"
+                               style="width: 44px; height: 22px; cursor: pointer;"
+                               {% if current_user.candidate and current_user.candidate.job_notifier_enabled %}checked{% endif %}>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn cp-btn-notifier-close" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn cp-btn-notifier-save" id="saveJobNotifierBtn">
+                        Save Preference
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var saveBtn = document.getElementById('saveJobNotifierBtn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', function() {
+            var switchInput = document.getElementById('jobNotifierSwitch');
+            var isEnabled = switchInput ? switchInput.checked : true;
+            
+            fetch('/candidate/toggle-job-notifier', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ enabled: isEnabled })
+            }).then(function(res) { return res.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Could not save preference.');
+                }
+            }).catch(function(err) {
+                window.location.reload();
+            });
+        });
+    }
+});
+</script>
+{% endif %}
+
 {% include '_settings_panel.html' %}
 {% if not (current_user.is_authenticated and current_user.is_admin()) %}
 {% include '_ai_chatbot_drawer.html' %}

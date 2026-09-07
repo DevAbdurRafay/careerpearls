@@ -534,10 +534,11 @@ def manage_jobs():
 
 
 @admin_bp.route('/jobs/<int:job_id>')
+@admin_bp.route('/jobs/<int:job_id>/preview')
 @admin_required
 def job_detail(job_id):
     job = Job.query.get_or_404(job_id)
-    return render_template('admin/job_detail_modal.html', job=job)
+    return render_template('admin/job_preview.html', job=job)
 
 
 @admin_bp.route('/jobs/<int:job_id>/unpublish', methods=['POST'])
