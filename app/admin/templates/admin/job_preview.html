@@ -168,7 +168,7 @@
                             <i class="bi bi-file-text text-primary"></i>
                             <span>Job Description</span>
                         </h5>
-                        <div class="small" style="color: #cbd5e1; line-height: 1.7; white-space: pre-wrap;">{{ job.description }}</div>
+                        <div class="small cp-job-description-content" style="color: #cbd5e1; line-height: 1.7;">{{ job.description | safe }}</div>
                     </div>
 
                     {# Requirements / Responsibilities if available #}

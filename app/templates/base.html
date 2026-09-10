@@ -30,7 +30,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/flash-toast.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ai-resume-analyzer.css') }}?v=2.0">
+    {% if not (current_user.is_authenticated and (current_user.is_admin() or current_user.is_employer())) %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ai-chatbot.css') }}?v=3.1">
+    {% endif %}
     {% block extra_head %}{% endblock %}
 </head>
 <body class="{% if current_user.is_authenticated and current_user.is_employer() %}employer-page{% elif current_user.is_authenticated and current_user.is_candidate() %}candidate-page{% endif %}">
@@ -262,8 +265,8 @@
     })
     </script>
     
-    <!-- Next-Gen AI Assistant Chatbot (Candidate & Employer) -->
-    {% if not (current_user.is_authenticated and current_user.is_admin()) %}
+    <!-- Next-Gen AI Assistant Chatbot (Candidate Only) -->
+    {% if not (current_user.is_authenticated and (current_user.is_admin() or current_user.is_employer())) %}
     {% include '_ai_chatbot_drawer.html' %}
     <script src="{{ url_for('static', filename='js/ai-chatbot.js') }}?v=3.1"></script>
     {% endif %}

@@ -82,29 +82,51 @@
                     <div class="mb-3">
                         <label class="form-label small fw-semibold text-white">Required Skills</label>
                         {{ form.skills(class="form-control cp-input-glow", placeholder="Python, Django, PostgreSQL (comma-separated)") }}
-                        <div class="form-text small text-muted">Enter skills separated by commas.</div>
+                        <div class="form-text small" style="color: #94a3b8 !important;">Enter skills separated by commas.</div>
                     </div>
 
                     <!-- Job Description -->
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold text-white">Job Description <span class="text-danger">*</span></label>
-                        {{ form.description(class="form-control cp-input-glow" + (" is-invalid" if form.description.errors else ""), rows=8, placeholder="Describe responsibilities, requirements and benefits...") }}
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label small fw-semibold text-white mb-0">Job Description <span class="text-danger">*</span></label>
+                            <span class="cp-desc-counter" id="editDescCharCounter" style="font-size: 0.75rem; color: #94a3b8;">0 / 4000 characters</span>
+                        </div>
+                        <!-- Rich Text Formatting Toolbar -->
+                        <div class="cp-editor-toolbar d-flex flex-wrap align-items-center gap-1 p-1 mb-1 rounded" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12);">
+                            <button type="button" class="btn btn-sm text-white px-2 py-1 border-0 fw-bold" onclick="formatDescText('bold', 'editDescription')" title="Bold text (<b>Text</b>)" style="background: rgba(255,255,255,0.1); border-radius: 4px;">
+                                <i class="bi bi-type-bold"></i> Bold
+                            </button>
+                            <button type="button" class="btn btn-sm text-white px-2 py-1 border-0 fst-italic" onclick="formatDescText('italic', 'editDescription')" title="Italic text (<i>Text</i>)" style="background: rgba(255,255,255,0.1); border-radius: 4px;">
+                                <i class="bi bi-type-italic"></i> Italic
+                            </button>
+                            <button type="button" class="btn btn-sm text-white px-2 py-1 border-0" onclick="formatDescText('h3', 'editDescription')" title="Heading (<h3>Heading</h3>)" style="background: rgba(255,255,255,0.1); border-radius: 4px;">
+                                <i class="bi bi-type-h3"></i> Heading
+                            </button>
+                            <button type="button" class="btn btn-sm text-white px-2 py-1 border-0" onclick="formatDescText('ul', 'editDescription')" title="Bullet List (<ul><li>Item</li></ul>)" style="background: rgba(255,255,255,0.1); border-radius: 4px;">
+                                <i class="bi bi-list-ul"></i> Bullet List
+                            </button>
+                            <button type="button" class="btn btn-sm text-white px-2 py-1 border-0" onclick="formatDescText('p', 'editDescription')" title="Paragraph (<p>Text</p>)" style="background: rgba(255,255,255,0.1); border-radius: 4px;">
+                                <i class="bi bi-paragraph"></i> Paragraph
+                            </button>
+                            <span class="ms-auto small" style="font-size: 0.72rem; color: #94a3b8;"><i class="bi bi-info-circle me-1"></i>Select text &amp; click formatting buttons</span>
+                        </div>
+                        {{ form.description(class="form-control cp-input-glow" + (" is-invalid" if form.description.errors else ""), rows=8, maxlength="4000", placeholder="Describe responsibilities, requirements and benefits...", id="editDescription") }}
                         {% if form.description.errors %}
-                        <div class="invalid-feedback d-block mt-1">{% for e in form.description.errors %}{{ e }}{% endfor %}</div>
+                        <div class="invalid-feedback d-block mt-1">{% for e in form.description.errors %}<i class="bi bi-exclamation-circle me-1"></i>{{ e }}{% endfor %}</div>
                         {% endif %}
                     </div>
 
                     <!-- Logo Upload -->
                     <div class="mb-4">
-                        <label class="form-label small fw-semibold text-white">Job / Company Logo <span class="text-muted fw-normal">(Optional)</span></label>
+                        <label class="form-label small fw-semibold text-white">Job / Company Logo <span class="fw-normal" style="color: #94a3b8 !important;">(Optional)</span></label>
                         {% if job.logo_path %}
                         <div class="mb-2">
                             <img src="{{ url_for('uploaded_file', filename=job.logo_path) }}" alt="Current Logo" style="width:56px;height:56px;object-fit:contain;border-radius:10px;background:rgba(255,255,255,0.05);padding:4px;">
-                            <span class="text-muted small ms-2">Current logo</span>
+                            <span class="small ms-2" style="color: #94a3b8 !important;">Current logo</span>
                         </div>
                         {% endif %}
                         <input type="file" name="logo_file" class="form-control cp-input-glow" accept="image/png,image/jpeg,image/svg+xml,image/webp">
-                        <div class="form-text small text-muted">Upload a new logo to replace the current one. PNG/JPEG/SVG, max 2MB.</div>
+                        <div class="form-text small" style="color: #94a3b8 !important;">Upload a new logo to replace the current one. PNG/JPEG/SVG, max 2MB.</div>
                     </div>
 
                     <!-- Submit Buttons -->
@@ -123,12 +145,62 @@
 
 {% block extra_scripts %}
 <script>
+window.formatDescText = function(tag, textareaId) {
+    const textarea = document.getElementById(textareaId);
+    if (!textarea) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = textarea.value.substring(start, end);
+    let replacement = '';
+    
+    if (tag === 'bold') {
+        const text = selectedText || 'Bold Text';
+        replacement = `<b>${text}</b>`;
+    } else if (tag === 'italic') {
+        const text = selectedText || 'Italic Text';
+        replacement = `<i>${text}</i>`;
+    } else if (tag === 'h3') {
+        const text = selectedText || 'Heading Title';
+        replacement = `\n<h3>${text}</h3>\n`;
+    } else if (tag === 'ul') {
+        if (selectedText) {
+            const items = selectedText.split('\n').filter(l => l.trim()).map(l => `  <li>${l.trim()}</li>`).join('\n');
+            replacement = `\n<ul>\n${items}\n</ul>\n`;
+        } else {
+            replacement = `\n<ul>\n  <li>Key responsibility or requirement 1</li>\n  <li>Key responsibility or requirement 2</li>\n</ul>\n`;
+        }
+    } else if (tag === 'p') {
+        const text = selectedText || 'Paragraph text...';
+        replacement = `\n<p>${text}</p>\n`;
+    }
+    
+    textarea.value = textarea.value.substring(0, start) + replacement + textarea.value.substring(end);
+    textarea.focus();
+    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     const closesAtInput = document.querySelector('input[name="closes_at"]');
     if (closesAtInput) {
         const now = new Date();
         now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
         closesAtInput.min = now.toISOString().slice(0, 16);
+    }
+
+    const editDescArea = document.getElementById('editDescription');
+    const editCounter = document.getElementById('editDescCharCounter');
+    function updateEditCounter() {
+        if (!editDescArea || !editCounter) return;
+        if (editDescArea.value.length > 4000) {
+            editDescArea.value = editDescArea.value.substring(0, 4000);
+        }
+        editCounter.textContent = `${editDescArea.value.length} / 4000 characters`;
+    }
+    if (editDescArea) {
+        editDescArea.addEventListener('input', updateEditCounter);
+        editDescArea.addEventListener('paste', function() { setTimeout(updateEditCounter, 10); });
+        updateEditCounter();
     }
 });
 </script>

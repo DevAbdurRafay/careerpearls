@@ -37,10 +37,12 @@
                         <span class="badge px-3 py-1.5 rounded-pill" style="background: rgba(16, 185, 129, 0.12); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.78rem; font-weight: 600;">Remote</span>
                     {% elif 'Hybrid' in emp_type %}
                         <span class="badge px-3 py-1.5 rounded-pill" style="background: rgba(139, 92, 246, 0.12); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.3); font-size: 0.78rem; font-weight: 600;">Hybrid</span>
+                    {% elif 'Part' in emp_type %}
+                        <span class="badge px-3 py-1.5 rounded-pill" style="background: rgba(236, 72, 153, 0.12); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.3); font-size: 0.78rem; font-weight: 600;">Part-time</span>
                     {% elif 'Internship' in emp_type or 'Contract' in emp_type %}
                         <span class="badge px-3 py-1.5 rounded-pill" style="background: rgba(245, 158, 11, 0.12); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); font-size: 0.78rem; font-weight: 600;">{{ emp_type }}</span>
                     {% else %}
-                        <span class="badge px-3 py-1.5 rounded-pill" style="background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); font-size: 0.78rem; font-weight: 600;">Full Time</span>
+                        <span class="badge px-3 py-1.5 rounded-pill" style="background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); font-size: 0.78rem; font-weight: 600;">{{ emp_type }}</span>
                     {% endif %}
                 </div>
             </div>

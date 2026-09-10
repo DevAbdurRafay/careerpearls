@@ -1,29 +1,221 @@
 {% extends "base.html" %}
-{% block title %}Apply — {{ job.title }}{% endblock %}
+{% block title %}Apply to {{ job.title }} — CareerPearls{% endblock %}
+
+{% block extra_head %}
+<style>
+.cp-apply-card {
+    background: linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(11, 16, 27, 0.98));
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.cp-info-box {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 16px;
+}
+
+.cp-info-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.cp-info-value {
+    font-size: 0.96rem;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.cp-apply-card .form-label {
+    font-weight: 700 !important;
+    font-size: 0.92rem !important;
+    color: #f8fafc !important;
+    margin-bottom: 8px !important;
+}
+
+.cp-apply-card .form-select,
+.cp-apply-card .form-control {
+    background: rgba(15, 23, 42, 0.8) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.16) !important;
+    color: #ffffff !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    font-size: 0.92rem !important;
+    transition: all 0.25s ease !important;
+}
+
+.cp-apply-card .form-select:focus,
+.cp-apply-card .form-control:focus {
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.3) !important;
+    background: rgba(15, 23, 42, 0.95) !important;
+    color: #ffffff !important;
+}
+
+.cp-apply-card .form-select option {
+    background: #0f172a !important;
+    color: #ffffff !important;
+}
+
+/* Light Theme Styling for Apply Page */
+:root[data-theme="light"] .cp-apply-card {
+    background: #ffffff !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08) !important;
+}
+
+:root[data-theme="light"] .cp-apply-card h2 {
+    color: #0f172a !important;
+}
+
+:root[data-theme="light"] .cp-apply-card .text-pearl {
+    color: #475569 !important;
+}
+
+:root[data-theme="light"] .cp-info-box {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
+:root[data-theme="light"] .cp-info-label {
+    color: #64748b !important;
+}
+
+:root[data-theme="light"] .cp-info-value {
+    color: #0f172a !important;
+}
+
+:root[data-theme="light"] .cp-apply-card .form-label {
+    color: #0f172a !important;
+}
+
+:root[data-theme="light"] .cp-apply-card .form-select,
+:root[data-theme="light"] .cp-apply-card .form-control {
+    background: #ffffff !important;
+    border: 1.5px solid #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+:root[data-theme="light"] .cp-apply-card .form-select:focus,
+:root[data-theme="light"] .cp-apply-card .form-control:focus {
+    border-color: #0284c7 !important;
+    box-shadow: 0 0 12px rgba(2, 132, 199, 0.25) !important;
+}
+
+:root[data-theme="light"] .cp-apply-card .form-select option {
+    background: #ffffff !important;
+    color: #0f172a !important;
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="py-4">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="cp-card">
-                <h2>Apply to {{ job.title }}</h2>
-                <p class="text-pearl">{{ job.company.name if job.company else 'Company' }}</p>
-                <hr style="border-color:var(--cp-border)">
-                <form method="POST">
-                    {{ form.hidden_tag() }}
-                    <div class="mb-3">
-                        {{ form.resume_id.label(class="form-label") }}
-                        {{ form.resume_id(class="form-select") }}
+<div class="container py-4" style="max-width: 900px;">
+    <div class="cp-apply-card">
+        
+        {# Header Section #}
+        <div class="d-flex align-items-start justify-content-between flex-wrap gap-3 mb-4 pb-3 border-bottom" style="border-color: rgba(255, 255, 255, 0.08) !important;">
+            <div>
+                <h2 class="fw-bold text-white mb-1" style="font-size: 1.8rem;">
+                    Apply to {{ job.title }}
+                </h2>
+                <div class="d-flex align-items-center gap-2 text-pearl fs-6" style="font-weight: 500;">
+                    <i class="bi bi-building text-primary me-1"></i>
+                    <span class="fw-semibold">{{ job.company.name if job.company else 'Analysis Workforce' }}</span>
+                    <span>&bull;</span>
+                    <span>{{ job.location or 'Karachi' }}</span>
+                </div>
+            </div>
+            <a href="{{ url_for('jobboard.job_detail', job_id=job.id) }}" class="btn btn-sm btn-cp-outline px-3 py-2" style="border-radius: 10px;">
+                <i class="bi bi-arrow-left me-1"></i>Back to Job
+            </a>
+        </div>
+
+        {# Candidate Profile Information Summary #}
+        <div class="mb-4">
+            <h5 class="fw-bold text-white mb-3" style="font-size: 1.05rem;">
+                <i class="bi bi-person-badge-fill me-2 text-info"></i>Applicant Contact Information
+            </h5>
+            <div class="row g-3">
+                {# Candidate Name #}
+                <div class="col-md-4">
+                    <div class="cp-info-box">
+                        <div class="cp-info-label">
+                            <i class="bi bi-person-fill me-1"></i>Full Name
+                        </div>
+                        <div class="cp-info-value text-truncate">
+                            {{ (candidate.full_name if candidate else None) or current_user.name or 'Candidate Name' }}
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        {{ form.cover_letter.label(class="form-label") }}
-                        {{ form.cover_letter(class="form-control", rows=6) }}
+                </div>
+
+                {# Email Address #}
+                <div class="col-md-4">
+                    <div class="cp-info-box">
+                        <div class="cp-info-label">
+                            <i class="bi bi-envelope-fill me-1"></i>Email Address
+                        </div>
+                        <div class="cp-info-value text-truncate">
+                            {{ current_user.email }}
+                        </div>
                     </div>
-                    {{ form.submit(class="btn btn-cp-primary") }}
-                    <a href="{{ url_for('jobboard.job_detail', job_id=job.id) }}" class="btn btn-cp-outline ms-2">Cancel</a>
-                </form>
+                </div>
+
+                {# Contact Number #}
+                <div class="col-md-4">
+                    <div class="cp-info-box">
+                        <div class="cp-info-label">
+                            <i class="bi bi-telephone-fill me-1"></i>Contact Number
+                        </div>
+                        <div class="cp-info-value text-truncate">
+                            {{ (candidate.phone if candidate and candidate.phone else None) or 'Not Provided' }}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+
+        {# Application Form #}
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            
+            {# Resume Selection #}
+            <div class="mb-4">
+                <label for="resume_id" class="form-label d-flex align-items-center justify-content-between">
+                    <span><i class="bi bi-file-earmark-pdf-fill me-2 text-warning"></i>Select Resume</span>
+                    <a href="{{ url_for('candidate.profile') }}" class="small text-info text-decoration-none fw-normal">
+                        <i class="bi bi-plus-circle me-1"></i>Upload New Resume
+                    </a>
+                </label>
+                {{ form.resume_id(class="form-select", id="resume_id") }}
+            </div>
+
+            {# Cover Letter Textarea #}
+            <div class="mb-4">
+                <label for="cover_letter" class="form-label">
+                    <i class="bi bi-pencil-square me-2 text-primary"></i>Cover Letter
+                </label>
+                {{ form.cover_letter(class="form-control", rows=6, id="cover_letter", placeholder="Write a professional cover letter introducing yourself, highlighting your relevant skills and experience for this role...") }}
+            </div>
+
+            {# Action Buttons #}
+            <div class="d-flex align-items-center gap-3 pt-2">
+                <button type="submit" class="btn btn-cp-primary px-4 py-2.5 fw-bold d-inline-flex align-items-center justify-content-center" style="border-radius: 12px; font-size: 0.95rem;">
+                    <i class="bi bi-send-fill me-2"></i>Submit Application
+                </button>
+                <a href="{{ url_for('jobboard.job_detail', job_id=job.id) }}" class="btn btn-cp-outline px-4 py-2.5 fw-semibold" style="border-radius: 12px; font-size: 0.95rem;">
+                    Cancel
+                </a>
+            </div>
+        </form>
+
     </div>
 </div>
 {% endblock %}

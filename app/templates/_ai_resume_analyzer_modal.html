@@ -1,0 +1,122 @@
+<!-- ════════════════════════════════════════════════════════════════════════════
+     CareerPearls - AI Resume Analyzer Chatbot Drawer Modal
+     ════════════════════════════════════════════════════════════════════════════ -->
+
+<!-- Modal Backdrop -->
+<div id="cpRaModalBackdrop" class="cp-ra-modal-backdrop" onclick="closeAiResumeAnalyzer()"></div>
+
+<!-- Slide-Over Drawer Window -->
+<div id="cpRaDrawer" class="cp-ra-drawer" role="dialog" aria-labelledby="cpRaTitle" aria-hidden="true"
+     data-job-id="{{ job.id }}"
+     data-job-title="{{ job.title }}">
+    
+    <!-- Drawer Header -->
+    <div class="cp-ra-header">
+        <div class="d-flex align-items-center gap-2.5">
+            <div class="cp-ra-avatar">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+            </div>
+            <div>
+                <h6 class="cp-ra-title" id="cpRaTitle">
+                    AI Resume Advisor
+                </h6>
+                <small class="cp-ra-subtitle text-truncate d-block" style="max-width: 320px;">
+                    Targeting: <strong class="cp-ra-subtitle-job">{{ job.title }}</strong>
+                </small>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="cp-ra-header-btn" id="cpRaRefreshBtn" onclick="resetAiResumeAnalyzer(false)" title="Refresh Assistant View">
+                <i class="bi bi-arrow-clockwise"></i>
+            </button>
+            <button type="button" class="cp-ra-header-btn cp-ra-trash-btn" id="cpRaClearChat" onclick="resetAiResumeAnalyzer(true)" title="Clear Chat History & Upload New Resume">
+                <i class="bi bi-trash3-fill"></i>
+            </button>
+            <button type="button" class="cp-ra-close-btn" onclick="closeAiResumeAnalyzer()" title="Close Analyzer">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Drawer Body -->
+    <div class="cp-ra-body" id="cpRaBody">
+        
+        <!-- File Upload Drop-Zone -->
+        <div id="cpRaDropzone" class="cp-ra-dropzone">
+            <input type="file" id="cpRaFileInput" accept=".pdf,.png,.jpg,.jpeg" class="d-none" onchange="handleResumeFileSelect(event)">
+            <div class="cp-ra-dropzone-icon">
+                <i class="bi bi-cloud-arrow-up-fill"></i>
+            </div>
+            <h6 class="fw-bold cp-ra-dropzone-heading mb-1" style="font-size: 1.02rem;">
+                Upload Your Resume for AI Analysis
+            </h6>
+            <p class="small mb-2" style="font-size: 0.84rem;">
+                Drag &amp; drop or click to choose file
+            </p>
+            <span class="badge bg-secondary-subtle text-secondary border border-secondary border-opacity-25 px-2.5 py-1 rounded-pill" style="font-size: 0.72rem;">
+                Supports PDF, PNG, JPG, JPEG (Max 15MB)
+            </span>
+        </div>
+
+        <!-- Parsing / Loading Spinner State -->
+        <div id="cpRaProgressWrap" class="cp-ra-progress-wrap d-none">
+            <div class="spinner-border text-info spinner-border-sm mb-2" role="status"></div>
+            <div class="fw-bold cp-ra-progress-text small" id="cpRaProgressText">
+                Analyzing resume text against job requirements...
+            </div>
+            <small class="cp-ra-progress-subtext d-block mt-1" style="font-size: 0.76rem;">
+                Evaluating hard skills, experience overlap &amp; credentials
+            </small>
+        </div>
+
+        <!-- Rejection / Error Alert Box -->
+        <div id="cpRaErrorAlert" class="alert alert-danger p-3 rounded-3 d-none mb-0" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #f87171; font-size: 0.85rem;">
+            <div class="d-flex align-items-start gap-2">
+                <i class="bi bi-exclamation-triangle-fill fs-5 flex-shrink-0"></i>
+                <div id="cpRaErrorMsg">
+                    Skills or structured experience not found in the uploaded file. Please upload a valid resume in PDF or image format.
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Results Container -->
+        <div id="cpRaResultCard" class="cp-ra-result-card d-none">
+            <!-- Dynamic Summary Rendered via JS -->
+        </div>
+
+        <!-- Interactive Chat Messages Stream -->
+        <div id="cpRaMessages" class="cp-ra-messages"></div>
+
+    </div>
+
+    <!-- Drawer Footer Input Form -->
+    <div class="cp-ra-footer">
+        <!-- Quick Prompt Chips (Placed in Footer directly above input box) -->
+        <div id="cpRaQuickPrompts" class="cp-ra-chips-scroll d-none mb-2.5">
+            <button type="button" class="cp-ra-chip" onclick="sendQuickPrompt('Where are my skill gaps for this job?')">
+                ⚡ Skill Gaps?
+            </button>
+            <button type="button" class="cp-ra-chip" onclick="sendQuickPrompt('How can I improve my match score for this role?')">
+                📈 Score Improvement
+            </button>
+            <button type="button" class="cp-ra-chip" onclick="sendQuickPrompt('Draft a targeted cover letter for this position')">
+                ✉️ Cover Letter
+            </button>
+        </div>
+
+        <form id="cpRaInputForm" onsubmit="handleAiResumeChatSubmit(event)" class="m-0">
+            <div class="cp-ra-input-wrap">
+                <textarea id="cpRaInput" class="cp-ra-input" rows="1" placeholder="Ask AI Advisor about your resume match..." required disabled></textarea>
+                <button type="submit" id="cpRaSendBtn" class="cp-ra-send-btn" title="Send Query" disabled>
+                    <i class="bi bi-send-fill" style="font-size: 0.82rem;"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

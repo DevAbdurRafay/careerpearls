@@ -163,7 +163,18 @@
 :root[data-theme="light"] a.btn[style*="background: linear-gradient(135deg, #0284c7, #2563eb)"] span {
     color: #ffffff !important;
 }
+
+/* Force hide general Ask AI chatbot on job detail pages to prevent overlapping */
+#cpAiChatContainer,
+#cpAiTriggerBtn,
+.cp-ai-trigger-btn {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
 </style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/ai-resume-analyzer.css') }}?v=2.0">
 {% endblock %}
 
 {% block navbar %}
@@ -200,7 +211,7 @@
 {% endblock navbar %}
 
 {% block content %}
-<div class="container py-4" style="max-width: 1240px; padding-top: 1.5rem !important;">
+<div class="container py-4 job-detail-page" style="max-width: 1240px; padding-top: 1.5rem !important;">
     <div class="row g-4">
         
         {# ── Left Main Column: Job Description & Details ── #}
@@ -263,7 +274,7 @@
                     <h5 class="fw-bold text-white mb-3" style="font-size: 1.15rem; letter-spacing: -0.2px;">
                         <i class="bi bi-file-text me-2 text-primary"></i>Job Description
                     </h5>
-                    <div class="text-pearl lh-lg" style="color: #cbd5e1; font-size: 0.96rem;">
+                    <div class="text-pearl lh-lg cp-job-description-content" style="color: #cbd5e1;">
                         {{ job.description | safe }}
                     </div>
                 </div>
@@ -370,4 +381,18 @@
 
     </div>
 </div>
+
+<!-- Floating AI Resume Analyzer Trigger Button (Bottom-Right) -->
+<button type="button" id="cpRaFloatingBtn" onclick="openAiResumeAnalyzer()" class="cp-ra-floating-btn shadow-lg" title="Analyze Your Resume with AI">
+    <div class="cp-ra-floating-inner">
+        <div class="cp-ra-floating-icon">
+            <i class="bi bi-stars"></i>
+        </div>
+        <span class="cp-ra-floating-label">Analyze Resume with AI</span>
+        <span class="cp-ra-pulse-ring"></span>
+    </div>
+</button>
+
+{% include '_ai_resume_analyzer_modal.html' %}
+<script src="{{ url_for('static', filename='js/ai-resume-analyzer.js') }}?v=1.0"></script>
 {% endblock content %}

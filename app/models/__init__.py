@@ -965,3 +965,35 @@ class ContactMessage(db.Model):
     phone = db.Column(db.String(20), nullable=False)
     message = db.Column(db.Text, nullable=False)
     sent_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+
+def get_formatted_12hr_time():
+    """
+    Returns exact local device time in 12-hour format with AM/PM (e.g. '05:48:30 PM, 10 Sep 2026').
+    """
+    from datetime import datetime, timedelta, timezone
+    pkt_tz = timezone(timedelta(hours=5))
+    now = datetime.now(pkt_tz)
+    return now.strftime("%I:%M:%S %p, %d %b %Y")
+
+
+class AiChatMessage(db.Model):
+    """
+    Stores AI Resume Analyzer & Career Assistant Chat Messages in Supabase PostgreSQL.
+    Includes exact 12-hour local device time (e.g. '05:48:30 PM, 10 Sep 2026').
+    """
+    __tablename__ = 'ai_chat_messages'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'), nullable=True)
+    job_id = db.Column(db.Integer, db.ForeignKey('jobs.id', ondelete='CASCADE'), nullable=True)
+    sender_role = db.Column(db.String(20), nullable=False, default='user')
+    prompt_text = db.Column(db.Text, nullable=False)
+    reply_text = db.Column(db.Text, nullable=True)
+    match_score = db.Column(db.Integer, nullable=True)
+    formatted_time = db.Column(db.String(60), nullable=False, default=get_formatted_12hr_time)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    user = db.relationship('User', backref=db.backref('ai_chat_messages', lazy='dynamic'))
+    job = db.relationship('Job', backref=db.backref('ai_chat_messages', lazy='dynamic'))
+

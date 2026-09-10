@@ -7858,6 +7858,115 @@ select::placeholder,
     box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35) !important;
 }
 
+/* High-Contrast Form Help Text & Subtext for Dark Theme & Employer Cards */
+:root[data-theme="dark"] .form-text,
+:root[data-theme="dark"] .form-text.text-muted,
+:root[data-theme="dark"] small.text-muted,
+.cp-card .form-text,
+.cp-card .form-text.text-muted,
+.cp-card small.text-muted {
+    color: #94a3b8 !important;
+}
+
+:root[data-theme="dark"] .form-label .text-muted,
+.cp-card .form-label .text-muted {
+    color: #94a3b8 !important;
+}
+
+/* Fully Responsive Job Description Content Styling */
+.cp-job-description-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    word-wrap: break-word !important;
+    color: var(--cp-text, #cbd5e1);
+    font-size: clamp(0.875rem, 2.5vw, 0.98rem);
+    line-height: 1.75;
+}
+
+.cp-job-description-content h1,
+.cp-job-description-content h2,
+.cp-job-description-content h3,
+.cp-job-description-content h4,
+.cp-job-description-content h5,
+.cp-job-description-content h6 {
+    color: var(--cp-text, #ffffff);
+    font-weight: 700;
+    margin-top: 1.25rem;
+    margin-bottom: 0.6rem;
+    line-height: 1.35;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.cp-job-description-content h2 {
+    font-size: clamp(1.15rem, 3.5vw, 1.45rem);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    padding-bottom: 0.4rem;
+}
+
+.cp-job-description-content h3 {
+    font-size: clamp(1.02rem, 3vw, 1.22rem);
+}
+
+.cp-job-description-content h4 {
+    font-size: clamp(0.95rem, 2.8vw, 1.1rem);
+}
+
+.cp-job-description-content p {
+    margin-bottom: 0.85rem;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.cp-job-description-content ul,
+.cp-job-description-content ol {
+    padding-left: 1.35rem;
+    margin-bottom: 1rem;
+    max-width: 100%;
+}
+
+@media (max-width: 576px) {
+    .cp-job-description-content ul,
+    .cp-job-description-content ol {
+        padding-left: 1rem;
+    }
+}
+
+.cp-job-description-content li {
+    margin-bottom: 0.45rem;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.cp-job-description-content b,
+.cp-job-description-content strong {
+    color: #4facfe;
+    font-weight: 600;
+}
+
+:root[data-theme="light"] .cp-job-description-content b,
+:root[data-theme="light"] .cp-job-description-content strong {
+    color: #2563eb;
+}
+
+.cp-job-description-content code {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.85em;
+    word-break: break-all;
+    white-space: pre-wrap;
+}
+
+.cp-job-description-content hr {
+    border-color: rgba(255, 255, 255, 0.12);
+    margin: 1.25rem 0;
+}
+
+
+
 
 
 

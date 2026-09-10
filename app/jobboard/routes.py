@@ -162,7 +162,7 @@ def apply(job_id):
         flash('Application submitted successfully!', 'success')
         return redirect(url_for('candidate.dashboard'))
 
-    return render_template('jobboard/apply.html', form=form, job=job)
+    return render_template('jobboard/apply.html', form=form, job=job, candidate=candidate)
 
 
 @jobboard_bp.route('/<int:job_id>/save', methods=['POST'])

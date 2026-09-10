@@ -65,7 +65,7 @@ class JobPostForm(FlaskForm):
         ('Senior Level (5-8 Years)', 'Senior Level (5-8 Years)'),
         ('Lead / Principal (8+ Years)', 'Lead / Principal (8+ Years)'),
         ('Executive / Director (10+ Years)', 'Executive / Director (10+ Years)'),
-        ('Based on Experience', 'Based on Experience'),
+        # ('Based on Experience', 'Based on Experience'),
     ], validators=[DataRequired(message='Please specify experience level.')])
     location = StringField('Job Location (City / Remote) *', validators=[
         DataRequired(message='Job location is required.'),
@@ -79,9 +79,9 @@ class JobPostForm(FlaskForm):
     closes_at = DateTimeField('Application Deadline *', format='%Y-%m-%dT%H:%M', validators=[
         DataRequired(message='Closing deadline date & time is required.')
     ])
-    description = TextAreaField('Job Description * (Max 1500 characters)', validators=[
+    description = TextAreaField('Job Description * (Max 4000 characters)', validators=[
         DataRequired(message='Job description is required.'),
-        Length(min=20, max=1500, message='Description must be between 20 and 1500 characters.')
+        Length(min=20, max=4000, message='Description must be between 20 and 4000 characters.')
     ])
     skills = StringField('Required Skills * (comma-separated)', validators=[
         DataRequired(message='Please provide at least one required skill.'),

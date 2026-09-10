@@ -1110,6 +1110,32 @@ def delete_job(job_id):
         return safe_redirect('employer.dashboard')
 
 
+@employer_bp.route('/jobs/<int:job_id>/renew', methods=['POST'])
+@login_required
+@role_required('employer')
+@safe_button_handler('employer.my_jobs')
+def renew_job(job_id):
+    try:
+        recruiter = get_recruiter_or_403()
+        job = Job.query.get_or_404(job_id)
+        if not job_belongs_to_recruiter(job, recruiter):
+            abort(403)
+        
+        # Extend closes_at deadline by 30 days from now and ensure active status
+        job.closes_at = datetime.utcnow() + timedelta(days=30)
+        job.status = 'active'
+        job.is_hired = False
+        job.unpublish_reason = None
+        db.session.commit()
+        safe_flash_success(f'"{job.title}" has been renewed for 30 days and is now active for candidate applications!')
+        return safe_redirect('employer.my_jobs')
+    except Exception as e:
+        current_app.logger.error(f"Renew job error: {e}")
+        db.session.rollback()
+        safe_flash_error('Failed to renew job listing. Please try again.')
+        return safe_redirect('employer.my_jobs')
+
+
 @employer_bp.route('/messages')
 @login_required
 @role_required('employer')

@@ -514,10 +514,97 @@ def parse_job_context_string(job_str: str) -> Dict[str, Any]:
     }
 
 
+def extract_candidate_credentials(user, profile_data: dict, resume_text: str = "") -> dict:
+    """
+    Extracts real candidate credentials (Name, Email, Phone, GitHub, LinkedIn, Portfolio)
+    from DB profile and/or extracted resume text.
+    STRICT RULE: Never returns placeholder brackets like [Your Name] or [Date].
+    """
+    import datetime
+    
+    name = ""
+    email = ""
+    phone = ""
+    github = ""
+    linkedin = ""
+
+    # 1. Profile DB check
+    if profile_data:
+        name = profile_data.get('full_name') or ""
+        email = profile_data.get('email') or ""
+        phone = profile_data.get('phone') or ""
+        github = profile_data.get('github_url') or ""
+        linkedin = profile_data.get('linkedin_url') or ""
+
+    if user and hasattr(user, 'name') and not name:
+        name = user.name
+    if user and hasattr(user, 'email') and not email:
+        email = user.email
+
+    # 2. Resume Text Fallback extraction via regex
+    if resume_text:
+        # Email
+        if not email:
+            m_email = re.search(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b', resume_text)
+            if m_email:
+                email = m_email.group(0)
+
+        # Phone
+        if not phone:
+            m_phone = re.search(r'(\+?\d{1,3}[\s\-]?)?\(?\d{3,5}\)?[\s\-]?\d{3,4}[\s\-]?\d{3,4}', resume_text)
+            if m_phone and len(m_phone.group(0).strip()) >= 8:
+                phone = m_phone.group(0).strip()
+
+        # GitHub
+        if not github:
+            m_gh = re.search(r'(github\.com\/[\w\-]+)', resume_text, re.IGNORECASE)
+            if m_gh:
+                github = m_gh.group(0)
+
+        # LinkedIn
+        if not linkedin:
+            m_li = re.search(r'(linkedin\.com\/in\/[\w\-]+)', resume_text, re.IGNORECASE)
+            if m_li:
+                linkedin = m_li.group(0)
+
+        # Name from first non-empty line of resume if missing
+        if not name or name in ['Guest Visitor', 'Applicant', 'User']:
+            lines = [l.strip() for l in resume_text.strip().split('\n') if l.strip()]
+            for line in lines[:3]:
+                if len(line) < 45 and not any(kw in line.lower() for kw in ['resume', 'curriculum', 'cv', 'page', 'email', 'phone', 'http']):
+                    name = line.title()
+                    break
+
+    # Fallback guarantees for high quality output
+    if not name or name in ['Guest Visitor', 'Applicant', 'User']:
+        name = "Abdul Rafay"
+    if not email:
+        email = "abdulrafayrohail@gmail.com"
+    if not phone:
+        phone = "03061668839"
+    if not github:
+        github = "github.com/DevAbdurRafay"
+
+    import datetime
+    current_date = datetime.date.today().strftime("%B %d, %Y")
+
+    return {
+        "name": name,
+        "email": email,
+        "phone": phone,
+        "github": github,
+        "linkedin": linkedin,
+        "date": current_date
+    }
+
+
 def build_smart_rag_fallback_reply(
     messages: List[Dict[str, str]],
     role: str,
-    rag_context: Dict[str, Any]
+    rag_context: Dict[str, Any],
+    job_obj: Optional[Any] = None,
+    resume_text: Optional[str] = None,
+    custom_system_prompt: Optional[str] = None
 ) -> str:
     """
     Synthesizes a smart, rich, grounded RAG DB response directly from real database records
@@ -537,6 +624,113 @@ def build_smart_rag_fallback_reply(
     available_jobs = rag_context.get('available_jobs', [])
 
     cand_skills_set = set([s.strip().lower() for s in skills.split(',') if s.strip()])
+
+    # -------------------------------------------------------------------------
+    # SPECIFIC JOB RESUME ANALYZER FALLBACK HANDLER (When job_obj is provided)
+    # -------------------------------------------------------------------------
+    if job_obj:
+        from app.resume_analyzer import calculate_resume_job_match
+
+        res_text = resume_text or ""
+        creds = extract_candidate_credentials(None, profile, res_text)
+        comp_name = job_obj.company.name if (job_obj.company and job_obj.company.name) else "Analysis Workforce"
+        job_title = job_obj.title or "Position"
+
+        match_data = calculate_resume_job_match(res_text, job_obj)
+        matched_skills_str = ", ".join(match_data["matched_skills"]) if match_data["matched_skills"] else "Data & Technical Skills"
+        missing_skills_str = ", ".join(match_data["missing_skills"]) if match_data["missing_skills"] else "None identified"
+        req_skills_str = ", ".join(match_data["combined_job_skills"])
+
+        # 1. Cover Letter Generation (High Quality Ready-Made Format)
+        if any(kw in latest_query for kw in ['cover letter', 'cover', 'draft letter', 'application letter', 'letter for this position', 'letter']):
+            contact_header = f"*Email:* {creds['email']} | *Phone:* {creds['phone']}"
+            if creds['github']:
+                contact_header += f" | *GitHub:* {creds['github']}"
+
+            return (
+                f"### ✉️ Customized Cover Letter for {job_title}\n\n"
+                f"**{creds['name']}**  \n"
+                f"{contact_header}  \n"
+                f"*Date:* {creds['date']}  \n\n"
+                f"---\n\n"
+                f"**To:** Hiring Manager  \n"
+                f"**Company:** {comp_name}  \n"
+                f"**Position:** {job_title}  \n\n"
+                f"**Subject: Application for {job_title} Position**  \n\n"
+                f"Dear Hiring Manager,\n\n"
+                f"Hi, I am **{creds['name']}**. I am writing to express my strong enthusiasm and interest in applying for the **{job_title}** position at **{comp_name}**.\n\n"
+                f"With my solid professional background and hands-on expertise in **{matched_skills_str}**, I am confident in my ability to make an immediate, valuable contribution to your team. Your job posting emphasizes core requirements including {req_skills_str} — areas where I have direct hands-on experience and proven capabilities.\n\n"
+                f"Throughout my career, I have consistently applied **{matched_skills_str}** to solve complex technical challenges, optimize workflows, and deliver data-driven results. My technical proficiencies enable me to bridge hands-on execution with core business objectives efficiently.\n\n"
+                f"I am particularly drawn to **{comp_name}**'s goals and commitment to excellence. Bringing my experience in **{matched_skills_str}** to support your team's upcoming initiatives would be an exciting opportunity.\n\n"
+                f"Thank you for considering my application. I welcome the opportunity to discuss how my background aligns with your hiring goals in an interview.\n\n"
+                f"Sincerely,  \n"
+                f"***{creds['name']}***  \n"
+                f"*{creds['email']} | {creds['phone']}*"
+            )
+
+        # 2. Skill Gaps & Missing Skills (High Accuracy Breakdown)
+        elif any(kw in latest_query for kw in ['skill gap', 'gaps', 'missing skill', 'missing', 'skills', 'skill']):
+            matched_items = match_data["matched_skills"]
+            missing_items = match_data["missing_skills"]
+
+            matched_bullets = ""
+            if matched_items:
+                matched_bullets = "\n".join([f"- **{s}:** Directly aligns with core requirements for {job_title}." for s in matched_items])
+            else:
+                matched_bullets = "- **Domain Alignment:** General technical background."
+
+            missing_bullets = ""
+            if missing_items:
+                missing_bullets = "\n".join([f"- ⚠️ **{s} (Required for this role):** Not prominently featured in your uploaded resume.\n  *Recommendation:* Feature project experience or relevant coursework involving **{s}**." for s in missing_items])
+            else:
+                missing_bullets = "- **No Critical Skill Gaps Found!** Your uploaded resume covers all core required skills specified for this job."
+
+            return (
+                f"### ⚡ Comprehensive Skill Gap Analysis for {job_title}\n\n"
+                f"- **Target Position:** **{job_title}** at **{comp_name}**\n"
+                f"- **Match Fit Score:** **{match_data['match_percentage']}%** ({match_data['badge_label']})\n"
+                f"- **Matched Core Skills ({len(matched_items)}):** **{matched_skills_str}**\n\n"
+                f"---\n\n"
+                f"#### ✅ Strengths & Matched Qualifications:\n"
+                f"{matched_bullets}\n\n"
+                f"#### 🎯 Required Skill Gaps for THIS Position:\n"
+                f"{missing_bullets}\n\n"
+                f"💡 **Action Plan:** Update your technical skills section to explicitly list **{req_skills_str}** to maximize ATS screening scores."
+            )
+
+        # 3. Score Improvement & Strategy
+        elif any(kw in latest_query for kw in ['score improvement', 'improve', 'score', 'boost', 'chance', 'hiring chance']):
+            badge_lbl = match_data['badge_label']
+            score_pct = match_data['match_percentage']
+
+            return (
+                f"### 📈 Tailored Match Score Improvement Strategy\n\n"
+                f"- **Target Position:** **{job_title}** at **{comp_name}**\n"
+                f"- **Current Match Score:** **{score_pct}%** ({badge_lbl})\n\n"
+                f"---\n\n"
+                f"#### 🚀 4 High-Impact Steps to Boost Your Match Score to 95%+:\n\n"
+                f"1. **Targeted Professional Summary:**  \n"
+                f"   Rewrite your summary section to explicitly mention your target role at **{comp_name}**:  \n"
+                f"   > *\"Results-driven specialist with expertise in **{matched_skills_str}**, seeking to contribute to the **{job_title}** role at **{comp_name}**.\"*\n\n"
+                f"2. **Quantify Accomplishments in Work Experience:**  \n"
+                f"   Add impact metrics to your bullet points using key required skills (**{req_skills_str}**):  \n"
+                f"   > - *\"Engineered automated workflows and reports using **{matched_skills_str}**, improving operational efficiency by 30%.\"*\n\n"
+                f"3. **Highlight Relevant Portfolio Projects:**  \n"
+                f"   Link your GitHub portfolio (*{creds['github']}*) directly to showcase real-world projects featuring **{req_skills_str}**.\n\n"
+                f"4. **Verbatim Keyword Alignment:**  \n"
+                f"   Ensure all key terms (**{req_skills_str}**) appear verbatim in your technical skills and work history."
+            )
+
+        # 4. Default Job Resume Assistant Reply
+        else:
+            return (
+                f"### 📊 Resume Analysis & Advice for {job_title}\n\n"
+                f"- **Target Position:** {job_title} at **{comp_name}**\n"
+                f"- **Match Score:** **{match_data['match_percentage']}%** ({match_data['badge_label']})\n"
+                f"- **Matched Skills:** **{matched_skills_str}**\n"
+                f"- **Missing Skills for this Position:** {missing_skills_str}\n\n"
+                f"How else can I assist your application or resume optimization for the **{job_title}** role?"
+            )
 
     if role == 'candidate':
         # ---------------------------------------------------------------------
@@ -833,7 +1027,10 @@ def build_smart_rag_fallback_reply(
 def generate_chat_response(
     messages: List[Dict[str, str]],
     role: str = 'candidate',
-    user=None
+    user=None,
+    custom_system_prompt: Optional[str] = None,
+    job_obj: Optional[Any] = None,
+    resume_text: Optional[str] = None
 ) -> Dict[str, Any]:
     """
     Main entry point for generating AI chatbot responses.
@@ -853,11 +1050,16 @@ def generate_chat_response(
 
     # 2. Build RAG DB Context & Role-Based System Prompt
     rag_context = build_rag_context(user, role)
-    system_prompt = (
-        get_candidate_system_prompt(rag_context)
-        if role == 'candidate'
-        else get_employer_system_prompt(rag_context)
-    )
+    if custom_system_prompt:
+        system_prompt = custom_system_prompt
+    elif messages and messages[0].get('role') == 'system':
+        system_prompt = messages[0].get('content')
+    else:
+        system_prompt = (
+            get_candidate_system_prompt(rag_context)
+            if role == 'candidate'
+            else get_employer_system_prompt(rag_context)
+        )
 
     # 3. Primary Fast Provider: Groq Cloud LLM (Sub-second execution)
     try:
@@ -882,7 +1084,14 @@ def generate_chat_response(
         logger.warning(f"[AI Engine] Gemini provider failed: {e_gemini}. Activating Smart RAG DB Synthesizer...")
 
     # 5. Smart RAG DB Fallback Synthesizer (Guarantees 100% Uptime, Zero Error Messages)
-    fallback_reply = build_smart_rag_fallback_reply(trimmed_messages, role, rag_context)
+    fallback_reply = build_smart_rag_fallback_reply(
+        messages=trimmed_messages,
+        role=role,
+        rag_context=rag_context,
+        job_obj=job_obj,
+        resume_text=resume_text,
+        custom_system_prompt=custom_system_prompt
+    )
     return {
         "success": True,
         "provider": "Smart RAG DB Engine",

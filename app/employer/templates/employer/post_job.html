@@ -25,7 +25,7 @@
                     <div class="mb-3">
                         <label class="form-label small fw-semibold text-white d-flex justify-content-between" for="title" style="font-size: 0.8rem;">
                             <span>Job Title <span class="text-danger">*</span></span>
-                            <span class="text-muted small fw-normal" style="font-size: 0.75rem;">Letters, spaces &amp; punctuation only (no numbers)</span>
+                            <span class="small fw-normal" style="font-size: 0.75rem; color: #94a3b8 !important;">Letters, spaces &amp; punctuation only (no numbers)</span>
                         </label>
                         {{ form.title(class="form-control cp-input-glow" + (" is-invalid" if form.title.errors else ""), placeholder="e.g. Senior Full Stack Engineer, Product Designer", id="title") }}
                         {% if form.title.errors %}
@@ -93,7 +93,7 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold text-white d-flex justify-content-between align-items-center" for="salary_range" style="font-size: 0.8rem;">
                             <span>Salary Range <span class="text-danger">*</span></span>
-                            <span class="text-muted small fw-normal" style="font-size: 0.75rem;">Pick a preset range or modify according to your needs</span>
+                            <span class="small fw-normal" style="font-size: 0.75rem; color: #94a3b8 !important;">Pick a preset range or modify according to your needs</span>
                         </label>
                         
                         <div class="row g-2 align-items-center">
@@ -135,18 +135,39 @@
                         {% endif %}
                     </div>
 
-                    <!-- Description with 1500-word limit counter -->
+                    <!-- Description with 4000-character limit counter & Rich Formatting Toolbar -->
                     <div class="mb-3">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <label class="form-label fw-semibold text-white mb-0" for="description" style="font-size: 0.8rem;">
                                 Job Description &amp; Responsibilities <span class="text-danger">*</span>
                             </label>
-                            <span class="cp-desc-counter" id="descCharCounter">0 / 1500 characters</span>
+                            <span class="cp-desc-counter" id="descCharCounter">0 / 4000 characters</span>
                         </div>
-                        {{ form.description(class="form-control cp-input-glow" + (" is-invalid" if form.description.errors else ""), rows=6, maxlength="1500", placeholder="Provide a detailed, engaging overview of this role, core responsibilities, and team expectations (Max 1500 characters)...", id="description") }}
+                        
+                        <!-- Rich Text Formatting Toolbar -->
+                        <div class="cp-editor-toolbar d-flex flex-wrap align-items-center gap-1 p-1 mb-1 rounded" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12);">
+                            <button type="button" class="btn btn-sm text-white px-2 py-1 border-0 fw-bold" onclick="formatDescText('bold', 'description')" title="Bold text (<b>Text</b>)" style="background: rgba(255,255,255,0.1); border-radius: 4px;">
+                                <i class="bi bi-type-bold"></i> Bold
+                            </button>
+                            <button type="button" class="btn btn-sm text-white px-2 py-1 border-0 fst-italic" onclick="formatDescText('italic', 'description')" title="Italic text (<i>Text</i>)" style="background: rgba(255,255,255,0.1); border-radius: 4px;">
+                                <i class="bi bi-type-italic"></i> Italic
+                            </button>
+                            <button type="button" class="btn btn-sm text-white px-2 py-1 border-0" onclick="formatDescText('h3', 'description')" title="Heading (<h3>Heading</h3>)" style="background: rgba(255,255,255,0.1); border-radius: 4px;">
+                                <i class="bi bi-type-h3"></i> Heading
+                            </button>
+                            <button type="button" class="btn btn-sm text-white px-2 py-1 border-0" onclick="formatDescText('ul', 'description')" title="Bullet List (<ul><li>Item</li></ul>)" style="background: rgba(255,255,255,0.1); border-radius: 4px;">
+                                <i class="bi bi-list-ul"></i> Bullet List
+                            </button>
+                            <button type="button" class="btn btn-sm text-white px-2 py-1 border-0" onclick="formatDescText('p', 'description')" title="Paragraph (<p>Text</p>)" style="background: rgba(255,255,255,0.1); border-radius: 4px;">
+                                <i class="bi bi-paragraph"></i> Paragraph
+                            </button>
+                            <span class="ms-auto small" style="font-size: 0.72rem; color: #94a3b8;"><i class="bi bi-info-circle me-1"></i>Select text &amp; click formatting buttons</span>
+                        </div>
+
+                        {{ form.description(class="form-control cp-input-glow" + (" is-invalid" if form.description.errors else ""), rows=8, maxlength="4000", placeholder="Provide a detailed, engaging overview of this role, core responsibilities, and team expectations (Max 4000 characters)...", id="description") }}
                         <div class="d-flex justify-content-between mt-1">
                             <small class="cp-post-job-hint">Detailed &amp; clear descriptions receive 3x more quality applications.</small>
-                            <small class="text-danger fw-bold d-none" id="descLimitWarning">Maximum 1500 characters limit reached!</small>
+                            <small class="text-danger fw-bold d-none" id="descLimitWarning">Maximum 4000 characters limit reached!</small>
                         </div>
                         {% if form.description.errors %}
                             <div class="invalid-feedback d-block mt-1">
@@ -159,7 +180,7 @@
                     <div class="mb-3">
                         <label class="form-label fw-semibold text-white d-flex justify-content-between" for="skills" style="font-size: 0.8rem;">
                             <span>Required Skills <span class="text-danger">*</span></span>
-                            <span class="text-muted small fw-normal" style="font-size: 0.75rem;">Comma-separated</span>
+                            <span class="small fw-normal" style="font-size: 0.75rem; color: #94a3b8 !important;">Comma-separated</span>
                         </label>
                         {{ form.skills(class="form-control cp-input-glow" + (" is-invalid" if form.skills.errors else ""), placeholder="e.g. Python, Django, PostgreSQL, REST API, Docker", id="skills") }}
                         {% if form.skills.errors %}
@@ -206,7 +227,7 @@
                 </div>
                 <div class="cp-card mb-3">
                     <h6 class="fw-bold text-white mb-2">Job Description</h6>
-                    <p class="text-pearl mb-0" id="previewDescription">Job description will appear here...</p>
+                    <div class="text-pearl mb-0 cp-job-description-content" id="previewDescription">Job description will appear here...</div>
                 </div>
                 <div class="cp-card mb-3">
                     <h6 class="fw-bold text-white mb-2">Required Skills</h6>
@@ -251,8 +272,43 @@
 }
 </style>
 <script>
+window.formatDescText = function(tag, textareaId) {
+    const textarea = document.getElementById(textareaId);
+    if (!textarea) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = textarea.value.substring(start, end);
+    let replacement = '';
+    
+    if (tag === 'bold') {
+        const text = selectedText || 'Bold Text';
+        replacement = `<b>${text}</b>`;
+    } else if (tag === 'italic') {
+        const text = selectedText || 'Italic Text';
+        replacement = `<i>${text}</i>`;
+    } else if (tag === 'h3') {
+        const text = selectedText || 'Heading Title';
+        replacement = `\n<h3>${text}</h3>\n`;
+    } else if (tag === 'ul') {
+        if (selectedText) {
+            const items = selectedText.split('\n').filter(l => l.trim()).map(l => `  <li>${l.trim()}</li>`).join('\n');
+            replacement = `\n<ul>\n${items}\n</ul>\n`;
+        } else {
+            replacement = `\n<ul>\n  <li>Key responsibility or requirement 1</li>\n  <li>Key responsibility or requirement 2</li>\n</ul>\n`;
+        }
+    } else if (tag === 'p') {
+        const text = selectedText || 'Paragraph text...';
+        replacement = `\n<p>${text}</p>\n`;
+    }
+    
+    textarea.value = textarea.value.substring(0, start) + replacement + textarea.value.substring(end);
+    textarea.focus();
+    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+};
+
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Strict Description character counter & hard limit (Max 1500 characters)
+    // 1. Strict Description character counter & hard limit (Max 4000 characters)
     const descArea = document.getElementById('description');
     const counter = document.getElementById('descCharCounter');
     const warning = document.getElementById('descLimitWarning');
@@ -260,19 +316,19 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateCounter() {
         if (!descArea || !counter) return;
         
-        // Strict Hard Limit: truncate any characters beyond 1500 immediately
-        if (descArea.value.length > 1500) {
-            descArea.value = descArea.value.substring(0, 1500);
+        // Strict Hard Limit: truncate any characters beyond 4000 immediately
+        if (descArea.value.length > 4000) {
+            descArea.value = descArea.value.substring(0, 4000);
         }
         
         const charCount = descArea.value.length;
-        counter.textContent = `${charCount} / 1500 characters`;
+        counter.textContent = `${charCount} / 4000 characters`;
         
-        if (charCount >= 1500) {
+        if (charCount >= 4000) {
             counter.classList.add('cp-desc-counter-full');
             if (warning) warning.classList.remove('d-none');
             descArea.classList.remove('is-invalid');
-        } else if (charCount >= 1400) {
+        } else if (charCount >= 3800) {
             counter.classList.add('cp-desc-counter-warn');
             counter.classList.remove('cp-desc-counter-full');
             if (warning) warning.classList.add('d-none');
@@ -355,9 +411,9 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (field === 'description' && value.length < 20) {
             isValid = false;
             errorMessage = 'Description must be at least 20 characters';
-        } else if (field === 'description' && value.trim().split(/\s+/).length > 1500) {
+        } else if (field === 'description' && value.length > 4000) {
             isValid = false;
-            errorMessage = 'Description cannot exceed 1500 words';
+            errorMessage = 'Description cannot exceed 4000 characters';
         } else if (field === 'location' && /\d/.test(value)) {
             isValid = false;
             errorMessage = 'Location cannot contain numbers';
@@ -428,7 +484,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('previewType').textContent = document.getElementById('employment_type').value || 'Employment Type';
             document.getElementById('previewCategory').textContent = document.getElementById('category_id').options[document.getElementById('category_id').selectedIndex]?.text || 'Category';
             document.getElementById('previewSalary').textContent = document.getElementById('salary_range').value || 'Salary Range';
-            document.getElementById('previewDescription').textContent = document.getElementById('description').value || 'Job description will appear here...';
+            document.getElementById('previewDescription').innerHTML = document.getElementById('description').value || 'Job description will appear here...';
             document.getElementById('previewExperience').textContent = document.getElementById('experience_required').value || 'Experience level';
 
             // Skills preview
