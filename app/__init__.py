@@ -220,7 +220,7 @@ def create_app(config_class=Config):
         from flask import render_template
         # ALWAYS show landing page first - this is the hard rule
         # Even authenticated users see the landing page with appropriate navbar state
-        from app.models import Job, User, Company, Application, Offer
+        from app.models import Job, User, Company, Application, Offer, Candidate
         from sqlalchemy import or_
         from datetime import datetime
     
@@ -233,7 +233,7 @@ def create_app(config_class=Config):
             or_(Job.approval_status == 'approved', Job.approval_status.is_(None)),
             or_(Job.is_hired == False, Job.is_hired.is_(None))
         ).count()
-        registered_candidates = User.query.filter_by(role='candidate').count()
+        registered_candidates = Candidate.query.count()
         partner_companies = Company.query.count()
         
         try:
@@ -274,28 +274,57 @@ def create_app(config_class=Config):
             Job.closes_at > datetime.utcnow()
         ).all()
 
-        import re
-        def get_job_max_salary(j):
-            if j.salary_max is not None and j.salary_max > 0:
-                return float(j.salary_max)
-            if j.salary_min is not None and j.salary_min > 0:
-                return float(j.salary_min)
-            if j.salary_range:
-                nums = re.findall(r'\d[\d,]*', j.salary_range)
-                parsed = []
-                for n in nums:
-                    try:
-                        clean_val = float(n.replace(',', ''))
-                        if clean_val > 0:
-                            parsed.append(clean_val)
-                    except ValueError:
-                        pass
-                if parsed:
-                    return max(parsed)
-            return 0.0
+        for j in all_active_jobs:
+            j.sync_salary_fields()
 
-        top_paying_job = max(all_active_jobs, key=get_job_max_salary, default=None) if all_active_jobs else None
+        top_paying_job = max(all_active_jobs, key=lambda j: j.effective_max_salary, default=None) if all_active_jobs else None
         
+        # Dynamically generate trending search tags from currently active open jobs
+        import re
+        trending_tags = []
+        seen_tags = set()
+
+        for j in all_active_jobs:
+            title = (j.title or '').strip()
+            t_lower = title.lower()
+
+            if ('python' in t_lower or 'flask' in t_lower or 'django' in t_lower) and 'python' not in seen_tags:
+                seen_tags.add('python')
+                trending_tags.append({'label': 'Python Dev', 'query': 'Python'})
+            elif ('react' in t_lower or 'next' in t_lower or 'frontend' in t_lower) and 'react' not in seen_tags:
+                seen_tags.add('react')
+                trending_tags.append({'label': 'React Dev', 'query': 'React'})
+            elif ('ai' in t_lower or 'machine learning' in t_lower or 'ml' in t_lower) and 'ai' not in seen_tags:
+                seen_tags.add('ai')
+                trending_tags.append({'label': 'AI & ML', 'query': 'AI Machine Learning'})
+            elif ('devops' in t_lower or 'cloud' in t_lower or 'kubernetes' in t_lower or 'aws' in t_lower) and 'devops' not in seen_tags:
+                seen_tags.add('devops')
+                trending_tags.append({'label': 'DevOps', 'query': 'DevOps'})
+            elif ('ui' in t_lower or 'ux' in t_lower or 'design' in t_lower) and 'design' not in seen_tags:
+                seen_tags.add('design')
+                trending_tags.append({'label': 'UI/UX Design', 'query': 'UI/UX'})
+            elif ('data' in t_lower or 'analyst' in t_lower or 'bi' in t_lower) and 'data' not in seen_tags:
+                seen_tags.add('data')
+                trending_tags.append({'label': 'Data Science', 'query': 'Data Analyst'})
+            else:
+                words = [w for w in re.sub(r'[^a-zA-Z0-9\s]', '', title).split() if len(w) > 2 and w.lower() not in ('senior', 'junior', 'lead', 'full', 'stack')]
+                if words:
+                    s_label = ' '.join(words[:2])
+                    if s_label.lower() not in seen_tags:
+                        seen_tags.add(s_label.lower())
+                        trending_tags.append({'label': s_label, 'query': words[0]})
+
+            if len(trending_tags) >= 5:
+                break
+
+        if not trending_tags:
+            trending_tags = [
+                {'label': 'Python Dev', 'query': 'Python'},
+                {'label': 'React Dev', 'query': 'React'},
+                {'label': 'DevOps', 'query': 'DevOps'},
+                {'label': 'UI/UX Design', 'query': 'UI/UX'}
+            ]
+
         return render_template('landing.html', 
                             active_jobs=active_jobs,
                             registered_candidates=registered_candidates,
@@ -303,7 +332,8 @@ def create_app(config_class=Config):
                             avg_offer_value=avg_offer_value,
                             total_offer_value=total_offer_value,
                             featured_jobs=featured_jobs,
-                            top_paying_job=top_paying_job)
+                            top_paying_job=top_paying_job,
+                            trending_tags=trending_tags)
 
     @app.route('/uploads/<path:filename>')
     def uploaded_file(filename):

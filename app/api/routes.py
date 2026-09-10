@@ -1,7 +1,7 @@
 from datetime import datetime
 from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
-from app.models import Job, Application, JobCategory, Company, User
+from app.models import Job, Application, JobCategory, Company, User, Candidate
 from app.utils import role_required, get_recruiter_or_403
 
 api_bp = Blueprint('api', __name__)
@@ -136,7 +136,7 @@ def api_admin_dashboard_data():
         
         # Get current statistics
         total_users = User.query.count()
-        candidates = User.query.filter_by(role='candidate').count()
+        candidates = Candidate.query.count()
         employers = User.query.filter_by(role='employer').count()
         active_jobs = Job.query.filter_by(status='active').count()
         

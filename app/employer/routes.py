@@ -426,6 +426,7 @@ def post_job():
             status='active',
             approval_status='approved',
         )
+        job.sync_salary_fields()
         db.session.add(job)
         db.session.flush()
 
@@ -1568,6 +1569,7 @@ def edit_job(job_id):
         job.description = form.description.data.strip()
         job.location = form.location.data.strip()
         job.salary_range = (form.salary_range.data or '').strip() or None
+        job.sync_salary_fields()
         job.employment_type = form.employment_type.data
         job.experience_required = (form.experience_required.data or '').strip() or None
         job.closes_at = form.closes_at.data

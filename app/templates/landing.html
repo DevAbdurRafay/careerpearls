@@ -133,10 +133,9 @@
                     </form>
                     <div class="lp-search-hints mt-3">
                         <span class="lp-hint-label">Trending:</span>
-                        <a href="{{ url_for('explore') }}?q=Python+Developer" class="lp-hint-tag">Python Dev</a>
-                        <a href="{{ url_for('explore') }}?q=React+Developer" class="lp-hint-tag">React Dev</a>
-                        <a href="{{ url_for('explore') }}?q=Data+Scientist" class="lp-hint-tag">Data Science</a>
-                        <a href="{{ url_for('explore') }}?q=UI+UX+Designer" class="lp-hint-tag">UI/UX Design</a>
+                        {% for tag in (trending_tags or []) %}
+                        <a href="{{ url_for('explore') }}?q={{ tag.query|urlencode }}" class="lp-hint-tag">{{ tag.label }}</a>
+                        {% endfor %}
                     </div>
                 </div>
                 <div class="lp-stats-row">

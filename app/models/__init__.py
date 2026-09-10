@@ -636,6 +636,46 @@ class Job(db.Model):
     def accepts_applications(self):
         return self.is_open()
 
+    def sync_salary_fields(self):
+        """Parse numbers from salary_range to update salary_min and salary_max attributes if set."""
+        if not self.salary_range:
+            return
+        import re
+        nums = re.findall(r'\d[\d,]*', str(self.salary_range))
+        parsed = []
+        for n in nums:
+            try:
+                val = int(float(n.replace(',', '')))
+                if val > 0:
+                    parsed.append(val)
+            except ValueError:
+                pass
+        if parsed:
+            self.salary_min = min(parsed)
+            self.salary_max = max(parsed)
+
+    @property
+    def effective_max_salary(self):
+        """Returns the dynamic maximum salary value for sorting top offer jobs."""
+        if self.salary_range:
+            import re
+            nums = re.findall(r'\d[\d,]*', str(self.salary_range))
+            parsed = []
+            for n in nums:
+                try:
+                    val = float(n.replace(',', ''))
+                    if val > 0:
+                        parsed.append(val)
+                except ValueError:
+                    pass
+            if parsed:
+                return max(parsed)
+        if self.salary_max is not None and self.salary_max > 0:
+            return float(self.salary_max)
+        if self.salary_min is not None and self.salary_min > 0:
+            return float(self.salary_min)
+        return 0.0
+
 
 class JobSkill(db.Model):
     __tablename__ = 'job_skills'
