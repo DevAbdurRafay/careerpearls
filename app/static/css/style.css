@@ -5398,32 +5398,58 @@ html {
    FIELDS OF INTEREST & CAREER STATUS CHIPS LIGHT THEME OVERHAUL
    ───────────────────────────────────────────────────────────────────────────── */
 
-:root[data-theme="light"] .interest-chip {
+/* Outer label wrapper must be transparent without border or square background */
+.interest-chip-label,
+label.interest-chip-label,
+:root[data-theme="light"] .interest-chip-label,
+:root[data-theme="light"] label.interest-chip-label {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 3px !important;
+    box-shadow: none !important;
+    display: inline-flex !important;
+    outline: none !important;
+}
+
+:root[data-theme="light"] .interest-chip,
+:root[data-theme="light"] label.interest-chip,
+:root[data-theme="light"] span.interest-chip {
     background: #f1f5f9 !important;
-    color: #1e293b !important;
-    -webkit-text-fill-color: #1e293b !important;
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
     border: 1.5px solid #cbd5e1 !important;
+    border-radius: 999px !important;
     font-weight: 500 !important;
+    padding: 0.45rem 1rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
 }
 
 :root[data-theme="light"] .interest-chip:hover {
     background: #e2e8f0 !important;
-    color: #0f172a !important;
-    -webkit-text-fill-color: #0f172a !important;
-    border-color: #94a3b8 !important;
+    color: #0284c7 !important;
+    -webkit-text-fill-color: #0284c7 !important;
+    border-color: #0284c7 !important;
 }
 
-:root[data-theme="light"] .interest-chip.selected {
-    background: linear-gradient(135deg, #7c3aed, #4f46e5) !important;
+:root[data-theme="light"] .interest-chip.selected,
+:root[data-theme="light"] label.interest-chip.selected,
+:root[data-theme="light"] span.interest-chip.selected {
+    background: linear-gradient(135deg, #0284c7, #2563eb) !important;
     color: #ffffff !important;
     -webkit-text-fill-color: #ffffff !important;
-    border-color: transparent !important;
-    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35) !important;
+    border: 1.5px solid transparent !important;
+    border-radius: 999px !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35) !important;
 }
 
-:root[data-theme="light"] .interest-chip span {
-    color: inherit !important;
-    -webkit-text-fill-color: inherit !important;
+:root[data-theme="light"] .interest-chip.selected *,
+:root[data-theme="light"] label.interest-chip.selected *,
+:root[data-theme="light"] span.interest-chip.selected * {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
 }
 
 :root[data-theme="light"] .status-card {
@@ -7893,17 +7919,34 @@ select::placeholder,
 .cp-job-description-content h6 {
     color: var(--cp-text, #ffffff);
     font-weight: 700;
-    margin-top: 1.25rem;
-    margin-bottom: 0.6rem;
+    margin-top: 0.85rem;
+    margin-bottom: 0.4rem;
     line-height: 1.35;
     word-break: break-word;
     overflow-wrap: break-word;
 }
 
+.cp-job-description-content > *:first-child,
+.cp-job-description-content h1:first-child,
+.cp-job-description-content h2:first-child,
+.cp-job-description-content h3:first-child,
+.cp-job-description-content h4:first-child {
+    margin-top: 0 !important;
+}
+
+.cp-job-description-content hr + h1,
+.cp-job-description-content hr + h2,
+.cp-job-description-content hr + h3,
+.cp-job-description-content hr + h4,
+.cp-job-description-content hr + h5,
+.cp-job-description-content hr + h6 {
+    margin-top: 0.6rem !important;
+}
+
 .cp-job-description-content h2 {
     font-size: clamp(1.15rem, 3.5vw, 1.45rem);
     border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-    padding-bottom: 0.4rem;
+    padding-bottom: 0.3rem;
 }
 
 .cp-job-description-content h3 {
@@ -7915,7 +7958,7 @@ select::placeholder,
 }
 
 .cp-job-description-content p {
-    margin-bottom: 0.85rem;
+    margin-bottom: 0.65rem;
     overflow-wrap: break-word;
     word-break: break-word;
 }
@@ -7923,7 +7966,7 @@ select::placeholder,
 .cp-job-description-content ul,
 .cp-job-description-content ol {
     padding-left: 1.35rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
     max-width: 100%;
 }
 
@@ -7935,7 +7978,7 @@ select::placeholder,
 }
 
 .cp-job-description-content li {
-    margin-bottom: 0.45rem;
+    margin-bottom: 0.35rem;
     overflow-wrap: break-word;
     word-break: break-word;
 }
@@ -7962,7 +8005,7 @@ select::placeholder,
 
 .cp-job-description-content hr {
     border-color: rgba(255, 255, 255, 0.12);
-    margin: 1.25rem 0;
+    margin: 0.6rem 0 !important;
 }
 
 

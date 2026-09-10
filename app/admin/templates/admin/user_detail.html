@@ -86,7 +86,7 @@
             <div class="mt-3 d-flex flex-wrap gap-2">
                 {% if c.linkedin_url %}<a href="{{ c.linkedin_url }}" target="_blank" class="btn btn-sm btn-outline-info admin-btn-sm"><i class="bi bi-linkedin me-1"></i>LinkedIn</a>{% endif %}
                 {% if c.github_url %}<a href="{{ c.github_url }}" target="_blank" class="btn btn-sm btn-outline-secondary admin-btn-sm"><i class="bi bi-github me-1"></i>GitHub</a>{% endif %}
-                {% if c.kaggle_url %}<a href="{{ c.kaggle_url }}" target="_blank" class="btn btn-sm btn-outline-secondary admin-btn-sm"><i class="bi bi-box me-1"></i>Kaggle</a>{% endif %}
+                {% if c.kaggle_url %}<a href="{{ c.kaggle_url }}" target="_blank" class="btn btn-sm btn-outline-secondary admin-btn-sm"><svg class="me-1" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block; vertical-align:-0.125em;"><path d="M18.825 23.859h-3.225l-5.7-8.325-2.2 2.175v6.15H4.25V.141h3.45v13.35l7.15-8.525h3.475l-6.85 8.125 7.35 10.768z"/></svg>Kaggle</a>{% endif %}
                 {% if c.portfolio_url %}<a href="{{ c.portfolio_url }}" target="_blank" class="btn btn-sm btn-outline-secondary admin-btn-sm"><i class="bi bi-globe me-1"></i>Portfolio</a>{% endif %}
             </div>
             {% endif %}

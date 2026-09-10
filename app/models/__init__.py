@@ -135,6 +135,59 @@ class Candidate(db.Model):
     certifications = db.relationship('CandidateCertification', backref='candidate', lazy='dynamic', cascade='all, delete-orphan')
     applications = db.relationship('Application', backref='candidate', lazy='dynamic', cascade='all, delete-orphan')
     saved_jobs = db.relationship('SavedJob', backref='candidate', lazy='dynamic', cascade='all, delete-orphan')
+    links = db.relationship('CandidateLink', backref='candidate', lazy='dynamic', cascade='all, delete-orphan')
+
+    def sync_links_to_table(self):
+        """Sync candidate social link fields to candidate_links table."""
+        if not getattr(self, 'id', None):
+            return
+        link_map = {
+            'linkedin': ('LinkedIn', self.linkedin_url),
+            'github': ('GitHub', self.github_url),
+            'kaggle': ('Kaggle', self.kaggle_url),
+            'portfolio': ('Portfolio', self.portfolio_url),
+        }
+        try:
+            existing = {l.link_type: l for l in CandidateLink.query.filter_by(candidate_id=self.id).all()}
+        except Exception:
+            existing = {}
+
+        for ltype, (title, val) in link_map.items():
+            clean_url = str(val).strip() if val and str(val).strip() else None
+            if clean_url:
+                if ltype in existing:
+                    existing[ltype].url = clean_url
+                    existing[ltype].title = title
+                    existing[ltype].updated_at = datetime.utcnow()
+                else:
+                    new_link = CandidateLink(
+                        candidate_id=self.id,
+                        link_type=ltype,
+                        title=title,
+                        url=clean_url
+                    )
+                    db.session.add(new_link)
+            else:
+                if ltype in existing:
+                    db.session.delete(existing[ltype])
+
+    def sync_links_from_table(self):
+        """Sync candidate_links table data back into candidate fields."""
+        if not getattr(self, 'id', None):
+            return
+        try:
+            table_links = CandidateLink.query.filter_by(candidate_id=self.id).all()
+            for l in table_links:
+                if l.link_type == 'linkedin' and l.url:
+                    self.linkedin_url = l.url
+                elif l.link_type == 'github' and l.url:
+                    self.github_url = l.url
+                elif l.link_type == 'kaggle' and l.url:
+                    self.kaggle_url = l.url
+                elif l.link_type == 'portfolio' and l.url:
+                    self.portfolio_url = l.url
+        except Exception:
+            pass
 
     def calculate_completion_pct(self):
         try:
@@ -180,6 +233,32 @@ class CandidateInterest(db.Model):
     interest_name = db.Column(db.String(80), nullable=False)
 
     __table_args__ = (db.UniqueConstraint('candidate_id', 'interest_name', name='uq_candidate_interest'),)
+
+
+class CandidateLink(db.Model):
+    """Candidate links (LinkedIn, GitHub, Kaggle, Portfolio, custom) stored in candidate_links table."""
+    __tablename__ = 'candidate_links'
+
+    id = db.Column(db.Integer, primary_key=True)
+    candidate_id = db.Column(db.Integer, db.ForeignKey('candidates.id', ondelete='CASCADE'), nullable=False, index=True)
+    link_type = db.Column(db.String(50), nullable=False, default='other')
+    title = db.Column(db.String(100), nullable=True)
+    url = db.Column(db.String(500), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+    __table_args__ = (db.UniqueConstraint('candidate_id', 'link_type', name='uq_candidate_link_type'),)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'candidate_id': self.candidate_id,
+            'link_type': self.link_type,
+            'title': self.title or self.link_type.capitalize(),
+            'url': self.url,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+        }
 
 
 CAREER_STATUS_OPTIONS = [

@@ -72,6 +72,7 @@ def _apply_social_links(candidate, form):
     candidate.github_url = form.github_url.data.strip() if form.github_url.data else None
     candidate.linkedin_url = form.linkedin_url.data.strip() if form.linkedin_url.data else None
     candidate.kaggle_url = form.kaggle_url.data.strip() if form.kaggle_url.data else None
+    candidate.sync_links_to_table()
 
 
 def _populate_social_links_form(form, candidate):
@@ -191,6 +192,7 @@ def _apply_profile_form(candidate, form):
     candidate.github_url = _format_url(form.github_url.data) if form.github_url.data else None
     candidate.portfolio_url = _format_url(form.portfolio_url.data) if form.portfolio_url.data else None
     candidate.kaggle_url = _format_url(form.kaggle_url.data) if form.kaggle_url.data else None
+    candidate.sync_links_to_table()
 
 
 def _populate_profile_form_from_view(form, view):

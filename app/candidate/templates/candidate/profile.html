@@ -114,7 +114,7 @@
                         {% endif %}
                         {% if candidate.kaggle_url %}
                         <a href="{{ candidate.kaggle_url }}" target="_blank" rel="noopener noreferrer" class="cp-social-badge cp-social-kaggle" title="Kaggle Profile">
-                            <i class="bi bi-diagram-3-fill"></i> Kaggle
+                            <svg class="me-1" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="display:inline-block; vertical-align:-0.125em;"><path d="M18.825 23.859h-3.225l-5.7-8.325-2.2 2.175v6.15H4.25V.141h3.45v13.35l7.15-8.525h3.475l-6.85 8.125 7.35 10.768z"/></svg> Kaggle
                         </a>
                         {% endif %}
                     </div>
@@ -299,7 +299,7 @@
                         </div>
                         <div>
                             <label class="form-label" for="kaggle_url">
-                                <i class="bi bi-diagram-3-fill text-warning me-1"></i>{{ optional_label('Kaggle Profile') }}
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="#20beff" style="display:inline-block; vertical-align:-0.125em;" class="me-1"><path d="M18.825 23.859h-3.225l-5.7-8.325-2.2 2.175v6.15H4.25V.141h3.45v13.35l7.15-8.525h3.475l-6.85 8.125 7.35 10.768z"/></svg>{{ optional_label('Kaggle Profile') }}
                             </label>
                             {{ form.kaggle_url(class="form-control cp-input-glow" ~ (" is-invalid" if form.kaggle_url.errors else ""), id="kaggle_url", placeholder="https://kaggle.com/username", oninput="validateSocialUrl(this, 'kaggle')") }}
                             {% for error in form.kaggle_url.errors %}

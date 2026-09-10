@@ -426,21 +426,52 @@
     color: #0369a1 !important;
 }
 
+/* Outer label wrapper must be transparent without border or square background */
+.interest-chip-label,
+label.interest-chip-label,
+:root[data-theme="light"] .interest-chip-label,
+:root[data-theme="light"] label.interest-chip-label {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 3px !important;
+    box-shadow: none !important;
+    display: inline-flex !important;
+    outline: none !important;
+}
+
+/* Inner chip is the ONLY element with rounded pill borders & background */
 :root[data-theme="light"] .interest-chip,
 :root[data-theme="light"] label.interest-chip,
 :root[data-theme="light"] span.interest-chip {
     background: #f1f5f9 !important;
-    border: 1px solid #cbd5e1 !important;
-    color: #1e293b !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 999px !important;
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+    font-weight: 500 !important;
+    padding: 0.45rem 1rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
 }
 
 :root[data-theme="light"] .interest-chip.selected,
 :root[data-theme="light"] label.interest-chip.selected,
 :root[data-theme="light"] span.interest-chip.selected {
-    background: #e0f2fe !important;
-    border-color: #0284c7 !important;
-    color: #0369a1 !important;
-    font-weight: 600 !important;
+    background: linear-gradient(135deg, #0284c7, #2563eb) !important;
+    border: 1.5px solid transparent !important;
+    border-radius: 999px !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35) !important;
+}
+
+:root[data-theme="light"] .interest-chip.selected *,
+:root[data-theme="light"] label.interest-chip.selected *,
+:root[data-theme="light"] span.interest-chip.selected * {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
 }
 
 :root[data-theme="light"] .cp-input-glow,

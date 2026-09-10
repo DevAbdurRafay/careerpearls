@@ -929,6 +929,23 @@ def _ensure_schema_columns():
                 db.session.commit()
             except Exception:
                 db.session.rollback()
+
+    if 'candidate_links' not in inspector.get_table_names():
+        try:
+            db.create_all()
+        except Exception:
+            pass
+
+    try:
+        from app.models import Candidate
+        candidates = Candidate.query.all()
+        for cand in candidates:
+            cand.sync_links_to_table()
+            cand.sync_links_from_table()
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
     try:
         db.session.commit()
     except Exception:
