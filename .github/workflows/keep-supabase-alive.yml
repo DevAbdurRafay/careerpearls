@@ -2,83 +2,16 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    # Runs daily at 00:00 UTC (5:00 AM PKT)
-    - cron: '0 0 * * *'
-  workflow_dispatch: # Allows manual trigger anytime from GitHub Actions tab
+    - cron: '0 0 */3 * *'
+  workflow_dispatch:
 
 jobs:
-  ping-supabase:
-    name: Keep Supabase Active
+  ping-app:
     runs-on: ubuntu-latest
-    env:
-      DEFAULT_SUPABASE_URL: "https://bslksbjdxdffacaoutaz.supabase.co"
-      DEFAULT_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzbGtzYmpkeGRmZmFjYW91dGF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0ODEzOTcsImV4cCI6MjEwMzA1NzM5N30.rXupFUrAHP0v8AriI6UoVKalHxvmDXEemLaUptUlAjA"
-      DEFAULT_DB_URL: "postgresql://postgres.bslksbjdxdffacaoutaz:rafaysupadb2026@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
-
     steps:
-      - name: Ping Supabase REST API via Curl
-        id: rest_ping
-        continue-on-error: true
+      - name: Ping Supabase Database
         run: |
-          SUPABASE_URL="${{ secrets.SUPABASE_URL }}"
-          if [ -z "$SUPABASE_URL" ]; then
-            SUPABASE_URL="$DEFAULT_SUPABASE_URL"
-          fi
-
-          ANON_KEY="${{ secrets.SUPABASE_ANON_KEY }}"
-          if [ -z "$ANON_KEY" ]; then
-            ANON_KEY="$DEFAULT_ANON_KEY"
-          fi
-
-          echo "Targeting Supabase URL: $SUPABASE_URL"
-
-          # Perform request with standard browser User-Agent header to bypass Cloudflare bot block
-          RESPONSE=$(curl -s -i \
-            -X GET "${SUPABASE_URL}/rest/v1/jobs?select=id&limit=1" \
-            -H "apikey: ${ANON_KEY}" \
-            -H "Authorization: Bearer ${ANON_KEY}" \
-            -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
-            -H "Accept: application/json")
-
-          echo "--- Full Supabase Response ---"
-          echo "$RESPONSE"
-          echo "------------------------------"
-
-          STATUS_CODE=$(echo "$RESPONSE" | grep -i "^HTTP/" | tail -n 1 | awk '{print $2}')
-          echo "Extracted Status Code: $STATUS_CODE"
-
-          if [ "$STATUS_CODE" -ge 200 ] && [ "$STATUS_CODE" -lt 400 ]; then
-            echo "REST Ping SUCCESS! Supabase is active."
-            echo "REST_SUCCESS=true" >> $GITHUB_ENV
-          else
-            echo "REST Ping failed with status code: $STATUS_CODE"
-            echo "REST_SUCCESS=false" >> $GITHUB_ENV
-          fi
-
-      - name: Fallback Direct PostgreSQL Ping (Python)
-        if: env.REST_SUCCESS != 'true'
-        run: |
-          echo "REST ping did not return 200/300. Attempting direct PostgreSQL connection..."
-          python -m pip install --upgrade pip
-          pip install psycopg2-binary
-
-          DB_URL="${{ secrets.DATABASE_URL }}"
-          if [ -z "$DB_URL" ]; then
-            DB_URL="$DEFAULT_DB_URL"
-          fi
-
-          python -c "
-          import os, psycopg2
-          db_url = '$DB_URL'
-          try:
-              conn = psycopg2.connect(db_url, connect_timeout=15)
-              cur = conn.cursor()
-              cur.execute('SELECT 1;')
-              res = cur.fetchone()
-              print('PostgreSQL Direct Connection Success:', res)
-              cur.close()
-              conn.close()
-          except Exception as e:
-              print('PostgreSQL Connection Failed:', e)
-              raise e
-          "
+          curl -s -f \
+            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzbGtzYmpkeGRmZmFjYW91dGF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0ODEzOTcsImV4cCI6MjEwMzA1NzM5N30.rXupFUrAHP0v8AriI6UoVKalHxvmDXEemLaUptUlAjA" \
+            "https://bslksbjdxdffacaoutaz.supabase.co/rest/v1/jobs?select=id&limit=1" \
+            -o /dev/null
