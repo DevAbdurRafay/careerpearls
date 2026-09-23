@@ -1,0 +1,21 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # runs daily at 6:00 AM UTC — adjust as needed
+    - cron: '0 6 * * *'
+  workflow_dispatch:  # manual trigger button bhi mil jayega Actions tab mein
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST endpoint
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}")
+          echo "Supabase responded with status: $response"
+          if [ "$response" -ge 400 ]; then
+            echo "Warning: non-2xx/3xx response from Supabase"
+          fi
