@@ -2,16 +2,75 @@ name: Keep Supabase Alive
 
 on:
   schedule:
+    # Runs automatically every 3 days at 00:00 UTC (5:00 AM PKT)
     - cron: '0 0 */3 * *'
-  workflow_dispatch:
+  workflow_dispatch: # Allows manual trigger anytime from GitHub Actions tab
 
 jobs:
-  ping-app:
+  ping-supabase:
+    name: Keep Supabase Active
     runs-on: ubuntu-latest
+
     steps:
-      - name: Ping Supabase Database
+      - name: Ping Supabase REST API
+        id: rest_ping
+        continue-on-error: true
         run: |
-          curl -s -f \
-            -H "apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzbGtzYmpkeGRmZmFjYW91dGF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0ODEzOTcsImV4cCI6MjEwMzA1NzM5N30.rXupFUrAHP0v8AriI6UoVKalHxvmDXEemLaUptUlAjA" \
-            "https://bslksbjdxdffacaoutaz.supabase.co/rest/v1/jobs?select=id&limit=1" \
-            -o /dev/null
+          SUPABASE_URL="${{ secrets.SUPABASE_URL }}"
+          ANON_KEY="${{ secrets.SUPABASE_ANON_KEY }}"
+
+          if [ -z "$SUPABASE_URL" ] || [ -z "$ANON_KEY" ]; then
+            echo "Error: SUPABASE_URL or SUPABASE_ANON_KEY secret is missing."
+            echo "REST_SUCCESS=false" >> $GITHUB_ENV
+            exit 1
+          fi
+
+          echo "Sending ping to Supabase REST API..."
+
+          RESPONSE=$(curl -s -i \
+            -X GET "${SUPABASE_URL}/rest/v1/jobs?select=id&limit=1" \
+            -H "apikey: ${ANON_KEY}" \
+            -H "Authorization: Bearer ${ANON_KEY}" \
+            -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36" \
+            -H "Accept: application/json")
+
+          STATUS_CODE=$(echo "$RESPONSE" | grep -i "^HTTP/" | tail -n 1 | awk '{print $2}')
+          echo "Supabase Response Status Code: $STATUS_CODE"
+
+          if [ "$STATUS_CODE" -ge 200 ] && [ "$STATUS_CODE" -lt 400 ]; then
+            echo "REST Ping SUCCESS! Supabase remains active."
+            echo "REST_SUCCESS=true" >> $GITHUB_ENV
+          else
+            echo "REST Ping failed with status code: $STATUS_CODE"
+            echo "REST_SUCCESS=false" >> $GITHUB_ENV
+          fi
+
+      - name: Fallback Direct PostgreSQL Ping (Python)
+        if: env.REST_SUCCESS != 'true'
+        run: |
+          echo "REST ping failed or not configured. Attempting direct PostgreSQL connection..."
+          
+          DB_URL="${{ secrets.DATABASE_URL }}"
+          if [ -z "$DB_URL" ]; then
+            echo "Error: DATABASE_URL secret is missing."
+            exit 1
+          fi
+
+          python -m pip install --upgrade pip
+          pip install psycopg2-binary
+
+          python -c "
+          import os, psycopg2
+          db_url = '$DB_URL'
+          try:
+              conn = psycopg2.connect(db_url, connect_timeout=15)
+              cur = conn.cursor()
+              cur.execute('SELECT 1;')
+              res = cur.fetchone()
+              print('PostgreSQL Direct Connection Success:', res)
+              cur.close()
+              conn.close()
+          except Exception as e:
+              print('PostgreSQL Connection Failed:', e)
+              raise e
+          "
