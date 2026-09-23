@@ -2,20 +2,33 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    # runs daily at 6:00 AM UTC — adjust as needed
     - cron: '0 6 * * *'
-  workflow_dispatch:  # manual trigger button bhi mil jayega Actions tab mein
+  workflow_dispatch:
 
 jobs:
   ping-supabase:
     runs-on: ubuntu-latest
     steps:
+      - name: Validate secrets are set
+        run: |
+          if [ -z "${{ secrets.SUPABASE_URL }}" ]; then
+            echo "ERROR: SUPABASE_URL secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SUPABASE_ANON_KEY }}" ]; then
+            echo "ERROR: SUPABASE_ANON_KEY secret is not set"
+            exit 1
+          fi
+          echo "Secrets look present."
+
       - name: Ping Supabase REST endpoint
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" \
-            "${{ secrets.SUPABASE_URL }}/rest/v1/" \
+          URL="${{ secrets.SUPABASE_URL }}/rest/v1/"
+          echo "Pinging: $URL"
+          response=$(curl -s -o /dev/null -w "%{http_code}" "$URL" \
             -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}")
           echo "Supabase responded with status: $response"
-          if [ "$response" -ge 400 ]; then
-            echo "Warning: non-2xx/3xx response from Supabase"
+          if [ "$response" -ge 400 ] || [ -z "$response" ]; then
+            echo "Warning: unexpected response from Supabase"
+            exit 1
           fi
