@@ -773,6 +773,7 @@ class Interview(db.Model):
     on_hold = db.Column(db.Boolean, default=False, nullable=False)
     hold_reason = db.Column(db.Text, nullable=True)
     reminder_sent = db.Column(db.Boolean, default=False, nullable=False)
+    is_conducted = db.Column(db.Boolean, default=False, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 

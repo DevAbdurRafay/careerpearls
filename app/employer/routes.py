@@ -167,6 +167,22 @@ def view_candidate_profile(candidate_id):
         flash('Candidate Sourcing Privacy Rule: You can only view details of candidates who have actively applied to your job postings.', 'danger')
         return redirect(url_for('employer.manage_applications'))
 
+    # Mark application as viewed by employer when modal profile is loaded
+    try:
+        updated = False
+        if not has_applied.is_read_by_employer:
+            has_applied.is_read_by_employer = True
+            updated = True
+        if has_applied.status == 'Applied':
+            has_applied.status = 'Viewed'
+            log_status_change(has_applied, 'Viewed', current_user.id)
+            updated = True
+        if updated:
+            db.session.commit()
+    except Exception as read_err:
+        current_app.logger.warning(f"Failed to update application view status: {read_err}")
+        db.session.rollback()
+
     try:
         work_mode_labels = dict(WORK_MODE_OPTIONS)
         return render_template(
@@ -479,14 +495,7 @@ def manage_applications():
         or_(Job.is_hired == False, Job.is_hired.is_(None))
     ).count()
 
-    # Mark all unread applications for this employer as read when visiting applications page
-    if job_ids:
-        Application.query.filter(
-            Application.job_id.in_(job_ids),
-            Application.is_read_by_employer == False
-        ).update({'is_read_by_employer': True}, synchronize_session=False)
-        db.session.commit()
-
+    # Applications remain unread until employer explicitly views candidate details in modal
     total_applications = Application.query.filter(
         Application.job_id.in_(job_ids),
         Application.status != 'Withdrawn'
@@ -877,10 +886,11 @@ def schedule_interview(app_id):
 @safe_button_handler('employer.manage_applications')
 def shortlist_candidate(app_id):
     """
-    ACTION: Shortlist Candidate
+    ACTION: Shortlist Candidate with Expected / Offered Amount
     Updates application status to 'Shortlisted'.
-    Sends congratulatory dashboard notification to candidate.
-    Dispatches official Shortlisted email with company query contact.
+    Records or updates the Offer record with salary_offered.
+    Sends congratulatory dashboard notification to candidate including offered amount.
+    Dispatches official Shortlisted email with company query contact and offered amount.
     """
     try:
         recruiter = get_recruiter_or_403()
@@ -890,6 +900,30 @@ def shortlist_candidate(app_id):
 
         org_name = gattr(recruiter.company, 'name') or 'Organization'
         org_email = current_user.email or (recruiter.company.email if recruiter.company else 'support@careerpearls.com')
+        
+        salary_offered = (request.form.get('salary_offered') or '').strip()
+        if not salary_offered:
+            if application.job.salary_range:
+                salary_offered = application.job.salary_range
+            elif application.job.salary_min and application.job.salary_max:
+                salary_offered = f"PKR {application.job.salary_min:,} - {application.job.salary_max:,} / month"
+            elif application.job.salary_max:
+                salary_offered = f"PKR {application.job.salary_max:,} / month"
+            else:
+                salary_offered = "Competitive Package"
+
+        # Create or update Offer record
+        offer = Offer.query.filter_by(application_id=application.id).first()
+        if not offer:
+            offer = Offer(
+                application_id=application.id,
+                salary_offered=salary_offered,
+                status='Pending'
+            )
+            db.session.add(offer)
+        else:
+            offer.salary_offered = salary_offered
+
         log_status_change(application, 'Shortlisted', current_user.id)
 
         # Send congratulatory notification to candidate
@@ -897,11 +931,11 @@ def shortlist_candidate(app_id):
         if cand_user_id:
             db.session.add(Notification(
                 user_id=cand_user_id,
-                message=f"🎉 Congratulations! You have been Shortlisted by {org_name} for the position of {application.job.title}!",
+                message=f"🎉 Congratulations! You have been Shortlisted by {org_name} for {application.job.title}! Expected / Offered Amount: {salary_offered}",
                 type='shortlist',
             ))
 
-        create_audit_log(current_user.id, 'candidate_shortlisted', 'Application', application.id)
+        create_audit_log(current_user.id, 'candidate_shortlisted', 'Application', application.id, details=f"Offered Amount: {salary_offered}")
         db.session.commit()
 
         # Dispatch official Shortlisted email notification
@@ -913,16 +947,48 @@ def shortlist_candidate(app_id):
                 company_name=org_name,
                 job_title=application.job.title,
                 company_email=org_email,
+                salary_offered=salary_offered,
             )
         except Exception as e:
             current_app.logger.error(f"Failed to send shortlisted email: {e}")
 
-        safe_flash_success(f'⭐ {application.candidate.full_name} has been Shortlisted for {application.job.title}! Confirmation email sent.')
+        safe_flash_success(f'⭐ {application.candidate.full_name} has been Shortlisted for {application.job.title}! (Offered Amount: {salary_offered}). Confirmation email sent.')
         return safe_redirect('employer.manage_applications')
     except Exception as e:
         current_app.logger.error(f"Shortlist candidate error: {e}")
         db.session.rollback()
         safe_flash_error('Failed to shortlist candidate. Please try again.')
+        return safe_redirect('employer.manage_applications')
+
+
+@employer_bp.route('/interviews/<int:interview_id>/toggle-conducted', methods=['POST'])
+@login_required
+@role_required('employer')
+def toggle_interview_conducted(interview_id):
+    """
+    Toggle interview conduct state (is_conducted: True/False).
+    Allows employer to check/uncheck whether an interview was conducted or not.
+    """
+    try:
+        recruiter = get_recruiter_or_403()
+        interview = Interview.query.get_or_404(interview_id)
+        if not job_belongs_to_recruiter(interview.application.job, recruiter):
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json:
+                return jsonify({'success': False, 'error': 'Forbidden'}), 403
+            abort(403)
+        interview.is_conducted = not bool(interview.is_conducted)
+        db.session.commit()
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json:
+            return jsonify({'success': True, 'is_conducted': interview.is_conducted})
+        status_label = "Conducted" if interview.is_conducted else "Not Conducted"
+        safe_flash_success(f'Interview status updated to {status_label}.')
+        return safe_redirect('employer.manage_applications')
+    except Exception as e:
+        current_app.logger.error(f"Toggle interview conducted error: {e}")
+        db.session.rollback()
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.is_json:
+            return jsonify({'success': False, 'error': 'Failed to toggle status'}), 500
+        safe_flash_error('Failed to update interview status.')
         return safe_redirect('employer.manage_applications')
 
 

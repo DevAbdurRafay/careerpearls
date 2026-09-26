@@ -272,40 +272,11 @@
                 <span>Hired · Process Completed</span>
             </span>
             {% else %}
-            {# Candidate NOT hired yet (active or rejected) - all mutator actions available #}
-
-            <!-- 2. Schedule Interview Action -->
+            <!-- Schedule Interview Action ONLY -->
             <button type="button" class="btn btn-sm px-3.5 py-2 fw-semibold d-inline-flex align-items-center gap-2 cp-modal-act-btn cp-modal-btn-schedule" onclick="openScheduleModalFromDossier({{ application.id }})" title="Schedule Official Interview">
                 <i class="bi bi-calendar2-check-fill"></i>
                 <span>Schedule Interview</span>
             </button>
-
-            <!-- 3. Shortlist Action -->
-            {% if application.status == 'Shortlisted' %}
-            <form method="POST" action="{{ url_for('employer.unshortlist_candidate', app_id=application.id) }}" class="d-inline m-0 p-0">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn-sm px-3.5 py-2 fw-semibold d-inline-flex align-items-center gap-2 cp-modal-act-btn cp-modal-btn-shortlist active" title="Shortlist is active. Click to remove.">
-                    <i class="bi bi-star-fill"></i>
-                    <span>Shortlisted</span>
-                </button>
-            </form>
-            {% else %}
-            <form method="POST" action="{{ url_for('employer.shortlist_candidate', app_id=application.id) }}" class="d-inline m-0 p-0">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn-sm px-3.5 py-2 fw-semibold d-inline-flex align-items-center gap-2 cp-modal-act-btn cp-modal-btn-shortlist" title="Shortlist Candidate">
-                    <i class="bi bi-star"></i>
-                    <span>Shortlist</span>
-                </button>
-            </form>
-            {% endif %}
-
-            <!-- 4. Reject Action -->
-            {% if application.status != 'Rejected' %}
-            <button type="button" class="btn btn-sm px-3.5 py-2 fw-semibold d-inline-flex align-items-center gap-2 cp-modal-act-btn cp-modal-btn-reject" onclick="openRejectModalFromDossier({{ application.id }})" title="Reject Application">
-                <i class="bi bi-x-circle-fill"></i>
-                <span>Reject</span>
-            </button>
-            {% endif %}
             {% endif %}
         </div>
     </div>

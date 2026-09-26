@@ -49,21 +49,18 @@ class Config:
         or os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
     )
 
-    _db_url = os.environ.get(
-        'DATABASE_URL',
-        'sqlite:///' + os.path.join(basedir, 'careerpearls.db'),
-    )
+    _db_url = os.environ.get('DATABASE_URL', 'sqlite:///' + os.path.join(basedir, 'careerpearls.db'))
     if _db_url.startswith('postgres://'):
         _db_url = _db_url.replace('postgres://', 'postgresql://', 1)
-    elif _db_url.startswith('sqlite:///') and not _db_url.startswith('sqlite:////'):
-        _db_path = _db_url.replace('sqlite:///', '', 1)
-        if not os.path.isabs(_db_path):
-            _db_path = os.path.join(basedir, _db_path)
-        _db_url = 'sqlite:///' + _db_path.replace('\\', '/')
+
     SQLALCHEMY_DATABASE_URI = _db_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    if 'postgresql' in _db_url:
+    if 'sqlite' in _db_url.lower():
+        SQLALCHEMY_ENGINE_OPTIONS = {
+            'pool_pre_ping': True,
+        }
+    else:
         SQLALCHEMY_ENGINE_OPTIONS = {
             'pool_pre_ping': True,
             'pool_recycle': 300,
@@ -74,10 +71,6 @@ class Config:
                 'connect_timeout': 10,
                 'sslmode': 'require',
             },
-        }
-    else:
-        SQLALCHEMY_ENGINE_OPTIONS = {
-            'pool_pre_ping': True,
         }
 
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', os.path.join(basedir, 'uploads'))

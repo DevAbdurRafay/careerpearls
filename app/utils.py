@@ -174,18 +174,36 @@ def job_belongs_to_recruiter(job, recruiter):
 def permanently_delete_user_account(user_id):
     """
     Permanently and completely removes a user account (Candidate or Employer)
-    and all associated database records across all tables.
-    Allows the email or Google OAuth ID to be cleanly reused for any role immediately.
+    and all associated database records across all tables in Supabase.
+    Removes physical file uploads and allows the email or Google OAuth ID
+    to be cleanly reused for any role immediately.
     """
+    import os
+    from flask import current_app
     from app.extensions import db
     from app.models import (
-        User, Candidate, CandidateSkill, CandidateInterest, CandidateEducation,
-        CandidateExperience, CandidateCertification, Resume,
-        Recruiter, Company, CompanyDocument, CompanyBenefit,
+        User, Candidate, CandidateSkill, CandidateInterest, CandidateLink,
+        CandidateEducation, CandidateExperience, CandidateCertification, Resume,
+        Recruiter, Company, CompanyHiringField, CompanyEmploymentType,
         Job, JobSkill, Application, ApplicationStatusHistory, ApplicationDocument,
         Interview, Interviewer, Offer, SavedJob, Shortlist, Notification,
-        Message, VerificationCode, Complaint, AuditLog
+        Message, Complaint, AuditLog, EmailVerification, AiChatMessage
     )
+
+    def _safe_remove_file(file_path):
+        if not file_path or not isinstance(file_path, str):
+            return
+        if file_path.startswith(('http://', 'https://')):
+            return
+        try:
+            full_path = file_path
+            if not os.path.isabs(full_path):
+                upload_folder = current_app.config.get('UPLOAD_FOLDER', 'uploads')
+                full_path = os.path.join(upload_folder, file_path.lstrip('/\\'))
+            if os.path.exists(full_path) and os.path.isfile(full_path):
+                os.remove(full_path)
+        except Exception as e:
+            current_app.logger.warning(f"Failed to remove physical file {file_path}: {e}")
 
     try:
         user = User.query.get(user_id)
@@ -198,16 +216,30 @@ def permanently_delete_user_account(user_id):
         candidate = getattr(user, 'candidate', None)
         if candidate:
             cid = candidate.id
+
+            # Physical file cleanup for candidate
+            _safe_remove_file(getattr(candidate, 'profile_image', None))
+            _safe_remove_file(getattr(candidate, 'profile_photo_path', None))
+
+            for cert in CandidateCertification.query.filter_by(candidate_id=cid).all():
+                _safe_remove_file(cert.file_path)
+
+            for res in Resume.query.filter_by(candidate_id=cid).all():
+                _safe_remove_file(res.file_path)
+
             CandidateSkill.query.filter_by(candidate_id=cid).delete()
             CandidateInterest.query.filter_by(candidate_id=cid).delete()
+            CandidateLink.query.filter_by(candidate_id=cid).delete()
             CandidateEducation.query.filter_by(candidate_id=cid).delete()
             CandidateExperience.query.filter_by(candidate_id=cid).delete()
             CandidateCertification.query.filter_by(candidate_id=cid).delete()
             Resume.query.filter_by(candidate_id=cid).delete()
             SavedJob.query.filter_by(candidate_id=cid).delete()
-            Shortlist.query.filter_by(candidate_id=cid).delete()
 
             for app in Application.query.filter_by(candidate_id=cid).all():
+                for doc in ApplicationDocument.query.filter_by(application_id=app.id).all():
+                    _safe_remove_file(doc.file_path)
+
                 Offer.query.filter_by(application_id=app.id).delete()
                 for intv in Interview.query.filter_by(application_id=app.id).all():
                     Interviewer.query.filter_by(interview_id=intv.id).delete()
@@ -229,11 +261,16 @@ def permanently_delete_user_account(user_id):
                 coid = company.id
                 other_recs = Recruiter.query.filter(Recruiter.company_id == coid, Recruiter.id != rid).count()
                 if other_recs == 0:
-                    CompanyDocument.query.filter_by(company_id=coid).delete()
-                    CompanyBenefit.query.filter_by(company_id=coid).delete()
+                    _safe_remove_file(getattr(company, 'logo_path', None))
+                    _safe_remove_file(getattr(company, 'logo_url', None))
+                    CompanyHiringField.query.filter_by(company_id=coid).delete()
+                    CompanyEmploymentType.query.filter_by(company_id=coid).delete()
 
                     for job in Job.query.filter_by(company_id=coid).all():
                         for app in Application.query.filter_by(job_id=job.id).all():
+                            for doc in ApplicationDocument.query.filter_by(application_id=app.id).all():
+                                _safe_remove_file(doc.file_path)
+
                             Offer.query.filter_by(application_id=app.id).delete()
                             for intv in Interview.query.filter_by(application_id=app.id).all():
                                 Interviewer.query.filter_by(interview_id=intv.id).delete()
@@ -260,10 +297,11 @@ def permanently_delete_user_account(user_id):
         ApplicationStatusHistory.query.filter_by(changed_by=user.id).delete()
         Notification.query.filter_by(user_id=user.id).delete()
         Message.query.filter((Message.sender_id == user.id) | (Message.receiver_id == user.id)).delete()
-        VerificationCode.query.filter_by(user_id=user.id).delete()
+        
         if user_email:
-            VerificationCode.query.filter_by(email=user_email).delete()
+            EmailVerification.query.filter_by(email=user_email).delete()
 
+        AiChatMessage.query.filter_by(user_id=user.id).delete()
         Complaint.query.filter((Complaint.user_id == user.id) | (Complaint.raised_by == user.id)).delete()
         AuditLog.query.filter_by(user_id=user.id).delete()
 
@@ -277,9 +315,8 @@ def permanently_delete_user_account(user_id):
         db.session.commit()
         return True, "Account successfully and permanently removed."
     except Exception as e:
-        from flask import current_app
-        current_app.logger.error(f"Error permanently deleting user {user_id}: {e}", exc_info=True)
         db.session.rollback()
+        current_app.logger.error(f"Error permanently deleting user {user_id}: {e}", exc_info=True)
         return False, str(e)
 
 

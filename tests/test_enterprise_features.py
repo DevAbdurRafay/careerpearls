@@ -51,13 +51,10 @@ def test_deactivation_frees_email(client, app):
     res = client.post('/candidate/deactivate-profile', data={'reason': 'Other', 'password': 'Password123!'}, follow_redirects=True)
     assert res.status_code == 200
 
-    # Ensure original email is kept but Candidate profile data is deleted
+    # Ensure User and Candidate profile data are completely removed so email can be reused
     with app.app_context():
         deactivated_user = User.query.filter_by(email='bob@example.com').first()
-        assert deactivated_user is not None
-        assert deactivated_user.is_active is False
-        assert deactivated_user.approval_status == 'deactivated'
-        assert deactivated_user.candidate is None
+        assert deactivated_user is None
 
 
 def test_candidate_privacy_rule(client, app):
@@ -183,7 +180,8 @@ def test_admin_employer_and_location_verification(client, app):
     db.session.commit()
 
     # Login as admin
-    client.post('/login', data={'email': 'admin_test@cp.com', 'password': 'Password123!'}, follow_redirects=True)
+    with client.session_transaction() as sess:
+        sess['admin_user_id'] = admin.id
 
     with app.test_request_context():
         approve_url = url_for('admin.verify_employer', company_id=comp.id, action='approve')
@@ -192,10 +190,12 @@ def test_admin_employer_and_location_verification(client, app):
     # Approve Employer
     r1 = client.post(approve_url, follow_redirects=True)
     assert r1.status_code == 200
+    db.session.refresh(comp)
     assert comp.verification_status == 'Approved'
     assert comp.is_verified is True
 
     # Verify Candidate Location
     r2 = client.post(verify_loc_url, data={'action': 'verify'}, follow_redirects=True)
     assert r2.status_code == 200
+    db.session.refresh(cand)
     assert cand.is_location_verified is True

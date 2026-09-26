@@ -382,6 +382,7 @@
     </div>
 </div>
 
+{% if current_user.is_authenticated and current_user.role == 'candidate' %}
 <!-- Floating AI Resume Analyzer Trigger Button (Bottom-Right) -->
 <button type="button" id="cpRaFloatingBtn" onclick="openAiResumeAnalyzer()" class="cp-ra-floating-btn shadow-lg" title="Analyze Your Resume with AI">
     <div class="cp-ra-floating-inner">
@@ -395,4 +396,5 @@
 
 {% include '_ai_resume_analyzer_modal.html' %}
 <script src="{{ url_for('static', filename='js/ai-resume-analyzer.js') }}?v=1.0"></script>
+{% endif %}
 {% endblock content %}

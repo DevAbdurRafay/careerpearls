@@ -442,15 +442,17 @@ def send_complaint_status_update_email(complainant_email, complainant_name, tick
     return ok, err
 
 
-def send_shortlisted_email(candidate_email, candidate_name, company_name, job_title, company_email=''):
+def send_shortlisted_email(candidate_email, candidate_name, company_name, job_title, company_email='', salary_offered=''):
     """
     Send official shortlisted email notification to candidate.
     """
     subject = f"Application Shortlisted: {job_title} — {company_name}"
+    salary_line = f"Expected / Offered Amount: {salary_offered}\n\n" if salary_offered else ""
     plain = (
         f"Dear {candidate_name},\n\n"
         f"We are pleased to inform you that your application for the "
         f"{job_title} role at {company_name} has been shortlisted.\n\n"
+        f"{salary_line}"
         f"Our talent team was impressed by your qualifications. "
         f"We will be reaching out shortly with details regarding the next steps in the recruitment process.\n\n"
         f"For any queries, please feel free to email our hiring team at: {company_email or 'support@careerpearls.com'}\n\n"
@@ -465,6 +467,7 @@ def send_shortlisted_email(candidate_email, candidate_name, company_name, job_ti
         company_name=company_name,
         job_title=job_title,
         company_email=company_email,
+        salary_offered=salary_offered,
     )
     return ok, err
 

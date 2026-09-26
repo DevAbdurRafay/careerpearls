@@ -3,25 +3,109 @@
 {% from '_loading_states.html' import loading_spinner, loading_skeleton_text, loading_skeleton_avatar %}
 {% from '_empty_states.html' import empty_state_applications, empty_state_interviews %}
 
+{% block extra_head %}
+<style>
+    /* ── Interview Conducted Badge Light Mode & Dark Mode Contrast ── */
+    .cp-badge-conducted-wait {
+        background: rgba(99, 102, 241, 0.25);
+        color: #a5b4fc;
+        border: 1px solid rgba(129, 140, 248, 0.5);
+        font-size: 0.82rem;
+    }
+    :root[data-theme="light"] .cp-badge-conducted-wait {
+        background: rgba(99, 102, 241, 0.15) !important;
+        color: #3730a3 !important;
+        border: 1.5px solid rgba(99, 102, 241, 0.5) !important;
+        font-weight: 700 !important;
+        box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15) !important;
+    }
+
+    /* ── Candidate Interview Cards & Watermark Overlay ── */
+    .cp-interview-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: 16px;
+        background: var(--cp-bg-card);
+        border: 1px solid var(--cp-border);
+        transition: all 0.3s ease;
+        padding: 1.25rem;
+    }
+    .cp-interview-card.cp-card-conducted {
+        border: 1.5px solid rgba(16, 185, 129, 0.45) !important;
+        background: rgba(16, 185, 129, 0.04) !important;
+    }
+    .cp-interview-card.cp-card-expired {
+        border: 1.5px solid rgba(239, 68, 68, 0.45) !important;
+        background: rgba(239, 68, 68, 0.04) !important;
+    }
+
+    .cp-interview-watermark {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-10deg);
+        pointer-events: none;
+        z-index: 10;
+        user-select: none;
+        white-space: nowrap;
+        text-align: center;
+        width: 100%;
+    }
+    .cp-interview-watermark span {
+        font-size: 2.2rem;
+        font-weight: 900;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        display: inline-block;
+        padding: 8px 28px;
+        border-radius: 12px;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+    }
+
+    /* Dark Theme Watermark Colors */
+    .cp-watermark-conducted span {
+        color: rgba(52, 211, 153, 0.75) !important;
+        border: 3.5px solid rgba(52, 211, 153, 0.8) !important;
+        background: rgba(16, 185, 129, 0.18) !important;
+        box-shadow: 0 0 25px rgba(16, 185, 129, 0.3) !important;
+    }
+    .cp-watermark-expired span {
+        color: rgba(244, 63, 94, 0.75) !important;
+        border: 3.5px solid rgba(244, 63, 94, 0.8) !important;
+        background: rgba(244, 63, 94, 0.18) !important;
+        box-shadow: 0 0 25px rgba(244, 63, 94, 0.3) !important;
+    }
+
+    /* Light Theme Watermark Colors */
+    :root[data-theme="light"] .cp-watermark-conducted span {
+        color: rgba(5, 150, 105, 0.85) !important;
+        border: 3.5px dashed rgba(5, 150, 105, 0.85) !important;
+        background: rgba(16, 185, 129, 0.22) !important;
+        box-shadow: 0 4px 18px rgba(16, 185, 129, 0.25) !important;
+    }
+    :root[data-theme="light"] .cp-watermark-expired span {
+        color: rgba(225, 29, 72, 0.85) !important;
+        border: 3.5px dashed rgba(225, 29, 72, 0.85) !important;
+        background: rgba(244, 63, 94, 0.22) !important;
+        box-shadow: 0 4px 18px rgba(244, 63, 94, 0.25) !important;
+    }
+    :root[data-theme="light"] .cp-interview-card.cp-card-conducted {
+        background: rgba(16, 185, 129, 0.06) !important;
+        border-color: rgba(16, 185, 129, 0.5) !important;
+    }
+    :root[data-theme="light"] .cp-interview-card.cp-card-expired {
+        background: rgba(244, 63, 94, 0.06) !important;
+        border-color: rgba(244, 63, 94, 0.5) !important;
+    }
+</style>
+{% endblock %}
+
 {% macro render_company_pill(comp, default_name='Employer') %}
-  {% if comp %}
-    <span class="cp-company-hover-pill-wrap">
-      <a href="#" onclick="return false;" class="cp-company-hover-pill">
-        <span class="cp-company-pill-avatar">
-          {% if comp.logo_path %}
-            <img src="{{ url_for('static', filename='uploads/company_logos/' ~ comp.logo_path) }}" alt="{{ comp.name }}">
-          {% else %}
-            <i class="bi bi-building"></i>
-          {% endif %}
-        </span>
-        <span class="cp-company-pill-name">{{ comp.name }}</span>
-      </a>
-      <div class="cp-company-tooltip-bubble">
-        <i class="bi bi-envelope-fill me-1" style="font-size: 0.82rem; color: #818cf8;"></i>{{ comp.official_email or (comp.domain or 'contact@company.com') }}
-      </div>
-    </span>
+  {% if comp and comp.name %}
+    <span class="fw-semibold text-pearl" style="font-size: 0.9rem; color: #94a3b8 !important;">{{ comp.name }}</span>
   {% else %}
-    <strong class="cp-company-pill-name">{{ default_name }}</strong>
+    <span class="fw-semibold text-pearl" style="font-size: 0.9rem; color: #94a3b8 !important;">{{ default_name }}</span>
   {% endif %}
 {% endmacro %}
 
@@ -154,10 +238,20 @@
                                 <div>
                                     <div class="d-flex align-items-center gap-2 mb-1">
                                         <h5 class="mb-0 fw-bold text-white">{{ app.job.title if app.job else 'Job no longer available' }}</h5>
-                                        {% if app.status == 'Selected' %}
+                                        {% set all_ivs = app.interviews.all() if app.interviews else [] %}
+                                        {% set last_intv = all_ivs[-1] if all_ivs else (app.interview if app.interview else None) %}
+                                        {% if app.status == 'Selected' or app.status == 'Hired' %}
                                         <span class="badge fw-bold px-2.5 py-1 rounded-pill" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.5); font-size: 0.8rem;"><i class="bi bi-patch-check-fill me-1"></i>Hired</span>
                                         {% elif app.status == 'Shortlisted' %}
-                                        <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill"><i class="bi bi-star-fill me-1"></i>Shortlisted</span>
+                                        <span class="badge bg-warning text-dark fw-bold px-2.5 py-1 rounded-pill shadow-sm"><i class="bi bi-star-fill me-1"></i>Shortlisted {% if app.offer and app.offer.salary_offered %}(Offered: {{ app.offer.salary_offered }}){% endif %}</span>
+                                        {% elif last_intv and last_intv.is_conducted %}
+                                        <span class="badge px-2.5 py-1 rounded-pill fw-bold shadow-sm cp-badge-conducted-wait"><i class="bi bi-patch-check-fill me-1 text-success"></i>Interview Conducted (Wait for response)</span>
+                                        {% elif last_intv and not last_intv.is_conducted %}
+                                        <span class="badge px-2.5 py-1 rounded-pill" style="background: rgba(99, 102, 241, 0.18); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.4); font-size: 0.8rem;"><i class="bi bi-calendar-event me-1"></i>Interview Scheduled</span>
+                                        {% elif app.status == 'Viewed' or app.is_read_by_employer %}
+                                        <span class="badge px-2.5 py-1 rounded-pill" style="background: rgba(56, 189, 248, 0.18); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); font-size: 0.8rem;"><i class="bi bi-eye-fill me-1"></i>Application Viewed by Employer</span>
+                                        {% elif app.status == 'Applied' %}
+                                        <span class="badge bg-secondary px-2.5 py-1 rounded-pill" style="font-size: 0.8rem;"><i class="bi bi-clock-history me-1"></i>Applied (Pending Review)</span>
                                         {% elif app.status == 'Rejected' %}
                                         <span class="badge bg-danger fw-bold px-2.5 py-1 rounded-pill">{{ app.status }}</span>
                                         {% else %}
@@ -171,6 +265,9 @@
                                         {{ render_company_pill(app.job.company if app.job else None, '—') }} · Applied {{ app.applied_at.strftime('%b %d, %Y') }}
                                         {% if app.job and app.job.location %} · <i class="bi bi-geo-alt me-1"></i>{{ app.job.location }}{% endif %}
                                     </p>
+                                    {% if app.status == 'Shortlisted' and app.offer and app.offer.salary_offered %}
+                                    <span class="small d-block mt-1 fw-bold text-warning" style="font-size: 0.84rem;"><i class="bi bi-cash-stack me-1"></i>Offered / Expected Amount: {{ app.offer.salary_offered }}</span>
+                                    {% endif %}
                                     {% if app.status == 'Selected' %}
                                     <span class="small d-block mt-1 fw-semibold" style="color:#c084fc;"><i class="bi bi-envelope-check me-1"></i>Onboarding details and start date will be sent to your email.</span>
                                     {% endif %}
@@ -248,7 +345,11 @@
                     </h5>
                     {% if upcoming_interviews|length > 0 %}
                     <span class="badge px-3 py-1.5 rounded-pill cp-interview-count-badge">
-                        {{ upcoming_interviews|length }} Scheduled
+                        {% if scheduled_count is defined and scheduled_count > 0 %}
+                            {{ scheduled_count }} Scheduled
+                        {% else %}
+                            {{ upcoming_interviews|length }} Total
+                        {% endif %}
                     </span>
                     {% endif %}
                 </div>
@@ -256,16 +357,41 @@
                     {% for interview in upcoming_interviews %}
                     {% set comp_name = interview.application.job.company.name if (interview.application and interview.application.job and interview.application.job.company) else 'Employer' %}
                     {% set job_title = interview.application.job.title if (interview.application and interview.application.job) else 'Position' %}
+                    {% set is_expired = (now_utc is defined and interview.scheduled_at and interview.scheduled_at < now_utc) %}
+                    {% set is_conducted = interview.is_conducted %}
+
                     <div class="col-lg-6">
-                        <div class="h-100 position-relative cp-interview-card">
-                            {# Header: Job Title & Mode Badge #}
-                            <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-2">
+                        <div class="h-100 position-relative cp-interview-card {% if is_conducted %}cp-card-conducted{% elif is_expired %}cp-card-expired{% endif %}">
+                            
+                            {# ── BIG WATERMARK OVERLAY ── #}
+                            {% if is_conducted %}
+                            <div class="cp-interview-watermark cp-watermark-conducted">
+                                <span>CONDUCTED</span>
+                            </div>
+                            {% elif is_expired %}
+                            <div class="cp-interview-watermark cp-watermark-expired">
+                                <span>DATE EXPIRED</span>
+                            </div>
+                            {% endif %}
+
+                            {# Header: Job Title & Mode/Status Badge #}
+                            <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-2 position-relative" style="z-index: 2;">
                                 <div class="w-100">
                                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
                                         <h6 class="fw-bold mb-0 cp-interview-title">{{ job_title }}</h6>
+                                        {% if is_conducted %}
+                                        <span class="badge px-3 py-1 rounded-pill bg-success text-white fw-bold shadow-sm" style="font-size: 0.8rem;">
+                                            <i class="bi bi-check-circle-fill me-1"></i>Conducted
+                                        </span>
+                                        {% elif is_expired %}
+                                        <span class="badge px-3 py-1 rounded-pill bg-warning text-dark fw-bold shadow-sm" style="font-size: 0.8rem;">
+                                            <i class="bi bi-clock-history me-1"></i>Date Expired
+                                        </span>
+                                        {% else %}
                                         <span class="badge px-3 py-1 rounded-pill cp-interview-mode-badge">
                                             {{ interview.mode or 'On-Site' }}
                                         </span>
+                                        {% endif %}
                                     </div>
                                     <div class="cp-interview-org d-flex align-items-center flex-wrap gap-1">
                                         <i class="bi bi-building me-1 cp-interview-org-icon"></i><span>Organization: </span>
@@ -275,7 +401,7 @@
                             </div>
 
                             {# Schedule Time Callout #}
-                            <div class="d-flex align-items-center cp-interview-time-box">
+                            <div class="d-flex align-items-center cp-interview-time-box position-relative" style="z-index: 2;">
                                 <div class="cp-interview-time-icon-wrap flex-shrink-0">
                                     <i class="bi bi-clock-history text-warning"></i>
                                 </div>
@@ -288,7 +414,7 @@
                             </div>
 
                             {# Venue / Address #}
-                            <div class="d-flex align-items-center cp-interview-venue-box">
+                            <div class="d-flex align-items-center cp-interview-venue-box position-relative" style="z-index: 2;">
                                 <div class="cp-interview-venue-icon-wrap flex-shrink-0">
                                     <i class="bi bi-geo-alt-fill text-danger"></i>
                                 </div>
@@ -299,8 +425,8 @@
                             </div>
 
                             {# Actions Bar #}
-                            <div class="d-flex align-items-center gap-2.5 flex-wrap pt-3 border-top cp-interview-actions-bar">
-                                {% if 'http' in (interview.location_or_link or '') %}
+                            <div class="d-flex align-items-center gap-2.5 flex-wrap pt-3 border-top cp-interview-actions-bar position-relative" style="z-index: 2;">
+                                {% if 'http' in (interview.location_or_link or '') and not is_conducted and not is_expired %}
                                 <a href="{{ interview.location_or_link }}" target="_blank" class="btn btn-sm px-3.5 py-2 fw-semibold d-inline-flex align-items-center gap-2 cp-btn-video-call">
                                     <i class="bi bi-camera-video-fill"></i>
                                     <span>Join Video Call</span>

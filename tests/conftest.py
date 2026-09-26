@@ -6,6 +6,7 @@ from config import Config
 class TestConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    SQLALCHEMY_ENGINE_OPTIONS = {'pool_pre_ping': True}
     WTF_CSRF_ENABLED = False
     SECRET_KEY = 'test-secret'
     ADMIN_PATH = 'admin-cp-portal'

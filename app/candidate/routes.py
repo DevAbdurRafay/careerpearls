@@ -1,7 +1,7 @@
 from datetime import date, datetime
 
 from flask import Blueprint, render_template, redirect, url_for, flash, current_app, request, session
-from flask_login import login_required, current_user
+from flask_login import login_required, current_user, logout_user
 from sqlalchemy.orm import joinedload
 from app.extensions import db
 from app.models import (
@@ -477,18 +477,30 @@ def dashboard():
     hired_apps = [a for a in applications if a.status == 'Selected']
     hired_app_ids = {a.id for a in hired_apps}
 
-    # Upcoming interviews — exclude interviews for hired jobs; only show for non-hired (Shortlisted / Interview Scheduled / Under Review)
+    # Candidate interviews (both upcoming scheduled and past/conducted/expired)
     from sqlalchemy import not_
+    now_utc = datetime.utcnow()
     interview_query = (
         Interview.query.join(Application)
         .filter(
             Application.candidate_id == candidate.id,
-            Interview.status == 'Scheduled',
         )
     )
     if hired_app_ids:
         interview_query = interview_query.filter(not_(Application.id.in_(hired_app_ids)))
-    upcoming_interviews = interview_query.order_by(Interview.scheduled_at.asc()).limit(10).all()
+    
+    all_raw_interviews = interview_query.all()
+
+    def _intv_sort_key(iv):
+        is_exp = bool(iv.scheduled_at and iv.scheduled_at < now_utc)
+        is_done = bool(iv.is_conducted or is_exp)
+        priority = 1 if is_done else 0
+        dt = iv.scheduled_at if iv.scheduled_at else (iv.created_at if hasattr(iv, 'created_at') and iv.created_at else datetime.min)
+        ts = dt.timestamp() if hasattr(dt, 'timestamp') else 0
+        return (priority, -ts if is_done else ts)
+
+    upcoming_interviews = sorted(all_raw_interviews, key=_intv_sort_key)
+    scheduled_count = sum(1 for iv in upcoming_interviews if not iv.is_conducted and (not iv.scheduled_at or iv.scheduled_at >= now_utc))
 
     # Get recent messages
     from sqlalchemy import or_
@@ -530,6 +542,8 @@ def dashboard():
         hired_apps=hired_apps,
         is_hired=len(hired_apps) > 0,
         upcoming_interviews=upcoming_interviews,
+        scheduled_count=scheduled_count,
+        now_utc=now_utc,
         recent_messages=recent_messages,
         unread_count=unread_count,
         saved_count=saved_count,

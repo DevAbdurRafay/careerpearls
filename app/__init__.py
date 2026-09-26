@@ -86,6 +86,11 @@ def create_app(config_class=Config):
             db.session.commit()
         except Exception:
             db.session.rollback()
+        try:
+            db.session.execute(db.text("ALTER TABLE interviews ADD COLUMN IF NOT EXISTS is_conducted BOOLEAN DEFAULT FALSE"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
 
     @app.context_processor
     def inject_nav_profile():
