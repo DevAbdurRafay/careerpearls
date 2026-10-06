@@ -43,16 +43,20 @@
             </div>
 
             <div class="mb-4">
-                <label class="form-label fw-semibold">
-                    Company Founded Date <span class="text-danger">*</span>
+                <label class="form-label fw-semibold d-flex align-items-center justify-content-between">
+                    <span>Company Founded Date <span class="text-danger">*</span></span>
+                    <span class="badge" style="background: rgba(79, 172, 254, 0.15); color: #60a5fa; border: 1px solid rgba(79, 172, 254, 0.3); font-size: 0.75rem; font-weight: 500;">
+                        <i class="bi bi-calendar-check me-1"></i>Past Dates Only
+                    </span>
                 </label>
                 <input type="date" name="founded_date" id="founded_date" class="form-control cp-input-glow"
                        value="{{ company.founded_date.strftime('%Y-%m-%d') if company.founded_date else '' }}"
                        min="1950-01-01"
-                       max="{{ now.strftime('%Y-%m-%d') if now is defined and now else '' }}"
+                       onclick="if(typeof this.showPicker === 'function') try{this.showPicker();}catch(e){}"
+                       onfocus="if(typeof this.showPicker === 'function') try{this.showPicker();}catch(e){}"
                        required
-                       style="padding: 0.75rem 1rem; border-radius: 12px;">
-                <small style="color: #94a3b8 !important;">When was your company established (1950 to present)? Dynamic company age will be displayed on your profile.</small>
+                       style="padding: 0.75rem 1rem; border-radius: 12px; cursor: pointer;">
+                <small style="color: #94a3b8 !important;">Select from calendar when your company was established (1950 to present). Dynamic company age will be displayed on your profile.</small>
             </div>
 
             <div class="mb-4">
@@ -240,10 +244,27 @@ if (submitBtn) {
         submitBtn.style.transform = 'translateY(0)';
     });
 }
-// Disable future date selection for founded_date
-const fdInput = document.getElementById('founded_date');
-if (fdInput) {
-    fdInput.setAttribute('max', new Date().toISOString().split('T')[0]);
-}
+// Interactive Calendar Picker & Past-Date Enforcement for founded_date
+(function() {
+    const fdInput = document.getElementById('founded_date');
+    if (fdInput) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        fdInput.setAttribute('max', todayStr);
+        fdInput.setAttribute('min', '1950-01-01');
+        
+        fdInput.addEventListener('click', function() {
+            if (typeof this.showPicker === 'function') {
+                try { this.showPicker(); } catch(e) {}
+            }
+        });
+
+        fdInput.addEventListener('change', function() {
+            if (this.value && this.value > todayStr) {
+                alert('Founded date cannot be in the future. Please select a past date.');
+                this.value = todayStr;
+            }
+        });
+    }
+})();
 </script>
 {% endblock %}

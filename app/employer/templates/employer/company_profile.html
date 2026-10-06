@@ -150,12 +150,21 @@
                             {{ form.description(class="form-control cp-input-glow", rows=5) }}
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Founded Date</label>
-                            <input type="date" name="founded_date" id="founded_date" class="form-control cp-input-glow"
-                                   value="{{ company.founded_date.strftime('%Y-%m-%d') if company.founded_date else '' }}"
-                                   min="1950-01-01"
-                                   max="{{ now.strftime('%Y-%m-%d') if now is defined and now else '' }}">
-                            <small class="text-pearl-muted">When was your company established (1950 to present)? Company age will be displayed dynamically on your profile.</small>
+                            <label class="form-label d-flex align-items-center justify-content-between">
+                                <span>Founded Date</span>
+                                <span class="badge" style="background: rgba(79, 172, 254, 0.15); color: #60a5fa; border: 1px solid rgba(79, 172, 254, 0.3); font-size: 0.75rem; font-weight: 500;">
+                                    <i class="bi bi-calendar-check me-1"></i>Past Dates Only
+                                </span>
+                            </label>
+                            <div class="position-relative">
+                                <input type="date" name="founded_date" id="founded_date" class="form-control cp-input-glow"
+                                       value="{{ company.founded_date.strftime('%Y-%m-%d') if company.founded_date else '' }}"
+                                       min="1950-01-01"
+                                       onclick="if(typeof this.showPicker === 'function') try{this.showPicker();}catch(e){}"
+                                       onfocus="if(typeof this.showPicker === 'function') try{this.showPicker();}catch(e){}"
+                                       style="cursor: pointer;">
+                            </div>
+                            <small class="text-pearl-muted d-block mt-1">Select from calendar when your company was established (1950 to present). Company age is calculated dynamically on your profile.</small>
                         </div>
                     </fieldset>
                     <div id="companyEditActions" class="mt-4 pt-2 border-top d-flex gap-2" style="display:none!important">
@@ -318,10 +327,29 @@ function cancelCompanyEdit() {
     }
 }
 
-// Disable future date selection for founded_date
-const fdInput = document.getElementById('founded_date');
-if (fdInput) {
-    fdInput.setAttribute('max', new Date().toISOString().split('T')[0]);
-}
+// Interactive Calendar Picker & Past-Date Enforcement for founded_date
+(function() {
+    const fdInput = document.getElementById('founded_date');
+    if (fdInput) {
+        const todayStr = new Date().toISOString().split('T')[0];
+        fdInput.setAttribute('max', todayStr);
+        fdInput.setAttribute('min', '1950-01-01');
+        
+        // Open native calendar picker on any click
+        fdInput.addEventListener('click', function() {
+            if (typeof this.showPicker === 'function') {
+                try { this.showPicker(); } catch(e) {}
+            }
+        });
+
+        // Ensure future dates cannot be selected or entered
+        fdInput.addEventListener('change', function() {
+            if (this.value && this.value > todayStr) {
+                alert('Founded date cannot be in the future. Please select a past date.');
+                this.value = todayStr;
+            }
+        });
+    }
+})();
 </script>
 {% endblock %}

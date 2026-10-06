@@ -242,8 +242,14 @@ def create_app(config_class=Config):
             or_(Job.approval_status == 'approved', Job.approval_status.is_(None)),
             or_(Job.is_hired == False, Job.is_hired.is_(None))
         ).count()
-        registered_candidates = Candidate.query.count()
-        partner_companies = Company.query.count()
+        registered_candidates = max(
+            Candidate.query.count(),
+            User.query.filter_by(role='candidate', is_active=True).count()
+        )
+        partner_companies = max(
+            Company.query.count(),
+            User.query.filter_by(role='employer', is_active=True).count()
+        )
         
         try:
             offers = Offer.query.with_entities(Offer.salary_offered).all()
@@ -1030,29 +1036,178 @@ def _seed_defaults():
     User.query.filter_by(approval_status='pending').update({'approval_status': 'approved'})
     db.session.commit()
 
-    admin_email = current_app.config.get('ADMIN_EMAIL')
-    admin_password = current_app.config.get('ADMIN_PASSWORD')
-    if not admin_email or not admin_password:
-        print('[CareerPearls] Set ADMIN_EMAIL and ADMIN_PASSWORD in .env, then run: python scripts/set_admin.py')
-    else:
-        from werkzeug.security import generate_password_hash
-        admin_user, _created = get_or_create_user(
-            admin_email,
-            defaults={
-                'name': 'Administrator',
-                'role': 'admin',
-                'approval_status': 'approved',
-                'password_hash': generate_password_hash(admin_password)
-            },
-            update={'role': 'admin', 'approval_status': 'approved'},
+    # 1. Admin Account (admin@careerpearls.com)
+    admin_email = current_app.config.get('ADMIN_EMAIL') or 'admin@careerpearls.com'
+    admin_password = current_app.config.get('ADMIN_PASSWORD') or 'Admin123456!'
+    
+    from werkzeug.security import generate_password_hash
+    admin_user, _created = get_or_create_user(
+        admin_email,
+        defaults={
+            'name': 'Administrator',
+            'role': 'admin',
+            'approval_status': 'approved',
+            'password_hash': generate_password_hash(admin_password)
+        },
+        update={'role': 'admin', 'approval_status': 'approved'},
+    )
+    if admin_password and _created:
+        admin_user.set_password(admin_password)
+    admin_user.role = 'admin'
+    admin_user.is_active = True
+    admin_user.approval_status = 'approved'
+    db.session.commit()
+
+    # 2. Candidate Account (abdulrafayrohail@gmail.com)
+    cand_email = 'abdulrafayrohail@gmail.com'
+    cand_user = User.query.filter_by(email=cand_email).first()
+    if not cand_user:
+        cand_user = User(
+            name='Abdul Rafay Rohail',
+            email=cand_email,
+            role='candidate',
+            approval_status='approved',
+            is_active=True,
+            privacy_policy_accepted_at=datetime.utcnow()
         )
-        if admin_password:
-            admin_user.set_password(admin_password)
-        admin_user.is_active = True
-        admin_user.approval_status = 'approved'
+        cand_user.set_password('Admin123456!')
+        db.session.add(cand_user)
+        db.session.commit()
+    else:
+        cand_user.role = 'candidate'
+        cand_user.name = 'Abdul Rafay Rohail'
+        cand_user.approval_status = 'approved'
+        cand_user.is_active = True
         db.session.commit()
 
-    # Seed Analysis Workforce recruiter account and featured jobs
+    from app.models import (
+        Candidate, CandidateEducation, CandidateExperience, CandidateSkill,
+        CandidateInterest, CandidateCertification, CandidateLink, Resume
+    )
+    cand_profile = Candidate.query.filter_by(user_id=cand_user.id).first()
+    if not cand_profile:
+        cand_profile = Candidate(
+            user_id=cand_user.id,
+            full_name='Abdul Rafay Rohail',
+            headline='Full Stack Python & AI Engineer',
+            phone='03061668839',
+            location='Karachi, Pakistan',
+            availability='immediate',
+            work_mode='remote',
+            career_status='professional',
+            has_internship=True,
+            internship_details='Software Engineering Intern at Tech Solutions (Python & Django)',
+            bio='Passionate Full Stack & AI Engineer with 3+ years experience building scalable backend architectures, microservices, and AI-driven platforms. Skilled in Python, Flask, Django, React, PostgreSQL, REST APIs, and Machine Learning.',
+            github_url='https://github.com/DevAbdurRafay',
+            linkedin_url='https://linkedin.com/in/devabdurrafay',
+            portfolio_url='https://devabdurrafay.github.io',
+            onboarding_complete=True,
+            is_location_verified=True,
+            location_verified_at=datetime.utcnow(),
+        )
+        db.session.add(cand_profile)
+        db.session.flush()
+    else:
+        cand_profile.full_name = 'Abdul Rafay Rohail'
+        cand_profile.headline = 'Full Stack Python & AI Engineer'
+        cand_profile.phone = '03061668839'
+        cand_profile.location = 'Karachi, Pakistan'
+        cand_profile.availability = 'immediate'
+        cand_profile.work_mode = 'remote'
+        cand_profile.career_status = 'professional'
+        cand_profile.bio = 'Passionate Full Stack & AI Engineer with 3+ years experience building scalable backend architectures, microservices, and AI-driven platforms.'
+        cand_profile.github_url = 'https://github.com/DevAbdurRafay'
+        cand_profile.linkedin_url = 'https://linkedin.com/in/devabdurrafay'
+        cand_profile.onboarding_complete = True
+        db.session.flush()
+
+    # Seed Education if not present
+    if cand_profile.education.count() == 0:
+        db.session.add(CandidateEducation(
+            candidate_id=cand_profile.id,
+            institution='FAST National University of Computer and Emerging Sciences',
+            degree='Bachelor of Science in Computer Science (BSCS)',
+            field_of_study='Computer Science & Software Engineering',
+            is_current=False,
+            start_date=datetime(2020, 8, 1).date(),
+            end_date=datetime(2024, 6, 30).date(),
+        ))
+
+    # Seed Experience if not present
+    if cand_profile.experience.count() == 0:
+        db.session.add(CandidateExperience(
+            candidate_id=cand_profile.id,
+            company='CareerPearls / Analysis Workforce',
+            title='Senior Full Stack Python Developer',
+            start_date=datetime(2024, 7, 1).date(),
+            end_date=None,
+            description='Architecting scalable Flask & Python REST APIs, integrating AI resume analysis systems, and building responsive modern UI dashboards.',
+        ))
+        db.session.add(CandidateExperience(
+            candidate_id=cand_profile.id,
+            company='Alpha Tech Solutions',
+            title='Junior Software Engineer',
+            start_date=datetime(2023, 1, 1).date(),
+            end_date=datetime(2024, 6, 1).date(),
+            description='Developed backend microservices and PostgreSQL database pipelines.',
+        ))
+
+    # Seed Skills if not present
+    if cand_profile.skills.count() == 0:
+        skills_to_seed = [
+            ('Python', 'Expert'),
+            ('Flask', 'Expert'),
+            ('Django', 'Advanced'),
+            ('React.js', 'Advanced'),
+            ('PostgreSQL', 'Advanced'),
+            ('REST API', 'Expert'),
+            ('Docker', 'Intermediate'),
+            ('Machine Learning', 'Intermediate'),
+            ('Git', 'Expert'),
+            ('Tailwind CSS', 'Advanced'),
+        ]
+        for s_name, prof in skills_to_seed:
+            db.session.add(CandidateSkill(
+                candidate_id=cand_profile.id,
+                skill_name=s_name,
+                proficiency_level=prof,
+            ))
+
+    # Seed Interests if not present
+    if cand_profile.interests.count() == 0:
+        for int_name in ['Software Development', 'Web Development', 'Data Science', 'Machine Learning', 'Cloud Computing']:
+            db.session.add(CandidateInterest(
+                candidate_id=cand_profile.id,
+                interest_name=int_name,
+            ))
+
+    # Seed Certification if not present
+    if cand_profile.certifications.count() == 0:
+        db.session.add(CandidateCertification(
+            candidate_id=cand_profile.id,
+            title='Professional Python & AI Engineering Certificate',
+            issuing_organization='Google & DeepLearning.AI',
+            issue_year='2024',
+            credential_id='CP-AI-2024-984',
+            credential_url='https://coursera.org/verify/CP-AI-2024-984',
+            description='Comprehensive certification covering advanced Python web architectures, REST APIs, and deep learning models.',
+        ))
+
+    # Seed Resume entry if not present
+    if cand_profile.resumes.count() == 0:
+        db.session.add(Resume(
+            candidate_id=cand_profile.id,
+            filename='Abdul_Rafay_Rohail_Resume.pdf',
+            file_path='uploads/resumes/Abdul_Rafay_Rohail_Resume.pdf',
+            raw_text='Abdul Rafay Rohail - Full Stack Python & AI Engineer. Skills: Python, Flask, Django, React, PostgreSQL, AI/ML. Education: BSCS FAST-NUCES. Experience: Senior Full Stack Developer at CareerPearls.',
+            uploaded_at=datetime.utcnow(),
+        ))
+
+    # Seed Links
+    cand_profile.sync_links_to_table()
+    db.session.commit()
+
+    # 3. Seed Analysis Workforce recruiter account and featured jobs
     recruiter_email = 'analysis.workforce@gmail.com'
     rec_user = User.query.filter_by(email=recruiter_email).first()
     if not rec_user:

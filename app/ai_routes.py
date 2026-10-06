@@ -131,28 +131,64 @@ def analyze_resume_endpoint():
         match_data = calculate_resume_job_match(extracted_text, job)
 
         # 4. Construct AI System Prompt for Initial Structured Card
-        matched_str = ", ".join(match_data["matched_skills"]) if match_data["matched_skills"] else "General domain skills"
-        missing_str = ", ".join(match_data["missing_skills"]) if match_data["missing_skills"] else "None identified"
+        matched_str = ", ".join(match_data["matched_skills"]) if match_data["matched_skills"] else "None explicitly matching"
+        missing_str = ", ".join(match_data["missing_skills"]) if match_data["missing_skills"] else "None identified (Great alignment!)"
+        cand_all_skills_str = ", ".join(match_data.get("candidate_all_skills", [])[:12]) if match_data.get("candidate_all_skills") else "General background"
+        is_low_match = match_data['match_percentage'] < 25 or len(match_data['matched_skills']) == 0
+
+        non_resume_warning = ""
+        if is_low_match or not match_data.get('ats_checklist', {}).get('skills_section'):
+            non_resume_warning = (
+                "> ⚠️ **CRITICAL ATS NOTICE: It seems like the uploaded file is not a resume or CV.**\n"
+                "> *This document lacks an explicit 'Skills' or 'Technical Stack' section and has no keyword alignment with this role. "
+                "If this is your resume, ensure you include recognized headings such as **Skills**, **Work Experience**, and **Education** "
+                "so enterprise ATS screeners do not automatically reject your application.*\n\n"
+            )
 
         prompt_system = f"""
-You are an elite Senior Technical Recruiter and HR Analytics Specialist evaluating a candidate's resume for the role of "{job.title}".
+You are an expert Enterprise ATS (Applicant Tracking System) Screener and Principal Technical Recruiter evaluating a candidate's resume for the role of "{job.title}".
 
-Job Description & Requirements:
-{job.description}
+Job Context & Requirements:
+- Title: {job.title}
+- Company: {job.company.name if job.company else 'Hiring Employer'}
+- Core Required Skills: {", ".join(match_data["combined_job_skills"])}
+- Job Description / Requirements: {job.description[:1200] if job.description else ''}
 
-Calculated Weighted Match Score: {match_data['match_percentage']}% ({match_data['badge_label']})
-Matched Skills Identified: {matched_str}
-Missing Key Skills: {missing_str}
+ATS Evaluation Metrics:
+- Calculated ATS Match Score: {match_data['match_percentage']}% ({match_data['badge_label']})
+- Matched Job Skills: {matched_str}
+- Missing Key Keywords: {missing_str}
+- Candidate Extracted Skills: {cand_all_skills_str}
+- ATS Structural Health: {match_data.get('ats_health_pct', 80)}%
+- Is Low / Non-Resume Document: {is_low_match}
 
-Please generate an initial candidate feedback response formatted cleanly in Markdown:
+Generate a comprehensive, ultra-detailed ATS-grade feedback report formatted in clean Markdown:
 
-1. **Match Overview**: State the score {match_data['match_percentage']}% with badge label "{match_data['badge_label']}".
-2. **Matched Skills**: Bulleted list of candidate strengths matching this job.
-3. **Missing / Gap Skills**: Bulleted list of key job requirements missing or weak in the resume.
-4. **Actionable Recommendations**: 2-3 specific, high-impact suggestions to tailor the resume for this position.
-Formatting Instruction:
-- Do NOT combine bullet points with heading tags (NEVER output '* ###' or '* **'). Use clean Markdown headings (### Heading) and clean bullet lists (- Item).
-- Use clear bold text (**Key Concept**) and distinct section titles.
+{non_resume_warning if is_low_match else ""}### 🎯 ATS Compatibility & Screener Overview
+- **Match Score**: **{match_data['match_percentage']}%** ({match_data['badge_label']})
+- **ATS Parseability Health**: **{match_data.get('ats_health_pct', 80)}%**
+- **ATS Screener Verdict**: {"⚠️ Document appears not to be a standard resume or lacks required technical skills." if is_low_match else "✅ Document parsed successfully by ATS screener."}
+
+### 🟢 Matched Core Competencies
+(Bulleted list of skills in the resume matching "{job.title}". If none, clearly explain that no matching skills were found.)
+
+### 🔴 Missing Critical Keywords & Skill Gaps
+(Bulleted list of high-priority job keywords missing from candidate's resume that recruiter filters require)
+
+### 📋 ATS Health & Formatting Check
+- Contact & Header Information: {"✅ Detected" if match_data.get('ats_checklist', {}).get('contact_info') else "⚠️ Missing contact details"}
+- Skills Section Structure: {"✅ Clear & Parseable" if match_data.get('ats_checklist', {}).get('skills_section') else "⚠️ Needs explicit 'Skills' heading"}
+- Work Experience History: {"✅ Formatted" if match_data.get('ats_checklist', {}).get('experience_section') else "⚠️ Unstructured experience"}
+- Bullet Points & Clarity: {"✅ Machine-readable" if match_data.get('ats_checklist', {}).get('bullet_points') else "⚠️ Use clean bullet points"}
+
+### 💡 Step-by-Step Optimization Tips
+1. Exact keywords to integrate for "{job.title}".
+2. How to showcase impact with metrics (e.g., % improvement, scale).
+3. Tailoring your professional headline and summary for {job.company.name if job.company else 'this employer'}.
+
+Formatting Rules:
+- Use clean standard markdown (### for main sections, #### for subheadings, - for bullets, numbers for steps).
+- Do NOT output broken tags like '* ###' or '* **'.
 """
         # Call LLM to format response
         messages_llm = [
@@ -169,22 +205,27 @@ Formatting Instruction:
         initial_markdown = ai_res.get('reply', '')
 
         if not initial_markdown:
-            initial_markdown = f"""### 📊 Resume Analysis Summary
-
+            initial_markdown = f"""{non_resume_warning}### 🎯 ATS Compatibility & Screener Overview
 - **Match Score**: **{match_data['match_percentage']}%** ({match_data['badge_label']})
+- **ATS Parseability Health**: **{match_data.get('ats_health_pct', 80)}%**
+- **ATS Screener Verdict**: {"⚠️ Document appears not to be a standard resume or lacks required technical skills." if is_low_match else "✅ Document parsed successfully by ATS screener."}
 
-#### ✅ Matched Skills
-{chr(10).join(['- ' + s for s in match_data['matched_skills']]) if match_data['matched_skills'] else '- Domain background alignment'}
+### 🟢 Matched Core Competencies
+{chr(10).join(['- ' + s for s in match_data['matched_skills']]) if match_data['matched_skills'] else '- None explicitly matching the required data stack. The current resume lacks direct keyword alignment.'}
 
-#### ⚠️ Skill Gaps & Missing Requirements
-{chr(10).join(['- ' + s for s in match_data['missing_skills']]) if match_data['missing_skills'] else '- No critical skill gaps found!'}
+### 🔴 Missing Critical Keywords & Skill Gaps
+{chr(10).join(['- ' + s for s in match_data['missing_skills']]) if match_data['missing_skills'] else '- No critical skill gaps found for this posting!'}
 
-#### 💡 Actionable Recommendations
-1. Highlight relevant project accomplishments related to {job.title}.
-2. Quantify achievements with metrics (e.g. reduced load times, increased conversion).
-3. Tailor your summary section specifically to target {job.company.name if job.company else 'the employer'}'s core requirements.
+### 📋 ATS Health & Formatting Check
+- **Contact Details**: {"✅ Detected" if match_data.get('ats_checklist', {}).get('contact_info') else "⚠️ Missing contact details"}
+- **Skills Section**: {"✅ Clear & Parseable" if match_data.get('ats_checklist', {}).get('skills_section') else "⚠️ Needs explicit 'Skills' heading"}
+- **Work History**: {"✅ Formatted" if match_data.get('ats_checklist', {}).get('experience_section') else "⚠️ Needs clear 'Experience' section"}
+- **Action Verbs**: {"✅ Good structure" if match_data.get('ats_checklist', {}).get('bullet_points') else "⚠️ Use bullet points"}
 
-> *{MANDATORY_DISCLAIMER}*
+### 💡 Step-by-Step Optimization Tips
+1. **Keyword Optimization**: Integrate missing keywords like `{missing_str}` into a dedicated Skills section.
+2. **Quantify Impact**: Include numbers and measurable achievements (e.g. "Increased performance by 30%").
+3. **Role Alignment**: Tailor your headline and summary to explicitly match `{job.title}`.
 """
 
         # Save Initial Resume Analysis Record to Supabase Database
@@ -372,3 +413,143 @@ STRICT POLICY & GUIDELINES FOR RESPONSES:
             "success": False,
             "error": f"Error processing resume chat query: {str(e)}"
         }), 500
+
+
+@ai_bp.route('/api/v1/resume-chat-history', methods=['GET'])
+@csrf.exempt
+def resume_chat_history_endpoint():
+    """
+    API Endpoint: GET /api/v1/resume-chat-history?job_id=<job_id>
+    Fetches stored AI Resume analysis and conversation history for the current candidate and job.
+    Ensures chats persist across page refreshes and hard refreshes until explicitly deleted.
+    """
+    try:
+        job_id = request.args.get('job_id')
+        if not job_id:
+            return jsonify({
+                "success": False,
+                "error": "Job ID parameter is required."
+            }), 400
+
+        job = Job.query.get(int(job_id))
+        if not job:
+            return jsonify({
+                "success": False,
+                "error": "Target job posting not found."
+            }), 404
+
+        query = AiChatMessage.query.filter_by(job_id=job.id)
+        if current_user.is_authenticated:
+            query = query.filter_by(user_id=current_user.id)
+        else:
+            query = query.filter_by(user_id=None)
+
+        records = query.order_by(AiChatMessage.created_at.asc()).all()
+        if not records:
+            return jsonify({
+                "success": True,
+                "has_history": False,
+                "job_id": job.id,
+                "messages": []
+            })
+
+        # Identify initial analysis vs follow-up messages
+        initial_record = None
+        for rec in records:
+            if rec.prompt_text and (rec.prompt_text.startswith("Uploaded Resume for Analysis:") or rec.match_score is not None):
+                initial_record = rec
+                break
+
+        messages_list = []
+        for rec in records:
+            if rec == initial_record:
+                continue
+            if rec.prompt_text:
+                messages_list.append({
+                    "role": "user",
+                    "content": rec.prompt_text,
+                    "formatted_time": rec.formatted_time
+                })
+            if rec.reply_text:
+                messages_list.append({
+                    "role": "assistant",
+                    "content": rec.reply_text,
+                    "formatted_time": rec.formatted_time
+                })
+
+        initial_data = None
+        if initial_record:
+            score = initial_record.match_score if initial_record.match_score is not None else 50
+            if score >= 75:
+                badge_color = 'green'
+                badge_label = 'High ATS Match / Top Tier Candidate'
+            elif score >= 45:
+                badge_color = 'orange'
+                badge_label = 'Moderate Match / Key Skill Gaps'
+            else:
+                badge_color = 'red'
+                badge_label = 'Low ATS Match / High Rejection Risk'
+
+            initial_data = {
+                "match_percentage": score,
+                "badge_color": badge_color,
+                "badge_label": badge_label,
+                "analysis_markdown": initial_record.reply_text or "",
+                "formatted_time": initial_record.formatted_time,
+                "disclaimer": MANDATORY_DISCLAIMER
+            }
+
+        return jsonify({
+            "success": True,
+            "has_history": True,
+            "job_id": job.id,
+            "initial_analysis": initial_data,
+            "messages": messages_list
+        })
+
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": f"Error fetching resume chat history: {str(e)}"
+        }), 500
+
+
+@ai_bp.route('/api/v1/delete-resume-chat', methods=['POST'])
+@csrf.exempt
+def delete_resume_chat_endpoint():
+    """
+    API Endpoint: POST /api/v1/delete-resume-chat
+    Payload: JSON with 'job_id'
+    Explicitly removes all resume analysis & chat history records for this job/candidate.
+    """
+    try:
+        data = request.get_json(silent=True) or {}
+        job_id = data.get('job_id')
+        if not job_id:
+            return jsonify({
+                "success": False,
+                "error": "Job ID is required to clear history."
+            }), 400
+
+        query = AiChatMessage.query.filter_by(job_id=int(job_id))
+        if current_user.is_authenticated:
+            query = query.filter_by(user_id=current_user.id)
+        else:
+            query = query.filter_by(user_id=None)
+
+        deleted_count = query.delete(synchronize_session=False)
+        db.session.commit()
+
+        return jsonify({
+            "success": True,
+            "deleted_count": deleted_count,
+            "message": "Resume chat history successfully deleted."
+        })
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            "success": False,
+            "error": f"Error clearing resume chat history: {str(e)}"
+        }), 500
+

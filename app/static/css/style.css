@@ -5652,20 +5652,23 @@ select::placeholder,
 
 /* ── Modern Action Icon Buttons for HD Pre-Save Previews ── */
 .cp-preview-action-btn {
-    width: 38px !important;
-    height: 38px !important;
-    min-width: 38px !important;
-    min-height: 38px !important;
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    min-height: 34px !important;
+    max-width: 34px !important;
+    max-height: 34px !important;
     padding: 0 !important;
     margin: 0 !important;
-    border-radius: 10px !important;
+    border-radius: 8px !important;
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
     text-align: center !important;
     line-height: 1 !important;
+    flex-shrink: 0 !important;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    border-width: 1.5px !important;
+    border-width: 1px !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
     cursor: pointer !important;
 }

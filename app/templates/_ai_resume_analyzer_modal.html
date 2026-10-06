@@ -8,7 +8,8 @@
 <!-- Slide-Over Drawer Window -->
 <div id="cpRaDrawer" class="cp-ra-drawer" role="dialog" aria-labelledby="cpRaTitle" aria-hidden="true"
      data-job-id="{{ job.id }}"
-     data-job-title="{{ job.title }}">
+     data-job-title="{{ job.title }}"
+     data-user-id="{{ current_user.id if current_user.is_authenticated else '' }}">
     
     <!-- Drawer Header -->
     <div class="cp-ra-header">

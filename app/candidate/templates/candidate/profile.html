@@ -472,18 +472,18 @@
                             <p class="mb-0 text-white small fw-bold" style="font-size: 0.8rem;">PDF Resume Document Ready</p>
                         </div>
 
-                        <div class="d-flex align-items-center justify-content-between pt-2 border-top gap-2" style="border-color: rgba(255,255,255,0.08) !important;">
-                            <div class="d-flex align-items-center gap-2 min-w-0 flex-grow-1">
+                        <div class="d-flex align-items-center justify-content-between pt-2 border-top gap-2" style="border-color: rgba(255,255,255,0.08) !important; min-width: 0; width: 100%;">
+                            <div class="d-flex align-items-center gap-2 min-w-0 flex-grow-1" style="min-width: 0; overflow: hidden;">
                                 <i class="bi bi-file-earmark-check-fill text-info fs-5 flex-shrink-0"></i>
-                                <div class="min-w-0 flex-grow-1">
-                                    <span class="small text-white fw-bold text-truncate d-block" id="resumeSelectedFileName" style="max-width: 100%;"></span>
-                                    <div class="d-flex align-items-center gap-1.5 mt-0.5 flex-wrap">
+                                <div class="min-w-0 flex-grow-1" style="min-width: 0; overflow: hidden;">
+                                    <span class="small text-white fw-bold text-truncate d-block" id="resumeSelectedFileName" style="max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></span>
+                                    <div class="d-flex align-items-center gap-1 mt-0.5 flex-wrap">
                                         <span class="badge bg-primary text-white" id="resumeSelectedFileSize" style="font-size: 0.68rem;"></span>
                                         <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.68rem;"><i class="bi bi-check2 me-0.5"></i>Ready</span>
                                     </div>
                                 </div>
                             </div>
-                            <div class="d-flex align-items-center gap-1.5 flex-shrink-0">
+                            <div class="d-flex align-items-center gap-1.5 flex-shrink-0 ms-2">
                                 <button type="button" class="btn btn-sm cp-preview-action-btn cp-preview-change-btn" onclick="document.getElementById('resumeFileInput').click();" title="Change resume file" aria-label="Change resume file">
                                     <i class="bi bi-arrow-repeat fs-6"></i>
                                 </button>
@@ -676,7 +676,7 @@
                         {{ cert_form.certificate_file(class="d-none", id="certFileInput", accept=".pdf,.jpg,.jpeg,.png", required=True, onchange="handleCertSelect(this)") }}
 
                         <!-- HD Live Preview Card (Shown after selection) -->
-                        <div id="certPreviewCard" class="mt-2 p-3 rounded-3 d-none position-relative" style="background: var(--cp-bg-elevated); border: 1.5px solid rgba(56, 189, 248, 0.45); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);">
+                        <div id="certPreviewCard" class="mt-2 p-3 rounded-3 d-none position-relative" style="background: var(--cp-bg-elevated); border: 1.5px solid rgba(56, 189, 248, 0.45); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25); overflow: hidden; width: 100%; box-sizing: border-box;">
                             <!-- HD Image Preview Box -->
                             <div id="certImagePreviewWrap" class="mb-2.5 text-center d-none" style="background: rgba(0, 0, 0, 0.4); border-radius: 10px; padding: 10px; border: 1px solid rgba(255, 255, 255, 0.1); max-height: 190px; overflow: hidden; display: flex; align-items: center; justify-content: center;">
                                 <img id="certImagePreviewImg" src="" alt="Certificate HD Preview" style="max-height: 170px; max-width: 100%; object-fit: contain; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
@@ -691,18 +691,18 @@
                             </div>
 
                             <!-- File Details & Action Controls -->
-                            <div class="d-flex align-items-center justify-content-between pt-2 border-top gap-2" style="border-color: rgba(255,255,255,0.08) !important;">
-                                <div class="d-flex align-items-center gap-2 min-w-0 flex-grow-1">
+                            <div class="d-flex align-items-center justify-content-between pt-2 border-top gap-2" style="border-color: rgba(255,255,255,0.08) !important; min-width: 0; width: 100%;">
+                                <div class="d-flex align-items-center gap-2 min-w-0 flex-grow-1" style="min-width: 0; overflow: hidden;">
                                     <i class="bi bi-patch-check-fill text-warning fs-5 flex-shrink-0"></i>
-                                    <div class="min-w-0 flex-grow-1">
-                                        <div class="small text-white fw-bold text-truncate" id="certPreviewFileName" style="max-width: 100%;"></div>
-                                        <div class="d-flex align-items-center gap-1.5 mt-0.5 flex-wrap">
+                                    <div class="min-w-0 flex-grow-1" style="min-width: 0; overflow: hidden;">
+                                        <div class="small text-white fw-bold text-truncate" id="certPreviewFileName" style="max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></div>
+                                        <div class="d-flex align-items-center gap-1 mt-0.5 flex-wrap">
                                             <span class="badge bg-primary text-white" id="certPreviewFileSize" style="font-size: 0.68rem;"></span>
                                             <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.68rem;"><i class="bi bi-check2 me-0.5"></i>Ready to save</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="d-flex align-items-center gap-1.5 flex-shrink-0">
+                                <div class="d-flex align-items-center gap-1.5 flex-shrink-0 ms-2">
                                     <button type="button" class="btn btn-sm cp-preview-action-btn cp-preview-change-btn" onclick="document.getElementById('certFileInput').click();" title="Change certificate file" aria-label="Change certificate file">
                                         <i class="bi bi-arrow-repeat fs-6"></i>
                                     </button>

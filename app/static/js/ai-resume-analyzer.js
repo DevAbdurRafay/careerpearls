@@ -1,10 +1,53 @@
 /**
  * CareerPearls - AI Resume Analyzer Chatbot Controller
+ * Provides full chat persistence across page refreshes and hard reloads.
  */
 
 let currentResumeText = "";
 let currentJobId = null;
 let chatHistory = [];
+let currentAnalysisData = null;
+
+function getResumeStorageKey(jobId) {
+    const drawer = document.getElementById('cpRaDrawer');
+    const userId = drawer ? (drawer.getAttribute('data-user-id') || 'guest') : 'guest';
+    const jId = jobId || (drawer ? drawer.getAttribute('data-job-id') : '0');
+    return `cp_ra_chat_u${userId}_job${jId}`;
+}
+
+function saveStateToLocal(jobId, analysisData, resumeText, messages) {
+    try {
+        const key = getResumeStorageKey(jobId);
+        const payload = {
+            jobId: jobId,
+            analysisData: analysisData,
+            resumeText: resumeText || "",
+            messages: messages || [],
+            savedAt: Date.now()
+        };
+        localStorage.setItem(key, JSON.stringify(payload));
+    } catch (e) {
+        console.warn('LocalStorage save error:', e);
+    }
+}
+
+function loadStateFromLocal(jobId) {
+    try {
+        const key = getResumeStorageKey(jobId);
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+        return JSON.parse(raw);
+    } catch (e) {
+        return null;
+    }
+}
+
+function clearStateFromLocal(jobId) {
+    try {
+        const key = getResumeStorageKey(jobId);
+        localStorage.removeItem(key);
+    } catch (e) {}
+}
 
 function openAiResumeAnalyzer() {
     const backdrop = document.getElementById('cpRaModalBackdrop');
@@ -18,6 +61,15 @@ function openAiResumeAnalyzer() {
     document.body.style.overflow = 'hidden';
 
     setupDropzoneListeners();
+
+    // 1. Instantly restore from LocalStorage if available (0ms render on reload)
+    const localState = loadStateFromLocal(currentJobId);
+    if (localState && localState.analysisData) {
+        restoreAnalysisView(localState.analysisData, localState.resumeText, localState.messages);
+    }
+
+    // 2. Fetch latest synced history from server
+    syncResumeChatHistory(currentJobId);
 }
 
 function closeAiResumeAnalyzer() {
@@ -62,7 +114,74 @@ function handleResumeFileSelect(event) {
     }
 }
 
-function resetAiResumeAnalyzer(isClearAndUploadNew) {
+function restoreAnalysisView(analysisData, resumeText, messages) {
+    if (!analysisData) return;
+
+    currentAnalysisData = analysisData;
+    if (resumeText) currentResumeText = resumeText;
+
+    const dropzone = document.getElementById('cpRaDropzone');
+    const resultCard = document.getElementById('cpRaResultCard');
+    const quickPrompts = document.getElementById('cpRaQuickPrompts');
+    const messagesWin = document.getElementById('cpRaMessages');
+    const input = document.getElementById('cpRaInput');
+    const sendBtn = document.getElementById('cpRaSendBtn');
+    const errorAlert = document.getElementById('cpRaErrorAlert');
+
+    if (errorAlert) errorAlert.classList.add('d-none');
+    if (dropzone) dropzone.classList.add('d-none');
+
+    // Render Result Card
+    renderAnalysisResultCard(analysisData);
+    if (resultCard) resultCard.classList.remove('d-none');
+    if (quickPrompts) quickPrompts.classList.remove('d-none');
+
+    // Render Chat Messages
+    if (messagesWin) {
+        messagesWin.innerHTML = '';
+        if (Array.isArray(messages)) {
+            chatHistory = [{
+                role: "assistant",
+                content: analysisData.analysis_markdown || ""
+            }];
+
+            messages.forEach(msg => {
+                if (msg.role === 'user' || msg.role === 'assistant') {
+                    appendChatMessage(msg.role, msg.content || msg.text || '');
+                    chatHistory.push({
+                        role: msg.role,
+                        content: msg.content || msg.text || ''
+                    });
+                }
+            });
+        }
+    }
+
+    if (input) {
+        input.removeAttribute('disabled');
+        input.focus();
+    }
+    if (sendBtn) sendBtn.removeAttribute('disabled');
+}
+
+async function syncResumeChatHistory(jobId) {
+    if (!jobId) return;
+
+    try {
+        const response = await fetch(`/api/v1/resume-chat-history?job_id=${encodeURIComponent(jobId)}`);
+        const data = await response.json();
+
+        if (response.ok && data.success && data.has_history && data.initial_analysis) {
+            restoreAnalysisView(data.initial_analysis, currentResumeText, data.messages || []);
+            // Update local storage cache
+            saveStateToLocal(jobId, data.initial_analysis, currentResumeText, data.messages || []);
+        }
+    } catch (e) {
+        // Fall back gracefully to local storage
+    }
+}
+
+async function resetAiResumeAnalyzer(isClearAndUploadNew) {
     const dropzone = document.getElementById('cpRaDropzone');
     const resultCard = document.getElementById('cpRaResultCard');
     const quickPrompts = document.getElementById('cpRaQuickPrompts');
@@ -73,9 +192,30 @@ function resetAiResumeAnalyzer(isClearAndUploadNew) {
     const fileInput = document.getElementById('cpRaFileInput');
 
     if (isClearAndUploadNew) {
-        // Clear history & reset to upload new resume
+        // Confirm before deleting
+        const confirmDelete = window.confirm("Are you sure you want to delete this resume analysis and chat history for this job? You can then upload a new resume.");
+        if (!confirmDelete) return;
+
+        // 1. Delete from Server Database
+        if (currentJobId) {
+            try {
+                await fetch('/api/v1/delete-resume-chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ job_id: currentJobId })
+                });
+            } catch (err) {
+                console.warn('Error calling delete endpoint:', err);
+            }
+            // 2. Clear Local Storage
+            clearStateFromLocal(currentJobId);
+        }
+
+        // 3. Clear In-Memory State
         chatHistory = [];
         currentResumeText = "";
+        currentAnalysisData = null;
+
         if (fileInput) fileInput.value = "";
         if (messagesWin) messagesWin.innerHTML = "";
         if (resultCard) {
@@ -95,6 +235,7 @@ function resetAiResumeAnalyzer(isClearAndUploadNew) {
     } else {
         // Refresh assistant view / scroll to bottom
         if (messagesWin) messagesWin.scrollTop = messagesWin.scrollHeight;
+        if (currentJobId) syncResumeChatHistory(currentJobId);
     }
 }
 
@@ -128,7 +269,6 @@ async function processResumeFileUpload(file) {
         progressWrap.classList.add('d-none');
 
         if (!response.ok || !data.success) {
-            // Rejection or error handling
             const errMsg = data.error || "Skills or structured experience not found in the uploaded file. Please upload a valid resume in PDF or image format.";
             document.getElementById('cpRaErrorMsg').innerText = errMsg;
             errorAlert.classList.remove('d-none');
@@ -138,6 +278,7 @@ async function processResumeFileUpload(file) {
 
         // Store resume text context for follow-up chat
         currentResumeText = data.resume_text_snippet || "";
+        currentAnalysisData = data;
         
         // Render Result Card
         renderAnalysisResultCard(data);
@@ -147,6 +288,9 @@ async function processResumeFileUpload(file) {
         input.removeAttribute('disabled');
         sendBtn.removeAttribute('disabled');
         input.focus();
+
+        // Save initial state to Local Storage
+        saveStateToLocal(currentJobId, data, currentResumeText, []);
 
     } catch (err) {
         progressWrap.classList.add('d-none');
@@ -189,6 +333,7 @@ function formatAiMarkdown(rawText) {
 
 function renderAnalysisResultCard(data) {
     const card = document.getElementById('cpRaResultCard');
+    if (!card) return;
     
     // Badge Class
     let badgeClass = 'cp-ra-badge-orange';
@@ -209,10 +354,12 @@ function renderAnalysisResultCard(data) {
                 <small class="cp-ra-card-sublabel d-block" style="font-size: 0.78rem;">Composite Match Score</small>
                 <h4 class="fw-bold cp-ra-card-score mb-0" style="font-size: 1.6rem;">${data.match_percentage}%</h4>
             </div>
-            <span class="cp-ra-badge ${badgeClass}">
-                <span>${iconStr}</span>
-                <span>${data.badge_label}</span>
-            </span>
+            <div class="d-flex align-items-center gap-2">
+                <span class="cp-ra-badge ${badgeClass}">
+                    <span>${iconStr}</span>
+                    <span>${data.badge_label}</span>
+                </span>
+            </div>
         </div>
         <div class="cp-ra-summary-body">
             ${formattedSummary}
@@ -277,6 +424,10 @@ async function handleAiResumeChatSubmit(event) {
             appendChatMessage('assistant', data.reply);
             chatHistory.push({ role: 'user', content: promptText });
             chatHistory.push({ role: 'assistant', content: data.reply });
+
+            // Persist updated conversation to Local Storage
+            const followUpList = chatHistory.slice(1); // exclude initial result card
+            saveStateToLocal(currentJobId, currentAnalysisData, currentResumeText, followUpList);
         } else {
             appendChatMessage('assistant', "⚠️ Sorry, I could not process your query at this moment. Please try again.");
         }
@@ -293,6 +444,7 @@ async function handleAiResumeChatSubmit(event) {
 
 function appendChatMessage(role, text) {
     const messagesWin = document.getElementById('cpRaMessages');
+    if (!messagesWin) return;
     const isUser = role === 'user';
     const msgDiv = document.createElement('div');
     msgDiv.className = `cp-ra-msg ${isUser ? 'cp-ra-msg-user' : 'cp-ra-msg-bot'}`;
@@ -311,6 +463,7 @@ function appendChatMessage(role, text) {
 
 function appendLoadingMessage(id) {
     const messagesWin = document.getElementById('cpRaMessages');
+    if (!messagesWin) return;
     const msgDiv = document.createElement('div');
     msgDiv.id = id;
     msgDiv.className = 'cp-ra-msg cp-ra-msg-bot';
@@ -327,3 +480,19 @@ function removeLoadingMessage(id) {
     const el = document.getElementById(id);
     if (el) el.remove();
 }
+
+// Check on initial page load if drawer is on page
+document.addEventListener('DOMContentLoaded', () => {
+    const drawer = document.getElementById('cpRaDrawer');
+    if (drawer) {
+        const jId = drawer.getAttribute('data-job-id');
+        if (jId) {
+            currentJobId = jId;
+            // Pre-check if local history exists
+            const localState = loadStateFromLocal(jId);
+            if (localState && localState.analysisData) {
+                restoreAnalysisView(localState.analysisData, localState.resumeText, localState.messages);
+            }
+        }
+    }
+});
