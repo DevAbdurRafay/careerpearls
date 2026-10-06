@@ -8008,6 +8008,229 @@ select::placeholder,
     margin: 0.6rem 0 !important;
 }
 
+/* ==========================================================================
+   MOBILE RESPONSIVENESS & UI PERFECTION (Screens <= 991.98px & <= 576px)
+   ========================================================================== */
+
+@media (max-width: 991.98px) {
+    /* --- Mobile Navbar & Brand --- */
+    .cp-navbar,
+    nav#landingNav {
+        min-height: 54px !important;
+        height: auto !important;
+        padding: 4px 0 !important;
+    }
+
+    .cp-navbar .container-fluid {
+        min-height: 54px !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+
+    .cp-brand-inline {
+        gap: 8px !important;
+        padding: 2px 0 !important;
+    }
+
+    .cp-brand-logo-wrap,
+    .cp-brand-logo {
+        width: 34px !important;
+        height: 34px !important;
+    }
+
+    .cp-brand-name {
+        font-size: 1.1rem !important;
+        line-height: 1.2 !important;
+    }
+
+    .cp-brand-tagline {
+        display: none !important;
+    }
+
+    /* --- Navbar Mobile Collapse Menu --- */
+    #navMain.collapse.show,
+    #navMain.collapsing {
+        background: rgba(10, 14, 26, 0.98) !important;
+        backdrop-filter: blur(24px) !important;
+        -webkit-backdrop-filter: blur(24px) !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        padding: 1rem 1.25rem 1.5rem !important;
+        box-shadow: 0 16px 32px rgba(0, 0, 0, 0.7) !important;
+        margin-top: 4px;
+        border-radius: 0 0 16px 16px;
+    }
+
+    #navMain .navbar-nav {
+        width: 100% !important;
+        gap: 4px !important;
+    }
+
+    #navMain .nav-link {
+        padding: 10px 14px !important;
+        border-radius: 8px !important;
+        font-size: 0.95rem !important;
+        color: #e2e8f0 !important;
+        display: flex !important;
+        align-items: center !important;
+        transition: all 0.2s ease !important;
+    }
+
+    #navMain .nav-link:hover,
+    #navMain .nav-link.active {
+        background: rgba(79, 172, 254, 0.12) !important;
+        color: #60a5fa !important;
+    }
+
+    .cp-nav-user-actions {
+        width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        margin-top: 12px !important;
+        padding-top: 12px !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+
+    .cp-nav-user-actions .btn,
+    .cp-nav-user-actions a.btn {
+        width: 100% !important;
+        justify-content: center !important;
+        padding: 10px 16px !important;
+        font-size: 0.92rem !important;
+    }
+
+    /* --- Auth Pages Mobile Layout & Scroll Fix --- */
+    body.auth-page-body {
+        position: static !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        height: auto !important;
+        min-height: 100dvh !important;
+        background: #0a0e1a !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    .cp-main-auth,
+    .cp-main.cp-main-auth {
+        position: static !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        height: auto !important;
+        min-height: calc(100dvh - 54px) !important;
+        max-height: none !important;
+        padding-top: 54px !important;
+        overflow: visible !important;
+        display: block !important;
+    }
+
+    .auth-split {
+        display: block !important;
+        height: auto !important;
+        min-height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    /* Hide heavy decorative showcase animation on mobile so user directly sees login form */
+    .auth-panel-left {
+        display: none !important;
+    }
+
+    .auth-form-side {
+        width: 100% !important;
+        max-width: 100% !important;
+        height: auto !important;
+        min-height: calc(100dvh - 54px) !important;
+        max-height: none !important;
+        overflow: visible !important;
+        padding: 1.25rem 1rem 4rem 1rem !important;
+        display: flex !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+    }
+
+    .auth-form-inner {
+        width: 100% !important;
+        max-width: 440px !important;
+        margin: 0 auto !important;
+        padding: 0.5rem 0 2rem 0 !important;
+    }
+
+    .auth-form-title {
+        font-size: 1.6rem !important;
+        margin-bottom: 0.35rem !important;
+    }
+
+    .auth-form-sub {
+        font-size: 0.88rem !important;
+        margin-bottom: 1.25rem !important;
+    }
+
+    .role-tabs-wrapper {
+        margin-bottom: 1.25rem !important;
+    }
+
+    /* --- Google OAuth Button on Mobile --- */
+    .btn-oauth,
+    a.btn-oauth,
+    a.btn-oauth.btn-oauth-google {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 10px !important;
+        width: 100% !important;
+        min-height: 46px !important;
+        height: 46px !important;
+        font-size: 0.92rem !important;
+        font-weight: 600 !important;
+        border-radius: 10px !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(255, 255, 255, 0.16) !important;
+        color: #ffffff !important;
+        text-decoration: none !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    a.btn-oauth.btn-oauth-google:hover,
+    a.btn-oauth.btn-oauth-google:active {
+        background: rgba(255, 255, 255, 0.14) !important;
+        border-color: rgba(255, 255, 255, 0.25) !important;
+        color: #ffffff !important;
+    }
+
+    .oauth-divider {
+        margin: 1.25rem 0 !important;
+    }
+
+    /* --- Landing Page Hero & Search on Mobile --- */
+    .lp-hero-title {
+        font-size: clamp(1.85rem, 7vw, 2.75rem) !important;
+        line-height: 1.2 !important;
+    }
+
+    .lp-hero-desc {
+        font-size: 0.95rem !important;
+        line-height: 1.5 !important;
+    }
+
+    .lp-search-box {
+        flex-direction: column !important;
+        gap: 10px !important;
+        padding: 12px !important;
+        border-radius: 16px !important;
+    }
+
+    .lp-search-box .btn {
+        width: 100% !important;
+        justify-content: center !important;
+        height: 44px !important;
+    }
+}
+
+
 
 
 

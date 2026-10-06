@@ -26,29 +26,33 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body class="auth-page-body">
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top cp-navbar" id="landingNav"
-         style="top: 0; left: 0; right: 0; width: 100%; height: 72px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); background: rgba(10, 14, 26, 0.94); border-bottom: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 25px rgba(0, 0, 0, 0.45); z-index: 1050;">
-        <div class="container-fluid px-3 px-lg-5 d-flex align-items-center justify-content-between">
+    <nav class="navbar navbar-expand navbar-dark fixed-top cp-navbar" id="landingNav"
+         style="top: 0; left: 0; right: 0; width: 100%; min-height: 54px; height: 54px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); background: rgba(10, 14, 26, 0.96); border-bottom: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 25px rgba(0, 0, 0, 0.45); z-index: 1050; padding: 0 !important;">
+        <div class="container-fluid px-2 px-sm-3 px-lg-5 d-flex align-items-center justify-content-between" style="flex-wrap: nowrap !important; min-height: 54px;">
             {% set brand_href = url_for('index') %}
-            <div class="d-flex align-items-center">
+            <div class="d-flex align-items-center flex-shrink-0" style="min-width: 0; overflow: hidden;">
                 {% include '_navbar_brand.html' %}
             </div>
             
-            <div class="ms-auto d-flex align-items-center gap-3">
+            <div class="ms-auto d-flex align-items-center gap-1 gap-sm-2 flex-shrink-0">
+                <a href="{{ url_for('index') }}" class="btn btn-outline-light btn-sm px-2 px-sm-2.5 py-1 fw-medium d-inline-flex align-items-center gap-1 text-decoration-none" style="border-radius: 8px; font-size: 0.8rem; border-color: rgba(255,255,255,0.18);">
+                    <i class="bi bi-house-door"></i>
+                    <span class="d-none d-sm-inline">Home</span>
+                </a>
                 {% if 'admin' in request.endpoint or hide_nav_auth %}
-                    <span class="badge px-3 py-1.5 rounded-pill" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); font-size: 0.8rem; font-weight: 600;">
-                        <i class="bi bi-shield-lock-fill me-2"></i>Super Admin Portal
+                    <span class="badge px-2.5 py-1 rounded-pill" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35); font-size: 0.75rem; font-weight: 600;">
+                        <i class="bi bi-shield-lock-fill me-1"></i><span class="d-none d-sm-inline">Super Admin</span>
                     </span>
                 {% elif current_user.is_authenticated %}
-                    <a href="{{ url_for('auth.logout') }}" class="btn btn-cp-logout btn-sm px-3 py-2 fw-semibold" style="border-radius: 12px;">Logout</a>
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-cp-logout btn-sm px-2.5 py-1 fw-semibold" style="border-radius: 8px; font-size: 0.8rem;">Logout</a>
                 {% elif request.endpoint == 'auth.register' %}
-                    <a href="{{ url_for('auth.login', role=request.args.get('role', 'candidate')) }}" class="btn btn-cp-primary btn-sm px-4 py-2 fw-semibold d-inline-flex align-items-center gap-2 text-decoration-none" style="border-radius: 12px; font-size: 0.88rem;">
-                        <i class="bi bi-box-arrow-in-right" style="font-size: 1rem;"></i>
+                    <a href="{{ url_for('auth.login', role=request.args.get('role', 'candidate')) }}" class="btn btn-cp-primary btn-sm px-2.5 px-sm-3 py-1 fw-semibold d-inline-flex align-items-center gap-1 text-decoration-none" style="border-radius: 8px; font-size: 0.8rem;">
+                        <i class="bi bi-box-arrow-in-right"></i>
                         <span>Sign In</span>
                     </a>
                 {% elif request.endpoint == 'auth.login' %}
-                    <a href="{{ url_for('auth.register', role=request.args.get('role', 'candidate')) }}" class="btn btn-cp-primary btn-sm px-4 py-2 fw-semibold d-inline-flex align-items-center gap-2 text-decoration-none" style="border-radius: 12px; font-size: 0.88rem;">
-                        <i class="bi bi-person-plus" style="font-size: 1rem;"></i>
+                    <a href="{{ url_for('auth.register', role=request.args.get('role', 'candidate')) }}" class="btn btn-cp-primary btn-sm px-2.5 px-sm-3 py-1 fw-semibold d-inline-flex align-items-center gap-1 text-decoration-none" style="border-radius: 8px; font-size: 0.8rem;">
+                        <i class="bi bi-person-plus"></i>
                         <span>Register</span>
                     </a>
                 {% endif %}

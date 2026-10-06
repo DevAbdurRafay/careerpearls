@@ -38,92 +38,146 @@
 </head>
 <body class="{% if current_user.is_authenticated and current_user.is_employer() %}employer-page{% elif current_user.is_authenticated and current_user.is_candidate() %}candidate-page{% endif %}">
 {% block navbar %}
-<nav class="navbar navbar-expand-lg navbar-dark fixed-top cp-navbar" id="landingNav"
-     style="top: 0; left: 0; right: 0; width: 100%; height: 72px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); background: rgba(10, 14, 26, 0.94); border-bottom: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 25px rgba(0, 0, 0, 0.45); z-index: 1050;">
-    <div class="container-fluid px-3 px-lg-5 d-flex align-items-center justify-content-between">
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top cp-navbar" id="landingNav">
+    <style>
+        .cp-navbar {
+            top: 0; left: 0; right: 0; width: 100%;
+            min-height: 56px;
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            background: rgba(10, 14, 26, 0.97);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 4px 25px rgba(0,0,0,0.45);
+            z-index: 1050;
+            padding: 0 !important;
+        }
+        .cp-navbar .container-fluid { min-height: 56px; }
+
+        /* Hide tagline on mobile to save space */
+        @media (max-width: 991.98px) {
+            .cp-brand-tagline { display: none !important; }
+            .cp-brand-logo-wrap { width: 34px !important; height: 34px !important; }
+            .cp-brand-logo { width: 34px !important; height: 34px !important; }
+            .cp-brand-name { font-size: 1.05rem !important; }
+            .cp-brand-copy { gap: 0 !important; }
+
+            /* Mobile dropdown panel */
+            #navMain {
+                background: rgba(10,14,26,0.99);
+                border-top: 1px solid rgba(255,255,255,0.08);
+                padding: 0.75rem 1rem 1rem;
+                max-height: calc(100vh - 56px);
+                overflow-y: auto;
+            }
+            #navMain .navbar-nav { width: 100%; }
+            #navMain .nav-link {
+                padding: 0.65rem 0.5rem !important;
+                border-bottom: 1px solid rgba(255,255,255,0.06);
+                font-size: 0.95rem;
+            }
+            #navMain .nav-link:last-child { border-bottom: none; }
+            .cp-nav-user-actions {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 0.6rem !important;
+                margin-top: 0.75rem;
+                width: 100%;
+            }
+            .cp-nav-user-actions .btn,
+            .cp-nav-user-actions a {
+                width: 100%;
+                justify-content: center;
+                text-align: center;
+            }
+            .cp-nav-profile-link { width: 100%; justify-content: flex-start; }
+            .cp-nav-profile-name { max-width: 100% !important; }
+        }
+    </style>
+    <div class="container-fluid px-3 px-lg-5 d-flex align-items-center justify-content-between flex-wrap" style="flex-wrap: nowrap !important;">
         {% set brand_href = url_for('employer.dashboard') if (current_user.is_authenticated and current_user.is_employer()) else (url_for('candidate.profile') if (current_user.is_authenticated and current_user.is_candidate()) else url_for('index')) %}
-        <div class="d-flex align-items-center">
+        <div class="d-flex align-items-center flex-shrink-0" style="min-width:0; overflow:hidden;">
             {% include '_navbar_brand.html' %}
         </div>
-        <button class="navbar-toggler border-0 px-1 py-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMain">
+        <button class="navbar-toggler border-0 flex-shrink-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-controls="navMain" aria-expanded="false" aria-label="Toggle navigation" style="padding: 6px 8px;">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navMain">
-            <ul class="navbar-nav mx-auto cp-nav-links align-items-center gap-2 gap-lg-3 my-2 my-lg-0">
+            <ul class="navbar-nav mx-auto cp-nav-links align-items-lg-center gap-1 gap-lg-3 my-2 my-lg-0">
                 {% if current_user.is_authenticated and current_user.is_employer() %}
                     <li class="nav-item">
-                        <a class="nav-link cp-candidate-nav-link px-2.5 {% if request.endpoint == 'employer.dashboard' %}active fw-bold text-white{% endif %}" href="{{ url_for('employer.dashboard') }}">
+                        <a class="nav-link cp-candidate-nav-link px-2 {% if request.endpoint == 'employer.dashboard' %}active fw-bold text-white{% endif %}" href="{{ url_for('employer.dashboard') }}">
                             <i class="bi bi-grid-1x2 me-1"></i>Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link cp-candidate-nav-link px-2.5 {% if request.endpoint == 'employer.manage_applications' %}active fw-bold text-white{% endif %}" href="{{ url_for('employer.manage_applications') }}">
+                        <a class="nav-link cp-candidate-nav-link px-2 {% if request.endpoint == 'employer.manage_applications' %}active fw-bold text-white{% endif %}" href="{{ url_for('employer.manage_applications') }}">
                             <i class="bi bi-file-earmark-person me-1"></i>Applications
                             {% if unread_employer_apps and unread_employer_apps > 0 %}
-                            <span class="badge rounded-pill bg-danger ms-1 px-2 py-0.5" style="font-size: 0.72rem; vertical-align: middle; box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);">{{ unread_employer_apps }}</span>
+                            <span class="badge rounded-pill bg-danger ms-1 px-2" style="font-size: 0.72rem; vertical-align: middle;">{{ unread_employer_apps }}</span>
                             {% endif %}
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link cp-candidate-nav-link px-2.5 {% if request.endpoint == 'employer.post_job' %}active fw-bold text-white{% endif %}" href="{{ url_for('employer.post_job') }}">
+                        <a class="nav-link cp-candidate-nav-link px-2 {% if request.endpoint == 'employer.post_job' %}active fw-bold text-white{% endif %}" href="{{ url_for('employer.post_job') }}">
                             <i class="bi bi-plus-circle me-1"></i>Post Job
                         </a>
                     </li>
-
                     <li class="nav-item">
-                        <a class="nav-link cp-candidate-nav-link px-2.5 {% if request.endpoint == 'register_complaint' %}active fw-bold text-white{% endif %}" href="{{ url_for('register_complaint') }}" title="Help & Complaint Desk">
+                        <a class="nav-link cp-candidate-nav-link px-2 {% if request.endpoint == 'register_complaint' %}active fw-bold text-white{% endif %}" href="{{ url_for('register_complaint') }}">
                             <i class="bi bi-question-circle me-1"></i>Help
                         </a>
                     </li>
                 {% elif current_user.is_authenticated and current_user.is_candidate() %}
                     <li class="nav-item">
-                        <a class="nav-link cp-candidate-nav-link px-2.5 {% if request.endpoint == 'jobboard.job_list' or request.endpoint == 'explore' or request.endpoint == 'jobboard.job_detail' %}active fw-bold text-white{% endif %}" href="{{ url_for('explore') }}">
+                        <a class="nav-link cp-candidate-nav-link px-2 {% if request.endpoint in ['jobboard.job_list','explore','jobboard.job_detail'] %}active fw-bold text-white{% endif %}" href="{{ url_for('explore') }}">
                             <i class="bi bi-briefcase me-1"></i>Browse Jobs
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link cp-candidate-nav-link px-2.5 {% if request.endpoint == 'candidate.dashboard' %}active fw-bold text-white{% endif %}" href="{{ url_for('candidate.dashboard') }}" data-dashboard-url="{{ url_for('candidate.dashboard') }}" onclick="checkProfileBeforeRedirect(event)">
+                        <a class="nav-link cp-candidate-nav-link px-2 {% if request.endpoint == 'candidate.dashboard' %}active fw-bold text-white{% endif %}" href="{{ url_for('candidate.dashboard') }}" onclick="checkProfileBeforeRedirect(event)" data-dashboard-url="{{ url_for('candidate.dashboard') }}">
                             <i class="bi bi-file-earmark-text me-1"></i>My Applications
                             {% if unread_candidate_updates and unread_candidate_updates > 0 %}
-                            <span class="badge rounded-pill bg-danger ms-1 px-2 py-0.5" style="font-size: 0.72rem; vertical-align: middle; box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);">{{ unread_candidate_updates }}</span>
+                            <span class="badge rounded-pill bg-danger ms-1 px-2" style="font-size: 0.72rem; vertical-align: middle;">{{ unread_candidate_updates }}</span>
                             {% endif %}
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link cp-candidate-nav-link px-2.5 {% if request.endpoint == 'candidate.profile' %}active fw-bold text-white{% endif %}" href="{{ url_for('candidate.profile') }}">
+                        <a class="nav-link cp-candidate-nav-link px-2 {% if request.endpoint == 'candidate.profile' %}active fw-bold text-white{% endif %}" href="{{ url_for('candidate.profile') }}">
                             <i class="bi bi-person-badge me-1"></i>My Profile
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link cp-candidate-nav-link px-2.5 {% if request.endpoint == 'register_complaint' %}active fw-bold text-white{% endif %}" href="{{ url_for('register_complaint') }}" title="Help & Complaint Desk">
+                        <a class="nav-link cp-candidate-nav-link px-2 {% if request.endpoint == 'register_complaint' %}active fw-bold text-white{% endif %}" href="{{ url_for('register_complaint') }}">
                             <i class="bi bi-question-circle me-1"></i>Help
                         </a>
                     </li>
                 {% else %}
-                    <li class="nav-item"><a class="nav-link px-3 {% if request.endpoint == 'index' and not request.query_string %}active fw-bold text-white{% endif %}" href="{{ url_for('index') }}">Home</a></li>
-                    <li class="nav-item"><a class="nav-link px-3" href="{{ url_for('index') }}#features">Features</a></li>
-                    <li class="nav-item"><a class="nav-link px-3" href="{{ url_for('index') }}#how-it-works">How It Works</a></li>
-                    <li class="nav-item"><a class="nav-link px-3" href="{{ url_for('index') }}#featured-jobs">Jobs</a></li>
-                    <li class="nav-item"><a class="nav-link px-3 {% if request.endpoint == 'about' %}active fw-bold text-white{% endif %}" href="{{ url_for('about') }}">About</a></li>
-                    <li class="nav-item"><a class="nav-link px-3" href="{{ url_for('index') }}#contact">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link px-2 {% if request.endpoint == 'index' and not request.query_string %}active fw-bold text-white{% endif %}" href="{{ url_for('index') }}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link px-2" href="{{ url_for('index') }}#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link px-2" href="{{ url_for('index') }}#how-it-works">How It Works</a></li>
+                    <li class="nav-item"><a class="nav-link px-2" href="{{ url_for('index') }}#featured-jobs">Jobs</a></li>
+                    <li class="nav-item"><a class="nav-link px-2 {% if request.endpoint == 'about' %}active fw-bold text-white{% endif %}" href="{{ url_for('about') }}">About</a></li>
+                    <li class="nav-item"><a class="nav-link px-2" href="{{ url_for('index') }}#contact">Contact</a></li>
                 {% endif %}
             </ul>
 
-            <div class="d-flex align-items-center gap-3 ms-lg-auto cp-nav-user-actions">
+            <div class="d-flex align-items-center gap-2 ms-lg-auto cp-nav-user-actions">
                 {% if current_user.is_authenticated and current_user.is_candidate() %}
                     <span id="notificationBadge" class="d-none" data-count="0"></span>
                     {% include '_navbar_profile.html' %}
-                    <a class="btn btn-sm ms-2 cp-btn-logout d-inline-flex align-items-center" href="{{ url_for('auth.logout') }}" style="border-radius: 10px; padding: 6px 14px;">
+                    <a class="btn btn-sm cp-btn-logout d-inline-flex align-items-center justify-content-center" href="{{ url_for('auth.logout') }}" style="border-radius: 10px; padding: 6px 14px;">
                         <i class="bi bi-box-arrow-right me-2"></i><span>Logout</span>
                     </a>
                 {% elif current_user.is_authenticated and current_user.is_employer() %}
                     <span id="notificationBadge" class="d-none" data-count="0"></span>
                     {% include '_navbar_profile.html' %}
-                    <a class="btn btn-sm ms-2 cp-btn-logout d-inline-flex align-items-center" href="{{ url_for('auth.logout') }}" style="border-radius: 10px; padding: 6px 14px;">
+                    <a class="btn btn-sm cp-btn-logout d-inline-flex align-items-center justify-content-center" href="{{ url_for('auth.logout') }}" style="border-radius: 10px; padding: 6px 14px;">
                         <i class="bi bi-box-arrow-right me-2"></i><span>Logout</span>
                     </a>
                 {% else %}
-                    <a href="{{ url_for('auth.login') }}" class="btn btn-cp-primary btn-sm px-4 py-2 fw-semibold d-inline-flex align-items-center gap-1.5 text-decoration-none" style="border-radius: 12px; font-size: 0.9rem; box-shadow: 0 4px 18px rgba(2, 132, 199, 0.4);">
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-outline-light btn-sm px-3 py-2 fw-semibold d-inline-flex align-items-center gap-1 text-decoration-none" style="border-radius: 10px; font-size: 0.87rem;">
+                        <i class="bi bi-person-plus me-1"></i><span>Register</span>
+                    </a>
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-cp-primary btn-sm px-4 py-2 fw-semibold d-inline-flex align-items-center gap-1 text-decoration-none" style="border-radius: 10px; font-size: 0.87rem; box-shadow: 0 4px 18px rgba(2,132,199,0.4);">
                         <span>Get Started</span>
                     </a>
                 {% endif %}

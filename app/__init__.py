@@ -268,12 +268,19 @@ def create_app(config_class=Config):
             total_offer_value = "PKR 0"
         
         # Query featured active jobs from database (exclude hired jobs)
-        featured_jobs = Job.query.filter(
+        # Show jobs sorted by highest salary first (dynamic — changes when salary changes)
+        # Include jobs with no expiry date OR future expiry date
+        featured_jobs_query = Job.query.filter(
             Job.status == 'active',
             or_(Job.approval_status == 'approved', Job.approval_status.is_(None)),
             or_(Job.is_hired == False, Job.is_hired.is_(None)),
-            Job.closes_at > datetime.utcnow()
-        ).order_by(Job.created_at.desc()).limit(6).all()
+            or_(Job.closes_at.is_(None), Job.closes_at > datetime.utcnow())
+        ).order_by(
+            Job.salary_max.desc().nullslast(),
+            Job.salary_min.desc().nullslast(),
+            Job.created_at.desc()
+        ).limit(6).all()
+        featured_jobs = featured_jobs_query
 
         # Query highest paying active job for the dynamic hero floating showcase cards (exclude hired jobs)
         all_active_jobs = Job.query.filter(
@@ -1110,8 +1117,8 @@ def _seed_defaults():
     des_cat = JobCategory.query.filter_by(name='Design').first() or eng_cat
     fin_cat = JobCategory.query.filter_by(name='Finance').first() or eng_cat
 
-    # Sample jobs seeding (Disabled so database stays clean when cleared)
-    if False and company.jobs.count() == 0:
+    # Sample jobs seeding (6 featured active jobs with 90-day validity)
+    if company.jobs.count() == 0:
         featured_defs = [
             {
                 'title': 'Senior Full Stack Python Developer',
