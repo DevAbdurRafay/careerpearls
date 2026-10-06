@@ -49,8 +49,11 @@ class Config:
         or os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
     )
 
-    _db_url = os.environ.get('DATABASE_URL', 'sqlite:///' + os.path.join(basedir, 'careerpearls.db'))
-    if _db_url.startswith('postgres://'):
+    _db_url = os.environ.get('DATABASE_URL')
+    if not _db_url:
+        fallback_dir = '/tmp' if os.name != 'nt' and os.path.exists('/tmp') else basedir
+        _db_url = 'sqlite:///' + os.path.join(fallback_dir, 'careerpearls.db')
+    elif _db_url.startswith('postgres://'):
         _db_url = _db_url.replace('postgres://', 'postgresql://', 1)
 
     SQLALCHEMY_DATABASE_URI = _db_url
@@ -64,12 +67,11 @@ class Config:
         SQLALCHEMY_ENGINE_OPTIONS = {
             'pool_pre_ping': True,
             'pool_recycle': 300,
-            'pool_size': 10,
-            'max_overflow': 20,
+            'pool_size': 5,
+            'max_overflow': 10,
             'pool_timeout': 30,
             'connect_args': {
                 'connect_timeout': 10,
-                'sslmode': 'require',
             },
         }
 
