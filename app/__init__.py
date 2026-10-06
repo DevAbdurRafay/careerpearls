@@ -24,8 +24,12 @@ def create_app(config_class=Config):
     if not os.path.isabs(upload_folder):
         upload_folder = os.path.join(app.root_path, '..', upload_folder)
         upload_folder = os.path.abspath(upload_folder)
+    try:
+        os.makedirs(upload_folder, exist_ok=True)
+    except Exception:
+        upload_folder = '/tmp/uploads'
+        os.makedirs(upload_folder, exist_ok=True)
     app.config['UPLOAD_FOLDER'] = upload_folder
-    os.makedirs(upload_folder, exist_ok=True)
 
     db.init_app(app)
     login_manager.init_app(app)
@@ -593,7 +597,10 @@ def create_app(config_class=Config):
                     ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
                     if ext in ['jpg', 'jpeg', 'png', 'pdf']:
                         filename = f"complaint_{int(datetime.utcnow().timestamp())}_{secure_filename(file.filename)}"
-                        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+                        try:
+                            os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+                        except Exception:
+                            pass
                         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                         attachment_url = filename
                     else:

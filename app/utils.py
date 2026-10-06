@@ -126,7 +126,11 @@ def save_upload(file, upload_folder, allowed_extensions):
         if not raw_name:
             raw_name = 'document'
         filename = f"{uuid.uuid4().hex[:8]}_{raw_name}.{ext}"
-        os.makedirs(upload_folder, exist_ok=True)
+        try:
+            os.makedirs(upload_folder, exist_ok=True)
+        except Exception:
+            upload_folder = '/tmp/uploads'
+            os.makedirs(upload_folder, exist_ok=True)
         filepath = os.path.join(upload_folder, filename)
         file.save(filepath)
         return filename
@@ -152,7 +156,11 @@ def save_base64_image(data_url, upload_folder):
     if not raw:
         return None
     filename = f"{uuid.uuid4().hex}.{ext}"
-    os.makedirs(upload_folder, exist_ok=True)
+    try:
+        os.makedirs(upload_folder, exist_ok=True)
+    except Exception:
+        upload_folder = '/tmp/uploads'
+        os.makedirs(upload_folder, exist_ok=True)
     filepath = os.path.join(upload_folder, filename)
     with open(filepath, 'wb') as handle:
         handle.write(raw)
